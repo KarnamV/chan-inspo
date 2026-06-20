@@ -202,7 +202,7 @@
 <script>
 (function(){
   "use strict";
-  var STORE_KEY = "chanInspoKanban.v10";
+  var STORE_KEY = "chanInspoKanban.v11";
   var COLUMNS = [
     {id:"backlog",  name:"Backlog",     color:"#7d7068"},
     {id:"todo",     name:"To Do",       color:"#4a90d9"},
@@ -236,8 +236,8 @@
 
       // Phase 2 — Core systems
       c("Room generation (simple room graph)","2d","p2","done","RoomData.gd (Resource: id, type, depth, exits, visited). RoomGraph.gd (RefCounted): generate(seed) BFS tree 8-12 rooms, COMBAT 75%/ELITE 15%/SHOP+SHRINE 5% each, forced START+BOSS. API: get_room/get_neighbors/get_path_to_boss."),
-      c("Room transitions (3 exits, pick path)","2d","p2","doing",""),
-      c("Enemy AI: 3 enemy types (FSM)","2d","p2","todo","Demon, possessed warrior, beast. State machine per type."),
+      c("Room transitions (3 exits, pick path)","2d","p2","done","RoomRenderer.gd/tscn: coloured walls per type, 60px exit doors with glowing arch + dest label. RoomManager: travel_to(), 0.3s fade, player frozen during transition, BOSS locked until siblings visited. signal room_entered(data)."),
+      c("Enemy AI: 3 enemy types (FSM)","2d","p2","doing","Demon, possessed warrior, beast. State machine per type."),
       c("Combo system + martial-spirit meter","2d","p2","done","signal combo_updated/spirit_updated. Per-attack spirit: punch 8, kick 10, throw 15, dash 12, counter x1.5. Decay -5/sec. Talisman costs 30 spirit. Overdrive gold pulse at 100."),
       c("Talisman framework + 4 talismans","2d","p2","todo","Data-driven; equip 3 at run start."),
       c("Health, spirit meter, HUD","2d","p2","done","signal health_updated. MAX_HP=100. HUD.tscn: HP bar (red), spirit bar (gold), combo label (pop tween). TestRoom wires all signals via HUD.connect_player()."),
