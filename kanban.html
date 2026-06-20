@@ -202,7 +202,7 @@
 <script>
 (function(){
   "use strict";
-  var STORE_KEY = "chanInspoKanban.v12";
+  var STORE_KEY = "chanInspoKanban.v13";
   var COLUMNS = [
     {id:"backlog",  name:"Backlog",     color:"#7d7068"},
     {id:"todo",     name:"To Do",       color:"#4a90d9"},
@@ -239,9 +239,9 @@
       c("Room transitions (3 exits, pick path)","2d","p2","done","RoomRenderer.gd/tscn: coloured walls per type, 60px exit doors with glowing arch + dest label. RoomManager: travel_to(), 0.3s fade, player frozen during transition, BOSS locked until siblings visited. signal room_entered(data)."),
       c("Enemy AI: 3 enemy types (FSM)","2d","p2","done","EnemyBase.gd: HP/speed/dmg/detect/atk ranges, die() flash+fade, signal enemy_died. Demon: ranged projectile 1.8s, HP=40. PossessedWarrior: WINDUP->melee hitbox, HP=70. Beast: rush dash 350px/s+cooldown, HP=30. TestRoom: 2D+2PW+1B, room-clear at 5/5 kills unlocks exits."),
       c("Combo system + martial-spirit meter","2d","p2","done","signal combo_updated/spirit_updated. Per-attack spirit: punch 8, kick 10, throw 15, dash 12, counter x1.5. Decay -5/sec. Talisman costs 30 spirit. Overdrive gold pulse at 100."),
-      c("Talisman framework + 4 talismans","2d","p2","doing","Data-driven; equip 3 at run start."),
+      c("Talisman framework + 4 talismans","2d","p2","done","TalismanManager: 3 slots, Tab cycles. DragonClaw (3x dmg one-hit), PhoenixFeather (heal 20% HP, 40sp), TigerFang (dodge counter 2x, 25sp), SnakeCoil (chain 50% to 2 nearby, 35sp). Starting loadout: YinYang+DragonClaw+PhoenixFeather. Effect flags in Player.gd."),
       c("Health, spirit meter, HUD","2d","p2","done","signal health_updated. MAX_HP=100. HUD.tscn: HP bar (red), spirit bar (gold), combo label (pop tween). TestRoom wires all signals via HUD.connect_player()."),
-      c("Death + respawn loop","2d","p2","doing","Permadeath; return to hub."),
+      c("Death + respawn loop","2d","p2","done","RunStats AutoLoad: rooms_visited/enemies_killed/spirit_collected/spirit_shards. die() red flash -> player_died signal -> 0.5s pause -> fade to black -> Hub.tscn. Hub: run summary + New Run (RunStats.reset + reload TestRoom) + Quit."),
 
       // Phase 3 — Progression
       c("Gold drops + spending currency","2d","p3","backlog",""),
