@@ -1,0 +1,28 @@
+; DemonProjectile.tscn — small purple orb fired by the Demon.
+; Area2D (not CharacterBody2D) so it passes through walls via body_entered
+; on physics bodies in the same layer.  Adjust collision layers/masks in
+; Project Settings if wall PhysicsBody2D is on a different layer.
+
+[gd_scene load_steps=4 format=3 uid="uid://demonprojectile_scene"]
+
+[ext_resource type="Script" path="res://scripts/DemonProjectile.gd" id="1_proj_script"]
+
+[sub_resource type="PlaceholderTexture2D" id="2_proj_tex"]
+size = Vector2(10, 10)
+
+[sub_resource type="CircleShape2D" id="3_proj_shape"]
+radius = 6.0
+
+[node name="DemonProjectile" type="Area2D"]
+script = ExtResource("1_proj_script")
+; Set collision_layer = 0 and collision_mask to include player + walls.
+; Adjust as needed once physics layers are configured.
+collision_layer = 4
+collision_mask = 3
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+modulate = Color(0.7, 0.2, 1.0, 1.0)
+texture = SubResource("2_proj_tex")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("3_proj_shape")

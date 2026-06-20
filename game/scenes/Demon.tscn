@@ -1,0 +1,39 @@
+; Demon.tscn — Ranged harasser.
+; Inherits node layout from EnemyBase; uses Demon.gd script.
+; No extra child nodes needed beyond the base layout — projectiles are
+; instantiated at runtime as siblings (not children) of this node.
+
+[gd_scene load_steps=5 format=3 uid="uid://demon_scene"]
+
+[ext_resource type="Script" path="res://scripts/Demon.gd" id="1_demon_script"]
+
+[sub_resource type="PlaceholderTexture2D" id="2_demon_tex"]
+size = Vector2(28, 36)
+
+[sub_resource type="RectangleShape2D" id="3_col_shape"]
+size = Vector2(28, 36)
+
+[sub_resource type="LabelSettings" id="4_label_settings"]
+font_size = 11
+font_color = Color(1.0, 1.0, 1.0, 1.0)
+outline_size = 2
+outline_color = Color(0.0, 0.0, 0.0, 1.0)
+
+[node name="Demon" type="CharacterBody2D"]
+script = ExtResource("1_demon_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+modulate = Color(0.8, 0.4, 1.0, 1.0)
+texture = SubResource("2_demon_tex")
+offset = Vector2(0, -9)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("3_col_shape")
+position = Vector2(0, -9)
+
+[node name="HPLabel" type="Label" parent="."]
+position = Vector2(-28, -60)
+size = Vector2(56, 16)
+label_settings = SubResource("4_label_settings")
+text = "HP: 40/40"
+horizontal_alignment = 1

@@ -1,0 +1,52 @@
+; PossessedWarrior.tscn — Melee bruiser.
+; Adds a MeleeHitbox Area2D (rect shape in front of the warrior) that is
+; enabled only during the ATTACK state window.
+
+[gd_scene load_steps=6 format=3 uid="uid://possessedwarrior_scene"]
+
+[ext_resource type="Script" path="res://scripts/PossessedWarrior.gd" id="1_pw_script"]
+
+[sub_resource type="PlaceholderTexture2D" id="2_pw_tex"]
+size = Vector2(30, 40)
+
+[sub_resource type="RectangleShape2D" id="3_col_shape"]
+size = Vector2(30, 40)
+
+[sub_resource type="RectangleShape2D" id="4_melee_shape"]
+size = Vector2(40, 30)
+
+[sub_resource type="LabelSettings" id="5_label_settings"]
+font_size = 11
+font_color = Color(1.0, 1.0, 1.0, 1.0)
+outline_size = 2
+outline_color = Color(0.0, 0.0, 0.0, 1.0)
+
+[node name="PossessedWarrior" type="CharacterBody2D"]
+script = ExtResource("1_pw_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+modulate = Color(0.5, 0.8, 0.4, 1.0)
+texture = SubResource("2_pw_tex")
+offset = Vector2(0, -10)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("3_col_shape")
+position = Vector2(0, -10)
+
+[node name="HPLabel" type="Label" parent="."]
+position = Vector2(-28, -66)
+size = Vector2(56, 16)
+label_settings = SubResource("5_label_settings")
+text = "HP: 70/70"
+horizontal_alignment = 1
+
+; MeleeHitbox — positioned slightly in front (below in top-down, i.e. +Y).
+; Enabled only during the ATTACK window by PossessedWarrior.gd.
+[node name="MeleeHitbox" type="Area2D" parent="."]
+position = Vector2(0, 28)
+monitoring = false
+monitorable = false
+
+[node name="MeleeShape" type="CollisionShape2D" parent="MeleeHitbox"]
+shape = SubResource("4_melee_shape")
+disabled = true

@@ -1,0 +1,44 @@
+; EnemyBase.tscn — base scene that Demon/PossessedWarrior/Beast inherit from.
+; Provides the shared node layout: Sprite2D, CollisionShape2D, HPLabel, HitArea.
+; Subclass scenes override the script and add type-specific child nodes.
+
+[gd_scene load_steps=5 format=3 uid="uid://enemybase_scene"]
+
+[sub_resource type="PlaceholderTexture2D" id="1_base_tex"]
+size = Vector2(28, 36)
+
+[sub_resource type="RectangleShape2D" id="2_col_shape"]
+size = Vector2(28, 36)
+
+[sub_resource type="CircleShape2D" id="3_hit_shape"]
+radius = 20.0
+
+[sub_resource type="LabelSettings" id="4_label_settings"]
+font_size = 11
+font_color = Color(1.0, 1.0, 1.0, 1.0)
+outline_size = 2
+outline_color = Color(0.0, 0.0, 0.0, 1.0)
+
+[node name="EnemyBase" type="CharacterBody2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = SubResource("1_base_tex")
+offset = Vector2(0, -9)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("2_col_shape")
+position = Vector2(0, -9)
+
+[node name="HPLabel" type="Label" parent="."]
+position = Vector2(-28, -60)
+size = Vector2(56, 16)
+label_settings = SubResource("4_label_settings")
+text = "HP: ?"
+horizontal_alignment = 1
+
+[node name="HitArea" type="Area2D" parent="."]
+monitoring = false
+monitorable = true
+
+[node name="HitShape" type="CollisionShape2D" parent="HitArea"]
+shape = SubResource("3_hit_shape")

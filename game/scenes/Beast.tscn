@@ -1,0 +1,50 @@
+; Beast.tscn — Fast rusher.
+; Adds a RushHitbox Area2D (circle, larger than warrior melee) that is
+; enabled only during the RUSH state.
+
+[gd_scene load_steps=6 format=3 uid="uid://beast_scene"]
+
+[ext_resource type="Script" path="res://scripts/Beast.gd" id="1_beast_script"]
+
+[sub_resource type="PlaceholderTexture2D" id="2_beast_tex"]
+size = Vector2(32, 32)
+
+[sub_resource type="RectangleShape2D" id="3_col_shape"]
+size = Vector2(32, 32)
+
+[sub_resource type="CircleShape2D" id="4_rush_shape"]
+radius = 22.0
+
+[sub_resource type="LabelSettings" id="5_label_settings"]
+font_size = 11
+font_color = Color(1.0, 1.0, 1.0, 1.0)
+outline_size = 2
+outline_color = Color(0.0, 0.0, 0.0, 1.0)
+
+[node name="Beast" type="CharacterBody2D"]
+script = ExtResource("1_beast_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+modulate = Color(1.0, 0.5, 0.2, 1.0)
+texture = SubResource("2_beast_tex")
+offset = Vector2(0, -8)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("3_col_shape")
+position = Vector2(0, -8)
+
+[node name="HPLabel" type="Label" parent="."]
+position = Vector2(-28, -54)
+size = Vector2(56, 16)
+label_settings = SubResource("5_label_settings")
+text = "HP: 30/30"
+horizontal_alignment = 1
+
+; RushHitbox — centred on the beast body; enabled only during RUSH.
+[node name="RushHitbox" type="Area2D" parent="."]
+monitoring = false
+monitorable = false
+
+[node name="RushShape" type="CollisionShape2D" parent="RushHitbox"]
+shape = SubResource("4_rush_shape")
+disabled = true
