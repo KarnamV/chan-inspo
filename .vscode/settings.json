@@ -1,0 +1,50 @@
+{
+  // ─── Godot / GDScript ────────────────────────────────────────────────────
+  // godot-tools connects to Godot's built-in LSP on this port.
+  // Must match: Godot > Editor Settings > Network > Language Server > Remote Port
+  "godotTools.gdscript.lsp.serverPort": 6005,
+
+  // ─── File associations ───────────────────────────────────────────────────
+  "files.associations": {
+    "*.gd": "gdscript",
+    "*.gdshader": "gdshader",
+    "*.gdshaderinc": "gdshader",
+    "*.tscn": "ini",
+    "*.tres": "ini",
+    "*.import": "ini"
+  },
+
+  // ─── Editor behaviour ────────────────────────────────────────────────────
+  "editor.formatOnSave": true,
+  "editor.tabSize": 4,
+  "editor.insertSpaces": false,   // GDScript convention: hard tabs
+  "editor.trimAutoWhitespace": true,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+
+  // ─── Search / explorer exclusions ───────────────────────────────────────
+  "files.exclude": {
+    "**/.godot": true,
+    "**/*.import": false   // keep visible — sometimes useful to inspect
+  },
+  "search.exclude": {
+    "**/.godot": true,
+    "**/*.import": true
+  },
+
+  // ─── Godot external-editor setup note (READ ME) ──────────────────────────
+  // To make Godot open scripts directly in VS Code:
+  //   1. In Godot: Editor > Editor Settings > Text Editor > External
+  //   2. Enable "Use External Editor"
+  //   3. Exec Path:  C:\Users\karna\AppData\Local\Programs\Microsoft VS Code\Code.exe
+  //   4. Exec Flags: {project} --goto {file}:{line}:{col}
+  //      (the --goto flag tells VS Code to jump to that exact line/column)
+  //
+  // Then click any script in the FileSystem dock — it opens here at the right line.
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // ─── Python / other languages: silence unrelated linters ─────────────────
+  "[gdscript]": {
+    "editor.defaultFormatter": "geequlim.godot-tools"
+  }
+}
