@@ -1,8 +1,10 @@
-# Jackie's Demon Realm Escape — Roguelite Game Design
+# Jackie's Demon Realm Escape — 2.5D Top-Down Roguelite
+
+> **Scope:** This is the first, fully standalone game, built in Godot. A separate Unity 6 open-world sandbox (the *Jackie Chan Adventures*–style project) is parked to plan later and is **not** covered by this document.
 
 ## Core Concept
 
-Jackie (Chan-inspired martial artist) trapped in demon realm. Fight through procedurally generated levels. Collect talismans with unique powers to break free. Permadeath + meta-progression between runs.
+Jackie (Chan-inspired martial artist) trapped in demon realm. Fight through procedurally generated levels from a **2.5D top-down view**. Collect talismans with unique powers to break free. Permadeath + meta-progression between runs.
 
 ## Game Design
 
@@ -16,10 +18,10 @@ Start run -> Fight enemies across randomized rooms -> Collect talismans & gold -
 
 ### Gameplay Mechanics
 
-#### Combat (real-time, side-view beat-em-up)
-- 4 basic attacks: punch, kick, throw, jump-kick
+#### Combat (real-time, 2.5D top-down brawler)
+- 4 basic attacks: punch, kick, throw, dash-attack (directional lunge)
 - Combo system: sequences build "martial spirit" meter
-- Dodge roll (i-frame invincibility), block (stagger guard)
+- 8-directional movement on the plane; dodge roll (i-frame invincibility), block (stagger guard)
 - Jackie Chan style: environment kills (throw objects), acrobatic moves
 
 #### Talisman System (core progression)
@@ -32,7 +34,7 @@ Each talisman grants a persistent ability — equip 3 at start of run, find more
 | **Phoenix Feather** | Heal 20% on kill | Uncommon |
 | **Tiger Fang** | Dodge counter -> massive damage burst | Rare |
 | **Snake Coil** | Chain light between nearby enemies | Rare |
-| **Monkey Step** | Double jump + air control | Uncommon |
+| **Monkey Step** | Extra dodge-dash charges + faster reposition | Uncommon |
 | **Crane Wing** | Parry window expands -> stagger on parry | Rare |
 | **Demon Seal** | Absorb one hit, explode afterward (1 use) | Epic |
 | **Void Star** | Teleport short distance, leave afterimage decoy | Rare |
@@ -72,7 +74,7 @@ Each talisman grants a persistent ability — equip 3 at start of run, find more
 
 Why:
 - Free, open-source, lightweight (~100MB)
-- Excellent 2D support — ideal for side-view roguelite
+- Excellent 2D *and* lightweight 3D support — ideal for a 2.5D top-down roguelite (low-poly on a plane, or sprites with Y-sort depth)
 - Node scene tree maps perfectly to room/enemy/talisman components
 - Built-in tilemap + tileset editors
 - Export to Windows/macOS/Linux/Android/iOS/WebGL easily
@@ -148,7 +150,8 @@ Main Menu
 ## Recommended Dev Phases
 
 ### Phase 1: Prototype (Week 1-2)
-- Basic player movement + combat (4 attacks, dodge)
+- Set up 2.5D top-down camera + render approach (low-poly-on-plane vs. Y-sorted sprites)
+- Top-down 8-direction movement + combat (4 attacks, dodge)
 - One room with dummy enemies
 - One talisman working
 - Verify core combat feels good

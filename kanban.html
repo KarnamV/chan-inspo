@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Demon Realm — Game Dev Kanban</title>
+<style>
+  :root{
+    --bg:#12100f;
+    --panel:#1c1816;
+    --panel-2:#241f1c;
+    --ink:#f2e9df;
+    --muted:#9a8f84;
+    --line:#332b27;
+    --gold:#e0b341;
+    --red:#c0392b;
+    --jade:#3fae7a;
+    --violet:#9b6dd6;
+    --blue:#4a90d9;
+    --radius:12px;
+    --shadow:0 6px 18px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(192,57,43,.10), transparent 60%),
+      radial-gradient(900px 500px at 0% 110%, rgba(224,179,65,.08), transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    font:14px/1.45 "Segoe UI",Roboto,system-ui,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  header.app{
+    display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+    padding:16px 22px;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,rgba(255,255,255,.02),transparent);
+    position:sticky;top:0;z-index:30;backdrop-filter:blur(6px);
+  }
+  .brand{display:flex;align-items:center;gap:12px;margin-right:auto}
+  .seal{
+    width:40px;height:40px;border-radius:8px;flex:none;
+    display:grid;place-items:center;font-size:20px;
+    background:radial-gradient(circle at 30% 30%,#3a2a1a,#1a120c);
+    border:1px solid var(--gold);box-shadow:inset 0 0 14px rgba(224,179,65,.25);
+  }
+  .brand h1{font-size:16px;margin:0;letter-spacing:.3px}
+  .brand p{margin:2px 0 0;color:var(--muted);font-size:12px}
+  .controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  select,button,.chip{
+    font:inherit;color:var(--ink);background:var(--panel-2);
+    border:1px solid var(--line);border-radius:8px;padding:7px 11px;cursor:pointer;
+  }
+  select{padding-right:26px}
+  button:hover,.chip:hover{border-color:var(--gold)}
+  button.primary{background:var(--gold);color:#1a120c;border-color:var(--gold);font-weight:600}
+  button.ghost{background:transparent}
+  .meta-line{padding:10px 22px 0;color:var(--muted);font-size:12px;display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+  .progress-wrap{flex:1;min-width:160px;max-width:420px;height:8px;border-radius:99px;background:var(--panel-2);border:1px solid var(--line);overflow:hidden}
+  .progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--jade));transition:width .4s ease}
+
+  .board{
+    display:flex;gap:14px;padding:16px 22px 40px;overflow-x:auto;align-items:flex-start;
+  }
+  .col{
+    flex:1 1 0;min-width:248px;background:var(--panel);border:1px solid var(--line);
+    border-radius:var(--radius);display:flex;flex-direction:column;max-height:calc(100vh - 150px);
+  }
+  .col-head{
+    display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line);
+    position:sticky;top:0;background:var(--panel);border-radius:var(--radius) var(--radius) 0 0;
+  }
+  .col-head .dot{width:9px;height:9px;border-radius:99px;flex:none}
+  .col-head h2{font-size:13px;margin:0;text-transform:uppercase;letter-spacing:.6px}
+  .count{margin-left:auto;color:var(--muted);font-size:12px;background:var(--panel-2);border:1px solid var(--line);padding:1px 8px;border-radius:99px}
+  .col-body{padding:10px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;min-height:60px;flex:1}
+  .col-body.dragover{outline:2px dashed var(--gold);outline-offset:-6px;border-radius:8px}
+
+  .card{
+    background:var(--panel-2);border:1px solid var(--line);border-left:4px solid var(--muted);
+    border-radius:10px;padding:11px 12px;cursor:grab;box-shadow:var(--shadow);position:relative;
+  }
+  .card:active{cursor:grabbing}
+  .card.dragging{opacity:.45}
+  .card h3{margin:0 0 7px;font-size:13.5px;font-weight:600;line-height:1.3;padding-right:18px}
+  .card .tags{display:flex;flex-wrap:wrap;gap:6px}
+  .tag{font-size:10.5px;letter-spacing:.3px;padding:2px 7px;border-radius:99px;border:1px solid var(--line);color:var(--muted);text-transform:uppercase}
+  .tag.game{color:#1a120c;font-weight:700;border:none}
+  .tag.game.g2d{background:var(--gold)}
+  .tag.game.unity{background:var(--violet);color:#fff}
+  .tag.p0{border-color:#6b6b6b;color:#bdbdbd}
+  .tag.p1{border-color:var(--jade);color:var(--jade)}
+  .tag.p2{border-color:var(--blue);color:var(--blue)}
+  .tag.p3{border-color:var(--gold);color:var(--gold)}
+  .tag.p4{border-color:var(--red);color:#e57368}
+  .card .x{position:absolute;top:8px;right:8px;width:18px;height:18px;border-radius:5px;display:none;
+    place-items:center;color:var(--muted);font-size:13px;line-height:1;border:1px solid transparent;background:transparent;padding:0}
+  .card:hover .x{display:grid}
+  .card .x:hover{color:#fff;border-color:var(--red);background:rgba(192,57,43,.2)}
+  .col[data-col="done"] .card h3{text-decoration:line-through;color:var(--muted)}
+
+  .add-card{margin:2px;border:1px dashed var(--line);background:transparent;color:var(--muted);width:calc(100% - 4px);padding:9px;border-radius:8px}
+  .add-card:hover{color:var(--gold);border-color:var(--gold)}
+
+  /* modal */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;place-items:center;z-index:50;padding:20px}
+  .overlay.open{display:grid}
+  .modal{width:min(460px,100%);background:var(--panel);border:1px solid var(--gold);border-radius:14px;box-shadow:var(--shadow);padding:18px}
+  .modal h3{margin:0 0 14px;font-size:15px}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:5px}
+  .field input,.field textarea,.field select{width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:9px;font:inherit}
+  .field textarea{min-height:64px;resize:vertical}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+  .empty{color:var(--muted);font-size:12px;text-align:center;padding:14px 6px;font-style:italic}
+  footer.app{padding:0 22px 26px;color:var(--muted);font-size:11.5px}
+  .hidden{display:none!important}
+  ::-webkit-scrollbar{height:10px;width:10px}
+  ::-webkit-scrollbar-thumb{background:#3a322d;border-radius:99px}
+</style>
+</head>
+<body>
+<header class="app">
+  <div class="brand">
+    <div class="seal">龍</div>
+    <div>
+      <h1>Demon Realm — Game Dev Kanban</h1>
+      <p>Jackie-inspired games · 2.5D top-down roguelite (standalone, building now) · Unity open-world parked for later</p>
+    </div>
+  </div>
+  <div class="controls">
+    <select id="filterGame" title="Filter by game">
+      <option value="all">All games</option>
+      <option value="2d">2.5D top-down roguelite</option>
+      <option value="unity">Unity open-world (parked)</option>
+    </select>
+    <select id="filterPhase" title="Filter by phase">
+      <option value="all">All phases</option>
+      <option value="p0">Setup</option>
+      <option value="p1">Phase 1 · Prototype</option>
+      <option value="p2">Phase 2 · Core</option>
+      <option value="p3">Phase 3 · Progression</option>
+      <option value="p4">Phase 4 · Polish</option>
+      <option value="unity">Unity (parked / later)</option>
+    </select>
+    <button class="ghost" id="exportBtn" title="Download board as JSON backup">Export</button>
+    <button class="ghost" id="importBtn" title="Load a JSON backup">Import</button>
+    <button class="ghost" id="resetBtn" title="Reset to the original seeded board">Reset</button>
+    <input type="file" id="importFile" accept="application/json" class="hidden" />
+  </div>
+</header>
+
+<div class="meta-line">
+  <span id="statText">—</span>
+  <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+  <span id="pctText">0%</span>
+</div>
+
+<div class="board" id="board"></div>
+
+<footer class="app">
+  Drag cards between columns. Changes save automatically in this browser. Use <b>Export</b> to back the board up or move it to another machine.
+</footer>
+
+<!-- Card editor modal -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3 id="modalTitle">New card</h3>
+    <div class="field">
+      <label>Title</label>
+      <input id="mTitle" type="text" placeholder="e.g. Dodge roll with i-frames" />
+    </div>
+    <div class="field">
+      <label>Notes (optional)</label>
+      <textarea id="mNotes" placeholder="Acceptance criteria, references, gotchas…"></textarea>
+    </div>
+    <div class="field">
+      <label>Game</label>
+      <select id="mGame">
+        <option value="2d">2.5D top-down roguelite</option>
+        <option value="unity">Unity open-world (parked)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Phase</label>
+      <select id="mPhase">
+        <option value="p0">Setup</option>
+        <option value="p1">Phase 1 · Prototype</option>
+        <option value="p2">Phase 2 · Core</option>
+        <option value="p3">Phase 3 · Progression</option>
+        <option value="p4">Phase 4 · Polish</option>
+        <option value="unity">Unity track</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="ghost" id="mCancel">Cancel</button>
+      <button class="primary" id="mSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var STORE_KEY = "chanInspoKanban.v2";
+  var COLUMNS = [
+    {id:"backlog",  name:"Backlog",     color:"#7d7068"},
+    {id:"todo",     name:"To Do",       color:"#4a90d9"},
+    {id:"doing",    name:"In Progress", color:"#e0b341"},
+    {id:"testing",  name:"Testing",     color:"#9b6dd6"},
+    {id:"done",     name:"Done",        color:"#3fae7a"}
+  ];
+  var PHASE_LABEL = {p0:"Setup",p1:"Phase 1",p2:"Phase 2",p3:"Phase 3",p4:"Phase 4",unity:"Parked"};
+
+  // ---- Seed data (derived from GAME-design.md + project memory) ----
+  function seed(){
+    var id=0; function c(title,game,phase,col,notes){return {id:"c"+(++id),title:title,game:game,phase:phase,col:col,notes:notes||""};}
+    return [
+      // Setup
+      c("Git repo + GitHub set up","2d","p0","done","Repo already exists with design doc committed."),
+      c("Finalize game design doc","2d","p0","done","GAME-design.md complete."),
+      c("Install Godot 4.x","2d","p0","todo","~2GB disk. Target Win 10/11, 60fps @720p."),
+      c("Set up 2.5D top-down camera + render pipeline","2d","p0","todo","Angled top-down view with depth (Y-sort). Decide low-poly 3D on a plane vs. billboard sprites. Ref: Hades, Enter the Gungeon."),
+      c("Set up code editor (VS Code / Godot)","2d","p0","todo",""),
+      c("Install art tool (Aseprite / Krita / LibreSprite)","2d","p0","backlog","For pixel-art sprites and props."),
+      c("Install audio tool (Audacity / Bosca Ceoil)","2d","p0","backlog","SFX at minimum; chiptune music later."),
+
+      // Phase 1 — Prototype
+      c("Top-down player movement (8-direction)","2d","p1","todo","No gravity/platforming — free movement on a plane with depth sorting."),
+      c("4 basic attacks: punch, kick, throw, dash-attack","2d","p1","todo","Directional hitboxes + basic animation states (dash-attack replaces side-view jump-kick)."),
+      c("Dodge roll with i-frame invincibility","2d","p1","backlog",""),
+      c("Block / stagger guard","2d","p1","backlog",""),
+      c("One test room with dummy enemies","2d","p1","backlog","Static dummies to test hit feedback."),
+      c("One working talisman (Yin-Yang stance toggle)","2d","p1","backlog","Light/dark stance changes attack types."),
+      c("Combat feel review (gate)","2d","p1","backlog","Principle #1: if fighting isn't fun, stop and fix. Day-one priority."),
+
+      // Phase 2 — Core systems
+      c("Room generation (simple room graph)","2d","p2","backlog","BSP / graph of rooms, 8–12 per realm."),
+      c("Room transitions (3 exits, pick path)","2d","p2","backlog",""),
+      c("Enemy AI: 3 enemy types (FSM)","2d","p2","backlog","Demon, possessed warrior, beast. State machine per type."),
+      c("Combo system + martial-spirit meter","2d","p2","backlog","Sequences build spirit; spirit fuels talismans."),
+      c("Talisman framework + 4 talismans","2d","p2","backlog","Data-driven; equip 3 at run start."),
+      c("Health, spirit meter, HUD","2d","p2","backlog","Clear readable bars; telegraph enemy attacks."),
+      c("Death + respawn loop","2d","p2","backlog","Permadeath; return to hub."),
+
+      // Phase 3 — Progression
+      c("Gold drops + spending currency","2d","p3","backlog",""),
+      c("Shop between levels","2d","p3","backlog","Sells talismans, upgrades, healing, info."),
+      c("Shrine rooms (blessing or heal)","2d","p3","backlog","Sacrifice gold for random blessing OR restore HP."),
+      c("Mini-bosses at realm boundaries","2d","p3","backlog","Drop guaranteed talisman/upgrade."),
+      c("Spirit Shard meta-currency","2d","p3","backlog","Earned per run from distance + foes."),
+      c("Hub area UI + perma-upgrade menu","2d","p3","backlog","More slots, new moves, stat boosts, variants."),
+      c("7 realm themes + unlock logic","2d","p3","backlog","Unlock next realm after beating previous max."),
+      c("Temptation rooms (cursed power-ups)","2d","p3","backlog","Risk gold/shards for powerful but cursed buffs."),
+      c("Remaining talismans (10 total)","2d","p3","backlog","Dragon Claw, Phoenix Feather, Tiger Fang, Snake Coil, Monkey Step, Crane Wing, Demon Seal, Void Star, Heaven's Token."),
+
+      // Phase 4 — Polish
+      c("Art pass + animations","2d","p4","backlog",""),
+      c("VFX: particles, screen shake, hitstop","2d","p4","backlog",""),
+      c("Sound design + music","2d","p4","backlog",""),
+      c("Balance pass","2d","p4","backlog","10–20 min runs max."),
+      c("Bug-fix sweep","2d","p4","backlog",""),
+      c("Build + distribute","2d","p4","backlog","Windows build first."),
+
+      // Unity open-world — parked, to plan later
+      c("Unity open-world sandbox — PLAN LATER","unity","unity","backlog","Parked until the 2.5D top-down roguelite ships. When revisited, plan: Unity 6 + URP setup; cel-shading URP shader; talisman ability framework (ScriptableObject + strategy, 12 powers as data assets); two-talisman combo (signature hook); third-person controller + camera; Synty POLYGON asset integration; Mixamo Humanoid animation retargeting; hero character refinement (Meshy/Rodin base + Blender cleanup); vertical slice = 1 area + 3 talismans to validate the loop; open world deferred to its own later phase.")
+    ];
+  }
+
+  // ---- State ----
+  var state = load();
+  function load(){
+    try{ var raw=localStorage.getItem(STORE_KEY); if(raw){var p=JSON.parse(raw); if(p&&p.cards) return p;} }catch(e){}
+    return {cards:seed()};
+  }
+  function save(){ try{localStorage.setItem(STORE_KEY,JSON.stringify(state));}catch(e){} }
+
+  var filterGame="all", filterPhase="all", editingId=null;
+  var board=document.getElementById("board");
+
+  function visible(card){
+    if(filterGame!=="all" && card.game!==filterGame) return false;
+    if(filterPhase!=="all" && card.phase!==filterPhase) return false;
+    return true;
+  }
+
+  function render(){
+    board.innerHTML="";
+    COLUMNS.forEach(function(col){
+      var cards=state.cards.filter(function(c){return c.col===col.id;});
+      var vis=cards.filter(visible);
+      var el=document.createElement("section");
+      el.className="col"; el.dataset.col=col.id;
+      el.innerHTML =
+        '<div class="col-head"><span class="dot" style="background:'+col.color+'"></span>'+
+        '<h2>'+col.name+'</h2><span class="count">'+vis.length+'</span></div>'+
+        '<div class="col-body" data-col="'+col.id+'"></div>'+
+        '<button class="add-card" data-col="'+col.id+'">+ Add card</button>';
+      var body=el.querySelector(".col-body");
+      if(vis.length===0){ var e=document.createElement("div"); e.className="empty"; e.textContent="No cards"; body.appendChild(e); }
+      vis.forEach(function(card){ body.appendChild(cardEl(card)); });
+      board.appendChild(el);
+    });
+    wireDnD();
+    updateStats();
+    save();
+  }
+
+  function cardEl(card){
+    var d=document.createElement("article");
+    d.className="card"; d.draggable=true; d.dataset.id=card.id;
+    d.style.borderLeftColor = phaseColor(card.phase);
+    var notes = card.notes ? '<div class="tag" title="'+escapeAttr(card.notes)+'" style="cursor:help">ℹ notes</div>' : '';
+    d.innerHTML =
+      '<button class="x" title="Delete card" data-del="'+card.id+'">✕</button>'+
+      '<h3>'+escapeHtml(card.title)+'</h3>'+
+      '<div class="tags">'+
+        '<span class="tag game '+(card.game==="2d"?"g2d":"unity")+'">'+(card.game==="2d"?"2.5D":"Unity")+'</span>'+
+        '<span class="tag '+card.phase+'">'+(PHASE_LABEL[card.phase]||card.phase)+'</span>'+
+        notes+
+      '</div>';
+    d.querySelector("h3").addEventListener("click",function(){openEdit(card.id);});
+    d.querySelector(".x").addEventListener("click",function(ev){ ev.stopPropagation(); delCard(card.id); });
+    return d;
+  }
+
+  function phaseColor(p){return ({p0:"#7d7068",p1:"#3fae7a",p2:"#4a90d9",p3:"#e0b341",p4:"#c0392b",unity:"#9b6dd6"})[p]||"#7d7068";}
+
+  // ---- Drag & drop ----
+  var dragId=null;
+  function wireDnD(){
+    document.querySelectorAll(".card").forEach(function(c){
+      c.addEventListener("dragstart",function(){dragId=c.dataset.id;c.classList.add("dragging");});
+      c.addEventListener("dragend",function(){dragId=null;c.classList.remove("dragging");document.querySelectorAll(".col-body").forEach(function(b){b.classList.remove("dragover");});});
+    });
+    document.querySelectorAll(".col-body").forEach(function(body){
+      body.addEventListener("dragover",function(e){e.preventDefault();body.classList.add("dragover");});
+      body.addEventListener("dragleave",function(){body.classList.remove("dragover");});
+      body.addEventListener("drop",function(e){
+        e.preventDefault();body.classList.remove("dragover");
+        if(!dragId)return;
+        var card=state.cards.find(function(c){return c.id===dragId;});
+        if(card){card.col=body.dataset.col;render();}
+      });
+    });
+    document.querySelectorAll(".add-card").forEach(function(b){
+      b.addEventListener("click",function(){openNew(b.dataset.col);});
+    });
+  }
+
+  // ---- Stats ----
+  function updateStats(){
+    var all=state.cards.filter(visible);
+    var done=all.filter(function(c){return c.col==="done";}).length;
+    var pct = all.length? Math.round(done/all.length*100):0;
+    document.getElementById("statText").textContent = done+" of "+all.length+" cards done"+
+      (filterGame!=="all"||filterPhase!=="all"?" (filtered)":"");
+    document.getElementById("progressBar").style.width=pct+"%";
+    document.getElementById("pctText").textContent=pct+"%";
+  }
+
+  // ---- Modal ----
+  var overlay=document.getElementById("overlay");
+  function openNew(col){
+    editingId=null;
+    document.getElementById("modalTitle").textContent="New card";
+    document.getElementById("mTitle").value="";
+    document.getElementById("mNotes").value="";
+    document.getElementById("mGame").value = (filterGame!=="all"?filterGame:"2d");
+    document.getElementById("mPhase").value = (filterPhase!=="all"?filterPhase:"p1");
+    overlay.dataset.col=col||"todo";
+    overlay.classList.add("open");
+    document.getElementById("mTitle").focus();
+  }
+  function openEdit(id){
+    var card=state.cards.find(function(c){return c.id===id;});
+    if(!card)return;
+    editingId=id;
+    document.getElementById("modalTitle").textContent="Edit card";
+    document.getElementById("mTitle").value=card.title;
+    document.getElementById("mNotes").value=card.notes||"";
+    document.getElementById("mGame").value=card.game;
+    document.getElementById("mPhase").value=card.phase;
+    overlay.classList.add("open");
+    document.getElementById("mTitle").focus();
+  }
+  function closeModal(){overlay.classList.remove("open");editingId=null;}
+  document.getElementById("mCancel").addEventListener("click",closeModal);
+  overlay.addEventListener("click",function(e){if(e.target===overlay)closeModal();});
+  document.getElementById("mSave").addEventListener("click",function(){
+    var title=document.getElementById("mTitle").value.trim();
+    if(!title){document.getElementById("mTitle").focus();return;}
+    var notes=document.getElementById("mNotes").value.trim();
+    var game=document.getElementById("mGame").value;
+    var phase=document.getElementById("mPhase").value;
+    if(editingId){
+      var card=state.cards.find(function(c){return c.id===editingId;});
+      if(card){card.title=title;card.notes=notes;card.game=game;card.phase=phase;}
+    }else{
+      state.cards.push({id:"c"+Date.now(),title:title,notes:notes,game:game,phase:phase,col:overlay.dataset.col||"todo"});
+    }
+    closeModal();render();
+  });
+  function delCard(id){
+    var card=state.cards.find(function(c){return c.id===id;});
+    if(card && confirm('Delete card: "'+card.title+'"?')){
+      state.cards=state.cards.filter(function(c){return c.id!==id;});
+      render();
+    }
+  }
+
+  // ---- Filters / toolbar ----
+  document.getElementById("filterGame").addEventListener("change",function(e){filterGame=e.target.value;render();});
+  document.getElementById("filterPhase").addEventListener("change",function(e){filterPhase=e.target.value;render();});
+  document.getElementById("resetBtn").addEventListener("click",function(){
+    if(confirm("Reset the board to the original seeded cards? Your current changes will be lost (Export first if you want a backup).")){
+      state={cards:seed()};render();
+    }
+  });
+  document.getElementById("exportBtn").addEventListener("click",function(){
+    var blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+    var a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="chan-inspo-kanban-"+new Date().toISOString().slice(0,10)+".json";
+    a.click();URL.revokeObjectURL(a.href);
+  });
+  document.getElementById("importBtn").addEventListener("click",function(){document.getElementById("importFile").click();});
+  document.getElementById("importFile").addEventListener("change",function(e){
+    var f=e.target.files[0]; if(!f)return;
+    var r=new FileReader();
+    r.onload=function(){
+      try{var p=JSON.parse(r.result); if(p&&Array.isArray(p.cards)){state=p;render();} else alert("That file doesn't look like a kanban export.");}
+      catch(err){alert("Could not read that file.");}
+    };
+    r.readAsText(f); e.target.value="";
+  });
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")closeModal();});
+
+  // ---- helpers ----
+  function escapeHtml(s){return String(s).replace(/[&<>"']/g,function(m){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m];});}
+  function escapeAttr(s){return escapeHtml(s).replace(/\n/g," ");}
+
+  render();
+})();
+</script>
+</body>
+</html>
