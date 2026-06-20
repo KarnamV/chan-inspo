@@ -1,8 +1,10 @@
-[gd_scene load_steps=9 format=3 uid="uid://testroom_scene"]
+[gd_scene load_steps=6 format=3 uid="uid://testroom_scene"]
 
 [ext_resource type="PackedScene" path="res://scenes/Player.tscn" id="1_player_scene"]
 [ext_resource type="PackedScene" path="res://scenes/Dummy.tscn" id="2_dummy_scene"]
 [ext_resource type="Script" path="res://scripts/TestRoom.gd" id="3_testroom_script"]
+[ext_resource type="PackedScene" path="res://scenes/RoomRenderer.tscn" id="4_roomrenderer_scene"]
+[ext_resource type="Script" path="res://scripts/RoomManager.gd" id="5_roommanager_script"]
 
 [sub_resource type="LabelSettings" id="8_stance_label_settings"]
 font_size = 20
@@ -10,85 +12,30 @@ font_color = Color(1.0, 1.0, 1.0, 1.0)
 shadow_color = Color(0.0, 0.0, 0.0, 0.8)
 shadow_offset = Vector2(2, 2)
 
-[sub_resource type="RectangleShape2D" id="4_wall_top_shape"]
-size = Vector2(1280, 20)
-
-[sub_resource type="RectangleShape2D" id="5_wall_bottom_shape"]
-size = Vector2(1280, 20)
-
-[sub_resource type="RectangleShape2D" id="6_wall_left_shape"]
-size = Vector2(20, 720)
-
-[sub_resource type="RectangleShape2D" id="7_wall_right_shape"]
-size = Vector2(20, 720)
-
 ; ---------------------------------------------------------------------------
-; TestRoom.tscn — isolated combat-feel test room.
+; TestRoom.tscn — isolated combat-feel test room with room transitions.
 ;
-; Purpose: Verify all 4 attacks + counter attacks register hits, flash red,
-;          update HP labels, and destroy dummies cleanly.
+; Node hierarchy:
+;   TestRoom (Node2D)
+;     ├── RoomRenderer   — draws floor + coloured walls + exit door arches
+;     ├── RoomManager    — holds RoomGraph, drives fade transitions
+;     ├── Dummies        — combat dummies (kept for hit-testing; AI replaces later)
+;     ├── Player         — player character at room centre
+;     └── HUD (CanvasLayer, layer=10)
+;           └── StanceLabel
 ;
-; Layout (1280x720 viewport, walls 20px thick):
-;   Floor: 1240x680, offset (20, 20)
-;   Walls: ColorRect (visual) + StaticBody2D (physical) for each border
-;   5 Dummies: corner-spread + centre-north so all reach ranges are testable
-;   Player: starts at room centre (640, 360)
-;
-; Damage routing: TestRoom.gd connects player.attack_landed -> finds nearest
-;   dummy within 120px of hit_position and calls take_damage(damage).
+; Static floor/walls removed — RoomRenderer builds them procedurally.
+; RoomManager is wired up in TestRoom._setup_room_manager() with seed 42.
 ; ---------------------------------------------------------------------------
 
 [node name="TestRoom" type="Node2D"]
 script = ExtResource("3_testroom_script")
 
-[node name="Floor" type="ColorRect" parent="."]
-color = Color(0.12, 0.12, 0.14, 1.0)
-position = Vector2(20, 20)
-size = Vector2(1240, 680)
-
-[node name="WallTop" type="ColorRect" parent="."]
-color = Color(0.25, 0.18, 0.10, 1.0)
+[node name="RoomRenderer" parent="." instance=ExtResource("4_roomrenderer_scene")]
 position = Vector2(0, 0)
-size = Vector2(1280, 20)
 
-[node name="WallTopBody" type="StaticBody2D" parent="."]
-position = Vector2(640, 10)
-
-[node name="WallTopShape" type="CollisionShape2D" parent="WallTopBody"]
-shape = SubResource("4_wall_top_shape")
-
-[node name="WallBottom" type="ColorRect" parent="."]
-color = Color(0.25, 0.18, 0.10, 1.0)
-position = Vector2(0, 700)
-size = Vector2(1280, 20)
-
-[node name="WallBottomBody" type="StaticBody2D" parent="."]
-position = Vector2(640, 710)
-
-[node name="WallBottomShape" type="CollisionShape2D" parent="WallBottomBody"]
-shape = SubResource("5_wall_bottom_shape")
-
-[node name="WallLeft" type="ColorRect" parent="."]
-color = Color(0.25, 0.18, 0.10, 1.0)
-position = Vector2(0, 0)
-size = Vector2(20, 720)
-
-[node name="WallLeftBody" type="StaticBody2D" parent="."]
-position = Vector2(10, 360)
-
-[node name="WallLeftShape" type="CollisionShape2D" parent="WallLeftBody"]
-shape = SubResource("6_wall_left_shape")
-
-[node name="WallRight" type="ColorRect" parent="."]
-color = Color(0.25, 0.18, 0.10, 1.0)
-position = Vector2(1260, 0)
-size = Vector2(20, 720)
-
-[node name="WallRightBody" type="StaticBody2D" parent="."]
-position = Vector2(1270, 360)
-
-[node name="WallRightShape" type="CollisionShape2D" parent="WallRightBody"]
-shape = SubResource("7_wall_right_shape")
+[node name="RoomManager" type="Node" parent="."]
+script = ExtResource("5_roommanager_script")
 
 [node name="Dummies" type="Node2D" parent="."]
 
@@ -118,6 +65,6 @@ layer = 10
 ; Top-left corner, 12px padding from each edge.
 anchors_preset = 0
 position = Vector2(12, 12)
-size = Vector2(200, 32)
+size = Vector2(280, 32)
 label_settings = SubResource("8_stance_label_settings")
 text = "☯ LIGHT"

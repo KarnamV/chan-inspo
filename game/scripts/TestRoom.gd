@@ -5,6 +5,8 @@ const HIT_SEARCH_RADIUS: float = 120.0
 @onready var player: CharacterBody2D = $Player
 @onready var dummies_container: Node2D = $Dummies
 @onready var stance_label: Label = $HUD/StanceLabel
+@onready var room_renderer: Node2D = $RoomRenderer
+@onready var room_manager: Node  = $RoomManager
 
 # Pre-load the talisman script so we can instantiate it at runtime.
 const TalismanYinYangScript = preload("res://scripts/TalismanYinYang.gd")
@@ -18,6 +20,7 @@ func _ready() -> void:
 	player.attack_landed.connect(_on_attack_landed)
 	_setup_talisman()
 	_setup_hud()
+	_setup_room_manager()
 
 
 func _setup_talisman() -> void:
@@ -54,8 +57,31 @@ func _setup_hud() -> void:
 	_hud.connect_player(player)
 
 
+func _setup_room_manager() -> void:
+	# Give RoomManager its required references.
+	room_manager.room_renderer = room_renderer
+	room_manager.player        = player
+
+	# Connect door_entered on the renderer to room_manager.travel_to_exit.
+	room_renderer.door_entered.connect(room_manager.travel_to_exit)
+
+	# Connect room_entered signal to update the stance label area with room info.
+	room_manager.room_entered.connect(_on_room_entered)
+
+	# Generate a fixed-seed run (seed 42) so testing is deterministic.
+	# Change the seed to explore different graph layouts.
+	room_manager.generate_run(42)
+
+
 func _on_stance_changed(_new_stance: int) -> void:
 	stance_label.text = _talisman.stance_display_text()
+
+
+func _on_room_entered(room_data: RoomData) -> void:
+	# Update the stance label to show both stance and room type.
+	# Format: "☯ LIGHT  |  [COMBAT]"
+	var stance_text: String = _talisman.stance_display_text() if _talisman != null else ""
+	stance_label.text = "%s  |  [%s]" % [stance_text, room_data.type_name()]
 
 
 func _on_attack_landed(attack_name: String, damage: int, hit_position: Vector2) -> void:

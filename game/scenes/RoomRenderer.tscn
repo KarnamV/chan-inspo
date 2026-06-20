@@ -1,0 +1,11 @@
+; RoomRenderer.tscn
+; Reusable room-drawing scene.  All visual content is built at runtime by
+; RoomRenderer.gd — this file is just the root node with the script attached.
+; Instantiate this in the main scene, then call render_room() to populate it.
+
+[gd_scene load_steps=2 format=3 uid="uid://roomrenderer_scene"]
+
+[ext_resource type="Script" path="res://scripts/RoomRenderer.gd" id="1_roomrenderer_script"]
+
+[node name="RoomRenderer" type="Node2D"]
+script = ExtResource("1_roomrenderer_script")
