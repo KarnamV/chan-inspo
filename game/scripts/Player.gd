@@ -2,11 +2,23 @@ extends CharacterBody2D
 
 # ---------------------------------------------------------------------------
 # Player.gd — 8-direction movement + 4 basic attacks + block/stagger guard
+#             + combo counter + martial-spirit meter (Phase 2)
 # ---------------------------------------------------------------------------
 
 enum State { IDLE, MOVE, ATTACK, DODGE, BLOCK, HURT, DEAD }
 
 signal attack_landed(attack_name: String, damage: int, hit_position: Vector2)
+
+# Emitted whenever HP changes (take_hit, heal). max_hp is always MAX_HP;
+# included so the HUD does not need to know the constant directly.
+signal health_updated(current: int, max_hp: int)
+
+# Emitted whenever the combo counter changes (including resets to 0).
+signal combo_updated(count: int)
+
+# Emitted whenever the spirit value changes. max_spirit is always SPIRIT_MAX
+# and is included so the HUD does not need to know the constant directly.
+signal spirit_updated(current: float, max_spirit: float)
 
 @export var speed_run: float = 200.0
 @export var speed_walk: float = 80.0
@@ -22,6 +34,39 @@ var stance_damage_mult: float = 1.0
 # Talisman node assigned by the owning scene (e.g. TestRoom).
 # Must expose activate(player) and deactivate(player) methods.
 var active_talisman: Node = null
+
+# ---------------------------------------------------------------------------
+# HP
+# ---------------------------------------------------------------------------
+const MAX_HP: int = 100
+var current_hp: int = MAX_HP
+
+# ---------------------------------------------------------------------------
+# Combo + spirit meter
+# ---------------------------------------------------------------------------
+const SPIRIT_MAX: float = 100.0
+const SPIRIT_DECAY_RATE: float = 5.0       # per second, passive, when not attacking
+const SPIRIT_COST_TALISMAN: float = 30.0   # cost to activate talisman
+const COMBO_RESET_TIME: float = 2.5        # seconds of no hits before combo resets
+const OVERDRIVE_THRESHOLD: float = 100.0   # spirit value that triggers overdrive visual
+const OVERDRIVE_RELEASE: float = 80.0      # spirit must drop below this to end overdrive
+
+# Spirit gained per confirmed hit (body_entered fired).
+# Counter-window hits get COUNTER_SPIRIT_MULT applied on top.
+const SPIRIT_PER_ATTACK: Dictionary = {
+	"punch":      8.0,
+	"kick":      10.0,
+	"throw":     15.0,
+	"dash_attack": 12.0,
+}
+const COUNTER_SPIRIT_MULT: float = 1.5
+
+var combo_count: int = 0
+var spirit: float = 0.0
+
+var _combo_timer: float = 0.0      # counts down; reset to COMBO_RESET_TIME on each hit
+var _in_overdrive: bool = false    # tracks whether the gold-pulse tween is active
+var _overdrive_tween: Tween = null # kept so it can be killed when overdrive ends
 
 # How quickly velocity reaches the target each physics frame (lerp weight).
 # Higher = snappier. 18 gives instant-feeling brawler response without
@@ -54,11 +99,41 @@ func _ready() -> void:
 	hitbox_area.body_entered.connect(_on_hitbox_body_entered)
 	_current_attack_name = ""
 	_current_attack_damage = 0
+	_current_hit_is_counter = false
+	combo_count = 0
+	spirit = 0.0
+	_combo_timer = 0.0
+	_in_overdrive = false
+	_overdrive_tween = null
 
 
 func _physics_process(delta: float) -> void:
 	_handle_movement(delta)
 	move_and_slide()
+	_tick_combo(delta)
+	_tick_spirit_decay(delta)
+
+
+func _tick_combo(delta: float) -> void:
+	if combo_count == 0:
+		return
+	_combo_timer -= delta
+	if _combo_timer <= 0.0:
+		combo_count = 0
+		emit_signal("combo_updated", 0)
+
+
+func _tick_spirit_decay(delta: float) -> void:
+	if spirit <= 0.0:
+		return
+	# Passive decay only applies when the player is not mid-attack.
+	if state == State.ATTACK:
+		return
+	var prev: float = spirit
+	spirit = maxf(0.0, spirit - SPIRIT_DECAY_RATE * delta)
+	if spirit != prev:
+		emit_signal("spirit_updated", spirit, SPIRIT_MAX)
+		_check_overdrive_exit()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -66,7 +141,17 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 
 	# Talisman activation is allowed in any non-dead state (including ATTACK).
+	# Costs SPIRIT_COST_TALISMAN spirit; blocked (with HUD red-flash signal) if
+	# spirit is insufficient.
 	if event.is_action_pressed("talisman_activate") and active_talisman != null:
+		if spirit < SPIRIT_COST_TALISMAN:
+			# Emit current spirit so the HUD knows a blocked attempt happened.
+			# HUD distinguishes the flash by the fact that value < SPIRIT_COST_TALISMAN.
+			emit_signal("spirit_updated", spirit, SPIRIT_MAX)
+			return
+		spirit -= SPIRIT_COST_TALISMAN
+		emit_signal("spirit_updated", spirit, SPIRIT_MAX)
+		_check_overdrive_exit()
 		active_talisman.activate(self)
 		return
 
@@ -138,6 +223,11 @@ func _update_sprite_flip() -> void:
 # ---------------------------------------------------------------------------
 var _current_attack_name: String = ""
 var _current_attack_damage: int = 0
+# Captures whether in_counter_window was true at the moment the attack was
+# initiated. Each attack reads this before clearing in_counter_window so the
+# spirit multiplier can be applied inside _register_hit even though the flag
+# has already been cleared by the time body_entered fires.
+var _current_hit_is_counter: bool = false
 
 
 func _enable_hitbox(offset: Vector2, shape_size: Vector2) -> void:
@@ -156,6 +246,25 @@ func _on_hitbox_body_entered(body: Node2D) -> void:
 	if body == self:
 		return
 	emit_signal("attack_landed", _current_attack_name, _current_attack_damage, body.global_position)
+	_register_hit(_current_attack_name)
+
+
+# Called every time a hitbox overlap confirms a physical hit on a body.
+# Increments combo, awards spirit (with counter bonus), resets combo timer.
+func _register_hit(attack_name: String) -> void:
+	# Combo counter — max display capped at 999 but internally unlimited.
+	combo_count = mini(combo_count + 1, 999)
+	_combo_timer = COMBO_RESET_TIME
+	emit_signal("combo_updated", combo_count)
+
+	# Spirit gain — look up base value; unknown attack names award 0.
+	# _current_hit_is_counter was captured before in_counter_window was cleared,
+	# so the bonus is correctly applied even though in_counter_window is false now.
+	var base_spirit: float = SPIRIT_PER_ATTACK.get(attack_name, 0.0)
+	var spirit_gain: float = base_spirit * COUNTER_SPIRIT_MULT if _current_hit_is_counter else base_spirit
+	spirit = minf(spirit + spirit_gain, SPIRIT_MAX)
+	emit_signal("spirit_updated", spirit, SPIRIT_MAX)
+	_check_overdrive_enter()
 
 
 # ---------------------------------------------------------------------------
@@ -172,6 +281,7 @@ func attack_punch(dir: Vector2 = Vector2.ZERO) -> void:
 
 	state = State.ATTACK
 	_current_attack_name = "punch"
+	_current_hit_is_counter = in_counter_window
 	var base_dmg: int = int(DAMAGE * stance_damage_mult)
 	_current_attack_damage = int(base_dmg * COUNTER_DAMAGE_MULT) if in_counter_window else base_dmg
 	in_counter_window = false
@@ -193,6 +303,7 @@ func attack_kick(dir: Vector2 = Vector2.ZERO) -> void:
 
 	state = State.ATTACK
 	_current_attack_name = "kick"
+	_current_hit_is_counter = in_counter_window
 	var base_dmg: int = int(DAMAGE * stance_damage_mult)
 	_current_attack_damage = int(base_dmg * COUNTER_DAMAGE_MULT) if in_counter_window else base_dmg
 	in_counter_window = false
@@ -215,6 +326,7 @@ func attack_throw(dir: Vector2 = Vector2.ZERO) -> void:
 
 	state = State.ATTACK
 	_current_attack_name = "throw"
+	_current_hit_is_counter = in_counter_window
 	var base_dmg: int = int(DAMAGE * stance_damage_mult)
 	_current_attack_damage = int(base_dmg * COUNTER_DAMAGE_MULT) if in_counter_window else base_dmg
 	in_counter_window = false
@@ -239,6 +351,7 @@ func attack_dash(dir: Vector2 = Vector2.ZERO) -> void:
 	var recovery: float = RECOVERY * stance_speed_mult
 
 	var boosted: bool = in_counter_window
+	_current_hit_is_counter = boosted
 	in_counter_window = false
 
 	state = State.ATTACK
@@ -269,6 +382,43 @@ func _finish_attack() -> void:
 	_is_dodging = false
 	if state == State.ATTACK:
 		state = State.IDLE
+
+
+# ---------------------------------------------------------------------------
+# Overdrive helpers — triggered when spirit reaches SPIRIT_MAX (100).
+# Visual only for now; gameplay effects are Phase 3.
+# Uses a self-contained modulate tween on the sprite. The tween loops a gold
+# pulse independently of the block-flash and talisman tints; when overdrive
+# ends the sprite modulate is restored to Color.WHITE so talisman tints can
+# resume their own tweens normally.
+# ---------------------------------------------------------------------------
+
+func _check_overdrive_enter() -> void:
+	if _in_overdrive or spirit < OVERDRIVE_THRESHOLD:
+		return
+	_in_overdrive = true
+	_start_overdrive_pulse()
+
+
+func _check_overdrive_exit() -> void:
+	if not _in_overdrive or spirit > OVERDRIVE_RELEASE:
+		return
+	_in_overdrive = false
+	if _overdrive_tween != null and _overdrive_tween.is_valid():
+		_overdrive_tween.kill()
+	_overdrive_tween = null
+	# Return sprite to neutral white so talisman tints work without fighting.
+	sprite.modulate = Color.WHITE
+
+
+func _start_overdrive_pulse() -> void:
+	if _overdrive_tween != null and _overdrive_tween.is_valid():
+		_overdrive_tween.kill()
+	_overdrive_tween = create_tween()
+	_overdrive_tween.set_loops()   # infinite loop
+	# Pulse between a warm gold tint and a brighter gold.
+	_overdrive_tween.tween_property(sprite, "modulate", Color(1.8, 1.4, 0.2, 1.0), 0.25)
+	_overdrive_tween.tween_property(sprite, "modulate", Color(1.0, 0.8, 0.1, 1.0), 0.25)
 
 
 # ---------------------------------------------------------------------------
@@ -306,6 +456,12 @@ func take_hit(knockback_vel: Vector2, damage: int = 0) -> void:
 	_disable_hitbox()
 	state = State.HURT
 	velocity = knockback_vel
+	# Deduct HP and notify HUD. Block path returns early above, so this only
+	# fires for unblocked, non-dodge hits.
+	current_hp = max(0, current_hp - damage)
+	emit_signal("health_updated", current_hp, MAX_HP)
+	if current_hp <= 0:
+		die()
 
 
 func _trigger_block_flash() -> void:
