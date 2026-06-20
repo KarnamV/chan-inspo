@@ -1,8 +1,16 @@
 ; Engine configuration file.
 ; It's best edited using the editor UI and not directly,
-; but this file can be edited by hand for advanced configuration.
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
 
 config_version=5
+
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
@@ -10,21 +18,14 @@ config/name="Demon Realm Escape"
 config/description="2.5D top-down roguelite — Jackie Chan-inspired. Fight through 7 demon realms."
 config/version="0.1.0"
 run/main_scene="res://scenes/TestRoom.tscn"
-config/features=PackedStringArray("4.3", "Forward Plus")
+config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
 
 [display]
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
-window/size/resizable=true
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
-
-[rendering]
-
-textures/canvas_textures/default_texture_filter=0
-renderer/rendering_method="forward_plus"
 
 [input]
 
@@ -94,6 +95,6 @@ talisman_activate={
 ]
 }
 
-[physics]
+[rendering]
 
-common/physics_ticks_per_second=60
+textures/canvas_textures/default_texture_filter=0
