@@ -202,7 +202,7 @@
 <script>
 (function(){
   "use strict";
-  var STORE_KEY = "chanInspoKanban.v3";
+  var STORE_KEY = "chanInspoKanban.v4";
   var COLUMNS = [
     {id:"backlog",  name:"Backlog",     color:"#7d7068"},
     {id:"todo",     name:"To Do",       color:"#4a90d9"},
@@ -228,7 +228,7 @@
       // Phase 1 — Prototype
       c("Top-down player movement (8-direction)","2d","p1","done","Player.gd: state machine (IDLE/MOVE/ATTACK/DODGE/HURT/DEAD), 200/80px/s run/walk, ACCEL_WEIGHT=18 snappy lerp, facing_dir, sprite flip. Input: WASD+arrows, Shift=walk."),
       c("4 basic attacks: punch, kick, throw, dash-attack","2d","p1","done","Z/X/C/V keys. Directional hitboxes (Area2D, size per attack). signal attack_landed(name,dmg,pos). Lunge bug fixed (_is_lunging). take_hit/recover_from_hurt/die hooks ready."),
-      c("Dodge roll with i-frame invincibility","2d","p1","todo","Space key pre-mapped. Fill dodge_roll(dir) stub in Player.gd. DODGE state disables damage. i-frame window ~0.35s, lunge ~120px. Roll anim placeholder (scale flash)."),
+      c("Dodge roll with i-frame invincibility","2d","p1","doing","Space key pre-mapped. Fill dodge_roll(dir) stub in Player.gd. DODGE state disables damage. i-frame window ~0.35s, lunge ~120px. Roll anim placeholder (scale flash)."),
       c("Block / stagger guard","2d","p1","todo","Hold RMB or Q. BLOCK state: absorb hit, play stagger anim, brief counter window. Connects to take_hit() guard branch."),
       c("One test room with dummy enemies","2d","p1","backlog","Static dummies to test hit feedback."),
       c("One working talisman (Yin-Yang stance toggle)","2d","p1","backlog","Light/dark stance changes attack types."),
