@@ -3,7 +3,7 @@ extends Node2D
 const HIT_SEARCH_RADIUS: float = 120.0
 
 @onready var player: CharacterBody2D = $Player
-@onready var dummies_container: Node2D = $Dummies
+@onready var enemies_container: Node2D = $Enemies
 @onready var stance_label: Label = $HUD/StanceLabel
 @onready var room_renderer: Node2D = $RoomRenderer
 @onready var room_manager: Node  = $RoomManager
@@ -15,12 +15,17 @@ const HUDScene = preload("res://scenes/HUD.tscn")
 var _talisman: Node = null
 var _hud: CanvasLayer = null
 
+# Room-clear tracking.
+var _total_enemies: int = 0
+var _enemies_dead:  int = 0
+
 
 func _ready() -> void:
 	player.attack_landed.connect(_on_attack_landed)
 	_setup_talisman()
 	_setup_hud()
 	_setup_room_manager()
+	_connect_enemy_signals()
 
 
 func _setup_talisman() -> void:
@@ -73,6 +78,66 @@ func _setup_room_manager() -> void:
 	room_manager.generate_run(42)
 
 
+# ---------------------------------------------------------------------------
+# Enemy signal wiring + room-clear tracking
+# ---------------------------------------------------------------------------
+
+func _connect_enemy_signals() -> void:
+	# Count and connect all EnemyBase children in the Enemies container.
+	# This must be called after _ready() so the enemy nodes are fully initialised.
+	for enemy in enemies_container.get_children():
+		if enemy.has_signal("enemy_died"):
+			_total_enemies += 1
+			enemy.enemy_died.connect(_on_enemy_died)
+
+	print("[TestRoom] %d enemies registered for room-clear tracking." % _total_enemies)
+
+
+func _on_enemy_died(_enemy: Node) -> void:
+	_enemies_dead += 1
+	print("[TestRoom] Enemy down (%d / %d)." % [_enemies_dead, _total_enemies])
+
+	if _enemies_dead >= _total_enemies:
+		_on_room_cleared()
+
+
+func _on_room_cleared() -> void:
+	print("[TestRoom] Room cleared! All %d enemies defeated." % _total_enemies)
+	# Unlock exits via RoomManager — mark the current room as cleared so the
+	# boss-lock check (which gates on is_visited) can be satisfied.
+	# RoomManager already sets is_visited when a room is entered; for a
+	# combat-gated room we additionally want to flag it explicitly so future
+	# logic can distinguish visited vs. cleared.
+	var cur_room: RoomData = room_manager.current_room()
+	if cur_room != null:
+		cur_room.is_visited = true
+		print("[TestRoom] Exit doors unlocked.")
+
+
+# ---------------------------------------------------------------------------
+# Attack-landed: find nearest enemy and deal damage
+# ---------------------------------------------------------------------------
+
+func _on_attack_landed(_attack_name: String, damage: int, hit_position: Vector2) -> void:
+	var nearest: CharacterBody2D = null
+	var best_dist: float = HIT_SEARCH_RADIUS
+
+	for enemy in enemies_container.get_children():
+		if not enemy is CharacterBody2D:
+			continue
+		var d: float = enemy.global_position.distance_to(hit_position)
+		if d < best_dist:
+			best_dist = d
+			nearest = enemy
+
+	if nearest != null:
+		nearest.take_damage(damage)
+
+
+# ---------------------------------------------------------------------------
+# Label callbacks
+# ---------------------------------------------------------------------------
+
 func _on_stance_changed(_new_stance: int) -> void:
 	stance_label.text = _talisman.stance_display_text()
 
@@ -82,19 +147,3 @@ func _on_room_entered(room_data: RoomData) -> void:
 	# Format: "☯ LIGHT  |  [COMBAT]"
 	var stance_text: String = _talisman.stance_display_text() if _talisman != null else ""
 	stance_label.text = "%s  |  [%s]" % [stance_text, room_data.type_name()]
-
-
-func _on_attack_landed(attack_name: String, damage: int, hit_position: Vector2) -> void:
-	var nearest: CharacterBody2D = null
-	var best_dist: float = HIT_SEARCH_RADIUS
-
-	for dummy in dummies_container.get_children():
-		if not dummy is CharacterBody2D:
-			continue
-		var d: float = dummy.global_position.distance_to(hit_position)
-		if d < best_dist:
-			best_dist = d
-			nearest = dummy
-
-	if nearest != null:
-		nearest.take_damage(damage)

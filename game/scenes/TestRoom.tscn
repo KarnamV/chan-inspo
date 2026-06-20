@@ -1,10 +1,12 @@
-[gd_scene load_steps=6 format=3 uid="uid://testroom_scene"]
+[gd_scene load_steps=8 format=3 uid="uid://testroom_scene"]
 
 [ext_resource type="PackedScene" path="res://scenes/Player.tscn" id="1_player_scene"]
-[ext_resource type="PackedScene" path="res://scenes/Dummy.tscn" id="2_dummy_scene"]
 [ext_resource type="Script" path="res://scripts/TestRoom.gd" id="3_testroom_script"]
 [ext_resource type="PackedScene" path="res://scenes/RoomRenderer.tscn" id="4_roomrenderer_scene"]
 [ext_resource type="Script" path="res://scripts/RoomManager.gd" id="5_roommanager_script"]
+[ext_resource type="PackedScene" path="res://scenes/Demon.tscn" id="6_demon_scene"]
+[ext_resource type="PackedScene" path="res://scenes/PossessedWarrior.tscn" id="7_warrior_scene"]
+[ext_resource type="PackedScene" path="res://scenes/Beast.tscn" id="8_beast_scene"]
 
 [sub_resource type="LabelSettings" id="8_stance_label_settings"]
 font_size = 20
@@ -13,19 +15,23 @@ shadow_color = Color(0.0, 0.0, 0.0, 0.8)
 shadow_offset = Vector2(2, 2)
 
 ; ---------------------------------------------------------------------------
-; TestRoom.tscn — isolated combat-feel test room with room transitions.
+; TestRoom.tscn — combat test room with AI enemies + room transitions.
 ;
 ; Node hierarchy:
 ;   TestRoom (Node2D)
 ;     ├── RoomRenderer   — draws floor + coloured walls + exit door arches
 ;     ├── RoomManager    — holds RoomGraph, drives fade transitions
-;     ├── Dummies        — combat dummies (kept for hit-testing; AI replaces later)
-;     ├── Player         — player character at room centre
+;     ├── Enemies        — container for all AI enemies (replaces Dummies)
+;     │     ├── Demon1  (pos: 280,200)  — purple ranged harasser
+;     │     ├── Demon2  (pos: 1000,200) — purple ranged harasser
+;     │     ├── Warrior1 (pos: 640,200) — green melee bruiser
+;     │     ├── Warrior2 (pos: 280,520) — green melee bruiser
+;     │     └── Beast1  (pos: 1000,520) — orange fast rusher
+;     ├── Player         — player character (in "player" group)
 ;     └── HUD (CanvasLayer, layer=10)
 ;           └── StanceLabel
 ;
-; Static floor/walls removed — RoomRenderer builds them procedurally.
-; RoomManager is wired up in TestRoom._setup_room_manager() with seed 42.
+; TestRoom.gd connects enemy_died to track room clear.
 ; ---------------------------------------------------------------------------
 
 [node name="TestRoom" type="Node2D"]
@@ -37,25 +43,27 @@ position = Vector2(0, 0)
 [node name="RoomManager" type="Node" parent="."]
 script = ExtResource("5_roommanager_script")
 
-[node name="Dummies" type="Node2D" parent="."]
+[node name="Enemies" type="Node2D" parent="."]
 
-[node name="DummyNW" parent="Dummies" instance=ExtResource("2_dummy_scene")]
+[node name="Demon1" parent="Enemies" instance=ExtResource("6_demon_scene")]
 position = Vector2(280, 200)
 
-[node name="DummyNE" parent="Dummies" instance=ExtResource("2_dummy_scene")]
+[node name="Demon2" parent="Enemies" instance=ExtResource("6_demon_scene")]
 position = Vector2(1000, 200)
 
-[node name="DummyCenter" parent="Dummies" instance=ExtResource("2_dummy_scene")]
-position = Vector2(640, 280)
+[node name="Warrior1" parent="Enemies" instance=ExtResource("7_warrior_scene")]
+position = Vector2(640, 200)
 
-[node name="DummySW" parent="Dummies" instance=ExtResource("2_dummy_scene")]
+[node name="Warrior2" parent="Enemies" instance=ExtResource("7_warrior_scene")]
 position = Vector2(280, 520)
 
-[node name="DummySE" parent="Dummies" instance=ExtResource("2_dummy_scene")]
+[node name="Beast1" parent="Enemies" instance=ExtResource("8_beast_scene")]
 position = Vector2(1000, 520)
 
 [node name="Player" parent="." instance=ExtResource("1_player_scene")]
 position = Vector2(640, 360)
+; Add Player to the "player" group so enemies can find it via get_nodes_in_group.
+groups = ["player"]
 
 ; CanvasLayer keeps the HUD anchored to the viewport regardless of camera movement.
 [node name="HUD" type="CanvasLayer" parent="."]
