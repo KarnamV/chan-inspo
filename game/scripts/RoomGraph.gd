@@ -339,7 +339,7 @@ func _print_subtree(room_id: int, prefix: String, is_last: bool) -> void:
 
 	print("%s%sRoom%d  [%s, depth=%d]%s" % [prefix, connector, room.id, room.type_name(), room.depth, exits_str])
 
-	var child_ids: Array[int] = room.exits.values()
+	var child_ids: Array = room.exits.values()
 	var new_prefix := prefix + ("   " if is_last else "│  ")
 	for i in range(child_ids.size()):
 		_print_subtree(child_ids[i], new_prefix, i == child_ids.size() - 1)
