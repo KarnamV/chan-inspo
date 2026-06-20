@@ -8,13 +8,16 @@ const HIT_SEARCH_RADIUS: float = 120.0
 
 # Pre-load the talisman script so we can instantiate it at runtime.
 const TalismanYinYangScript = preload("res://scripts/TalismanYinYang.gd")
+const HUDScene = preload("res://scenes/HUD.tscn")
 
 var _talisman: Node = null
+var _hud: CanvasLayer = null
 
 
 func _ready() -> void:
 	player.attack_landed.connect(_on_attack_landed)
 	_setup_talisman()
+	_setup_hud()
 
 
 func _setup_talisman() -> void:
@@ -41,6 +44,14 @@ func _setup_talisman() -> void:
 
 	# Initialise label text to match talisman's default stance.
 	stance_label.text = _talisman.stance_display_text()
+
+
+func _setup_hud() -> void:
+	# Instantiate the HUD scene and add it as a sibling CanvasLayer.
+	# HUD.connect_player wires health_updated, spirit_updated, combo_updated.
+	_hud = HUDScene.instantiate()
+	add_child(_hud)
+	_hud.connect_player(player)
 
 
 func _on_stance_changed(_new_stance: int) -> void:

@@ -1,0 +1,96 @@
+[gd_scene load_steps=5 format=3 uid="uid://hud_scene"]
+
+[ext_resource type="Script" path="res://scripts/HUD.gd" id="1_hud_script"]
+
+; ---------------------------------------------------------------------------
+; HUD.tscn — Heads-up display (HP bar, Spirit meter, Combo counter).
+;
+; Structure:
+;   CanvasLayer (layer=10, script=HUD.gd)
+;     VBox  — VBoxContainer anchored top-left, 12px margin, 6px separation
+;       HPRow    — HBoxContainer
+;         HPBarBG  — ColorRect (dark red, 200x16)
+;           HPBarFill — ColorRect (red, starts at 200x16)
+;         HPLabel  — Label "HP 100 / 100"
+;       SpiritRow — HBoxContainer
+;         SpiritBarBG  — ColorRect (deep purple, 200x16)
+;           SpiritBarFill — ColorRect (gold, starts at 0x16)
+;         SpiritLabel  — Label "SP 0 / 100"
+;       ComboLabel — Label "x0" (large, right-aligned below bars)
+;
+; The HUD script drives all visual updates via player signals.
+; ---------------------------------------------------------------------------
+
+[sub_resource type="LabelSettings" id="2_bar_label_settings"]
+font_size = 14
+font_color = Color(1.0, 1.0, 1.0, 1.0)
+shadow_color = Color(0.0, 0.0, 0.0, 0.9)
+shadow_offset = Vector2(1, 1)
+
+[sub_resource type="LabelSettings" id="3_combo_label_settings"]
+font_size = 28
+font_color = Color(1.0, 0.85, 0.2, 1.0)
+shadow_color = Color(0.0, 0.0, 0.0, 0.9)
+shadow_offset = Vector2(2, 2)
+
+[sub_resource type="StyleBoxFlat" id="4_transparent_stylebox"]
+bg_color = Color(0, 0, 0, 0)
+
+[node name="HUD" type="CanvasLayer"]
+layer = 10
+script = ExtResource("1_hud_script")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+anchors_preset = 0
+position = Vector2(12, 12)
+size = Vector2(320, 120)
+theme_override_constants/separation = 6
+
+; --- HP row ---
+[node name="HPRow" type="HBoxContainer" parent="VBox"]
+theme_override_constants/separation = 8
+
+[node name="HPBarBG" type="ColorRect" parent="VBox/HPRow"]
+color = Color(0.30, 0.03, 0.03, 1.0)
+custom_minimum_size = Vector2(200, 16)
+size = Vector2(200, 16)
+
+[node name="HPBarFill" type="ColorRect" parent="VBox/HPRow/HPBarBG"]
+color = Color(0.85, 0.10, 0.10, 1.0)
+; Anchored left edge so shrinking from right looks correct.
+anchors_preset = 0
+position = Vector2(0, 0)
+size = Vector2(200, 16)
+
+[node name="HPLabel" type="Label" parent="VBox/HPRow"]
+label_settings = SubResource("2_bar_label_settings")
+text = "HP  100 / 100"
+vertical_alignment = 1
+
+; --- Spirit row ---
+[node name="SpiritRow" type="HBoxContainer" parent="VBox"]
+theme_override_constants/separation = 8
+
+[node name="SpiritBarBG" type="ColorRect" parent="VBox/SpiritRow"]
+color = Color(0.22, 0.07, 0.30, 1.0)
+custom_minimum_size = Vector2(200, 16)
+size = Vector2(200, 16)
+
+[node name="SpiritBarFill" type="ColorRect" parent="VBox/SpiritRow/SpiritBarBG"]
+color = Color(0.90, 0.72, 0.10, 1.0)
+anchors_preset = 0
+position = Vector2(0, 0)
+; Starts at 0 width — spirit begins empty.
+size = Vector2(0, 16)
+
+[node name="SpiritLabel" type="Label" parent="VBox/SpiritRow"]
+label_settings = SubResource("2_bar_label_settings")
+text = "SP  0 / 100"
+vertical_alignment = 1
+
+; --- Combo counter ---
+[node name="ComboLabel" type="Label" parent="VBox"]
+label_settings = SubResource("3_combo_label_settings")
+text = "x0"
+; Starts invisible — shown only once first hit lands.
+modulate = Color(1.0, 1.0, 1.0, 0.0)
