@@ -1,0 +1,174 @@
+[gd_scene load_steps=2 format=3 uid="uid://hub_scene"]
+
+[ext_resource type="Script" path="res://scripts/Hub.gd" id="1_hub_script"]
+
+; ---------------------------------------------------------------------------
+; Hub.tscn — Post-death hub screen (permadeath return point).
+;
+; Displays the run summary (rooms visited, enemies killed, spirit collected,
+; Spirit Shards earned) and offers "New Run" / "Quit" buttons.
+;
+; Node hierarchy:
+;   Hub (Control, full-screen, dark background)
+;     Background  — ColorRect, fills viewport (dark maroon/black)
+;     VBox        — VBoxContainer, centred
+;       TitleLabel      — "DEMON REALM ESCAPE"
+;       DeathLabel      — "YOU HAVE FALLEN"
+;       Separator       — HSeparator
+;       Stats (VBox)    — run summary labels
+;         RoomsLabel
+;         EnemiesLabel
+;         SpiritLabel
+;         ShardsLabel
+;       Separator2      — HSeparator
+;       Buttons (HBox)  — NewRunButton | QuitButton
+; ---------------------------------------------------------------------------
+
+[sub_resource type="LabelSettings" id="1_title_settings"]
+font_size = 42
+font_color = Color(0.95, 0.75, 0.15, 1.0)
+shadow_color = Color(0.0, 0.0, 0.0, 1.0)
+shadow_offset = Vector2(3, 3)
+
+[sub_resource type="LabelSettings" id="2_death_settings"]
+font_size = 22
+font_color = Color(0.85, 0.15, 0.15, 1.0)
+shadow_color = Color(0.0, 0.0, 0.0, 0.9)
+shadow_offset = Vector2(2, 2)
+
+[sub_resource type="LabelSettings" id="3_stat_settings"]
+font_size = 18
+font_color = Color(0.85, 0.85, 0.85, 1.0)
+shadow_color = Color(0.0, 0.0, 0.0, 0.8)
+shadow_offset = Vector2(1, 1)
+
+[sub_resource type="LabelSettings" id="4_shards_settings"]
+font_size = 20
+font_color = Color(0.90, 0.72, 0.10, 1.0)
+shadow_color = Color(0.0, 0.0, 0.0, 0.9)
+shadow_offset = Vector2(2, 2)
+
+[sub_resource type="StyleBoxFlat" id="5_new_run_style"]
+bg_color = Color(0.65, 0.10, 0.10, 1.0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1.0, 0.3, 0.3, 1.0)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="6_quit_style"]
+bg_color = Color(0.15, 0.15, 0.20, 1.0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.5, 0.5, 0.6, 1.0)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="Hub" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_hub_script")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.05, 0.02, 0.06, 1.0)
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -200.0
+offset_right = 200.0
+offset_bottom = 200.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="VBox"]
+layout_mode = 2
+label_settings = SubResource("1_title_settings")
+text = "DEMON REALM ESCAPE"
+horizontal_alignment = 1
+
+[node name="DeathLabel" type="Label" parent="VBox"]
+layout_mode = 2
+label_settings = SubResource("2_death_settings")
+text = "YOU HAVE FALLEN"
+horizontal_alignment = 1
+
+[node name="Separator" type="HSeparator" parent="VBox"]
+layout_mode = 2
+theme_override_colors/separator_color = Color(0.4, 0.1, 0.1, 1.0)
+
+[node name="Stats" type="VBoxContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RoomsLabel" type="Label" parent="VBox/Stats"]
+layout_mode = 2
+label_settings = SubResource("3_stat_settings")
+text = "Rooms visited:    0"
+horizontal_alignment = 1
+
+[node name="EnemiesLabel" type="Label" parent="VBox/Stats"]
+layout_mode = 2
+label_settings = SubResource("3_stat_settings")
+text = "Enemies defeated: 0"
+horizontal_alignment = 1
+
+[node name="SpiritLabel" type="Label" parent="VBox/Stats"]
+layout_mode = 2
+label_settings = SubResource("3_stat_settings")
+text = "Spirit collected: 0"
+horizontal_alignment = 1
+
+[node name="ShardsLabel" type="Label" parent="VBox/Stats"]
+layout_mode = 2
+label_settings = SubResource("4_shards_settings")
+text = "Spirit Shards earned: 0"
+horizontal_alignment = 1
+
+[node name="Separator2" type="HSeparator" parent="VBox"]
+layout_mode = 2
+theme_override_colors/separator_color = Color(0.4, 0.1, 0.1, 1.0)
+
+[node name="Buttons" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="NewRunButton" type="Button" parent="VBox/Buttons"]
+layout_mode = 2
+custom_minimum_size = Vector2(140, 44)
+theme_override_styles/normal = SubResource("5_new_run_style")
+text = "New Run"
+flat = false
+
+[node name="QuitButton" type="Button" parent="VBox/Buttons"]
+layout_mode = 2
+custom_minimum_size = Vector2(140, 44)
+theme_override_styles/normal = SubResource("6_quit_style")
+text = "Quit"
+flat = false
