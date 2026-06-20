@@ -202,7 +202,7 @@
 <script>
 (function(){
   "use strict";
-  var STORE_KEY = "chanInspoKanban.v7";
+  var STORE_KEY = "chanInspoKanban.v8";
   var COLUMNS = [
     {id:"backlog",  name:"Backlog",     color:"#7d7068"},
     {id:"todo",     name:"To Do",       color:"#4a90d9"},
@@ -231,8 +231,8 @@
       c("Dodge roll with i-frame invincibility","2d","p1","done","Space. dodge_roll(dir) stub filled. DODGE state = i-frame (take_hit returns early). 520px/s * 0.35s ~ 182px lunge. Scale tween (1.3,0.7) placeholder visual. _is_dodging flag mirrors _is_lunging pattern."),
       c("Block / stagger guard","2d","p1","done","Q key = BLOCK state. 40% move speed. take_hit during BLOCK: no knockback, halved dmg, white flash tween, 0.2s counter window (1.5x next attack). All 4 attacks read in_counter_window."),
       c("One test room with dummy enemies","2d","p1","done","TestRoom.tscn: 1280x720, 5 dummies (cross pattern), physics walls. Dummy.gd: 30HP, red flash, shrink+fade death, HP label. attack_landed signal routed to nearest dummy within 120px. F5 now opens TestRoom."),
-      c("One working talisman (Yin-Yang stance toggle)","2d","p1","doing","Light/dark stance changes attack types."),
-      c("Combat feel review (gate)","2d","p1","backlog","Principle #1: if fighting isn't fun, stop and fix. Day-one priority."),
+      c("One working talisman (Yin-Yang stance toggle)","2d","p1","done","E key toggles LIGHT/DARK stance. LIGHT: speed *0.75, dmg *0.85, white-gold tint. DARK: speed *1.3, dmg *1.35, purple-red tint. Stance label HUD in TestRoom. Block flash settles to stance tint."),
+      c("Combat feel review (gate)","2d","p1","todo","USER PLAYTEST GATE — open TestRoom (F5), test all moves. Principle #1: if fighting isn't fun, stop and fix. Controls: WASD move, Z punch, X kick, C throw, V dash, Space dodge, Q block, E talisman."),
 
       // Phase 2 — Core systems
       c("Room generation (simple room graph)","2d","p2","backlog","BSP / graph of rooms, 8–12 per realm."),
