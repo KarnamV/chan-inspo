@@ -1,0 +1,44 @@
+[gd_scene load_steps=5 format=3 uid="uid://player_scene"]
+
+[ext_resource type="Script" path="res://scripts/Player.gd" id="1_player_script"]
+
+[sub_resource type="RectangleShape2D" id="2_col_shape"]
+size = Vector2(24, 32)
+
+[sub_resource type="PlaceholderTexture2D" id="3_placeholder_tex"]
+size = Vector2(24, 48)
+
+[sub_resource type="RectangleShape2D" id="4_hitbox_shape"]
+size = Vector2(20, 20)
+
+[node name="Player" type="CharacterBody2D"]
+script = ExtResource("1_player_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+; Bright blue placeholder — easy to see on the dark floor.
+; Replace with actual spritesheet when art is ready.
+modulate = Color(0.2, 0.6, 1.0, 1.0)
+texture = SubResource("3_placeholder_tex")
+; Offset so the sprite's feet sit at the node's origin (Y-sort pivot = feet).
+offset = Vector2(0, -16)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("2_col_shape")
+; The collision box is centered on the node origin (feet area).
+position = Vector2(0, -8)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+; Camera follows the player node automatically.
+; Position smoothing gives the "easing" feel of Hades-style camera.
+position_smoothing_enabled = true
+position_smoothing_speed = 5.0
+; Zoom slightly out to show more of the room at 1280x720.
+zoom = Vector2(1.0, 1.0)
+
+[node name="HitboxArea" type="Area2D" parent="."]
+monitoring = false
+monitorable = false
+
+[node name="HitboxShape" type="CollisionShape2D" parent="HitboxArea"]
+shape = SubResource("4_hitbox_shape")
+disabled = true
