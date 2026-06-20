@@ -115,6 +115,7 @@ var in_counter_window: bool = false
 
 
 func _ready() -> void:
+	add_to_group("player")
 	hitbox_area.monitoring = false
 	hitbox_shape.disabled = true
 	hitbox_area.body_entered.connect(_on_hitbox_body_entered)
