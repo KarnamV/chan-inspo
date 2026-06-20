@@ -1,0 +1,41 @@
+[gd_scene load_steps=3 format=3 uid="uid://world_scene"]
+
+[ext_resource type="PackedScene" path="res://scenes/Player.tscn" id="1_player_scene"]
+
+[sub_resource type="RectangleShape2D" id="2_floor_shape"]
+size = Vector2(1280, 720)
+
+; ---------------------------------------------------------------------------
+; World.tscn — root scene for Phase 1 prototype.
+;
+; Node hierarchy:
+;   World (Node2D, y_sort_enabled = true)
+;     ├── FloorRect   (ColorRect — dark grey floor placeholder)
+;     └── Player      (instance of Player.tscn)
+;
+; Y-sort note:
+;   With y_sort_enabled on the World node, any child Node2D (or subclass) with
+;   a greater global_position.y value is drawn on top — this produces the
+;   correct depth illusion for a 2.5D top-down brawler without any 3D overhead.
+; ---------------------------------------------------------------------------
+
+[node name="World" type="Node2D"]
+; Y-sort enabled: children are drawn in order of their Y coordinate.
+; Sprites lower on screen (higher Y) draw on top of sprites higher on screen.
+y_sort_enabled = true
+
+[node name="FloorRect" type="ColorRect" parent="."]
+; Dark grey floor placeholder filling the base viewport.
+; Anchored top-left; the viewport is 1280x720.
+color = Color(0.12, 0.12, 0.14, 1.0)
+size = Vector2(2560, 2560)
+; Centre the floor so the player starts in the middle.
+position = Vector2(-1280, -1280)
+
+[node name="GridLines" type="Node2D" parent="."]
+; Visual grid reference (64px cells) — helps during early dev to judge
+; distances and movement speed. Remove or hide before alpha.
+
+[node name="Player" parent="." instance=ExtResource("1_player_scene")]
+; Player starts at world centre (0, 0).
+position = Vector2(0, 0)

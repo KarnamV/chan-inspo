@@ -1,0 +1,9 @@
+# Godot 4 — generated / editor-only files
+.godot/
+*.translation
+*.import
+export_presets.cfg
+
+# OS
+Thumbs.db
+.DS_Store

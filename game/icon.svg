@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <!-- Demon Realm Escape placeholder icon — replace with real art -->
+  <rect width="128" height="128" rx="16" fill="#1a1a2e"/>
+  <!-- Simple fist silhouette stand-in -->
+  <circle cx="64" cy="64" r="36" fill="#3399ff" opacity="0.85"/>
+  <text x="64" y="72" font-family="sans-serif" font-size="32" font-weight="bold"
+        text-anchor="middle" fill="#ffffff">DRE</text>
+</svg>
