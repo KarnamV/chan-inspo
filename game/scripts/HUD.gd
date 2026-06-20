@@ -21,7 +21,8 @@ const BAR_WIDTH: float = 200.0
 @onready var spirit_bar_fill: ColorRect = $VBox/SpiritRow/SpiritBarBG/SpiritBarFill
 @onready var spirit_label:    Label     = $VBox/SpiritRow/SpiritLabel
 
-@onready var combo_label: Label = $VBox/ComboLabel
+@onready var combo_label:    Label = $VBox/ComboLabel
+@onready var talisman_label: Label = $VBox/TalismanLabel
 
 # Track last tween for combo pop so we can cancel it on reset.
 var _combo_tween: Tween = null
@@ -33,6 +34,7 @@ func _ready() -> void:
 	_set_bar_fill(spirit_bar_fill, 0.0)
 	combo_label.text = "x0"
 	combo_label.modulate.a = 0.0   # invisible until first hit
+	talisman_label.text = ""
 
 
 # Call this from the owning scene after the player node is ready.
@@ -40,6 +42,11 @@ func connect_player(player: CharacterBody2D) -> void:
 	player.health_updated.connect(_on_health_updated)
 	player.spirit_updated.connect(_on_spirit_updated)
 	player.combo_updated.connect(_on_combo_updated)
+
+
+# Call this from TalismanManager.active_talisman_changed signal.
+func set_active_talisman_name(display_name: String) -> void:
+	talisman_label.text = display_name
 
 
 # ---------------------------------------------------------------------------

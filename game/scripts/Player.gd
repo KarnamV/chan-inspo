@@ -13,6 +13,10 @@ signal attack_landed(attack_name: String, damage: int, hit_position: Vector2)
 # included so the HUD does not need to know the constant directly.
 signal health_updated(current: int, max_hp: int)
 
+# Emitted once when the player's HP reaches 0.  TestRoom listens to this
+# to start the 0.5s pause → fade → Hub transition.
+signal player_died
+
 # Emitted whenever the combo counter changes (including resets to 0).
 signal combo_updated(count: int)
 
@@ -31,9 +35,26 @@ signal spirit_updated(current: float, max_spirit: float)
 var stance_speed_mult: float = 1.0
 var stance_damage_mult: float = 1.0
 
-# Talisman node assigned by the owning scene (e.g. TestRoom).
+# Talisman node currently active (kept in sync by TalismanManager on each cycle).
 # Must expose activate(player) and deactivate(player) methods.
 var active_talisman: Node = null
+
+# Reference to the TalismanManager child node (assigned by TestRoom after setup).
+var talisman_manager: Node = null
+
+# ---------------------------------------------------------------------------
+# Talisman effect flags — set by talisman activate(), cleared after one use.
+# ---------------------------------------------------------------------------
+
+# DragonClaw: next attack deals x3 damage, ignores counter/block state.
+var dragon_claw_active: bool = false
+
+# TigerFang: set true by TigerFang after a dodge roll completes (3s window).
+# Next attack deals x2 damage, then this flag clears.
+var tiger_fang_ready: bool = false
+
+# SnakeCoil: next hit chains 50% damage to up to 2 nearby enemies.
+var snake_coil_active: bool = false
 
 # ---------------------------------------------------------------------------
 # HP
@@ -140,16 +161,23 @@ func _unhandled_input(event: InputEvent) -> void:
 	if state == State.HURT or state == State.DEAD:
 		return
 
+	# Tab: cycle to the next talisman slot (allowed even mid-attack).
+	if event.is_action_pressed("talisman_cycle") and talisman_manager != null:
+		talisman_manager.cycle_next()
+		return
+
 	# Talisman activation is allowed in any non-dead state (including ATTACK).
-	# Costs SPIRIT_COST_TALISMAN spirit; blocked (with HUD red-flash signal) if
-	# spirit is insufficient.
+	# Spirit cost: reads SPIRIT_COST from the talisman if defined, otherwise
+	# falls back to the global SPIRIT_COST_TALISMAN (30 sp).
 	if event.is_action_pressed("talisman_activate") and active_talisman != null:
-		if spirit < SPIRIT_COST_TALISMAN:
+		var cost: float = SPIRIT_COST_TALISMAN
+		if "SPIRIT_COST" in active_talisman:
+			cost = active_talisman.SPIRIT_COST
+		if spirit < cost:
 			# Emit current spirit so the HUD knows a blocked attempt happened.
-			# HUD distinguishes the flash by the fact that value < SPIRIT_COST_TALISMAN.
 			emit_signal("spirit_updated", spirit, SPIRIT_MAX)
 			return
-		spirit -= SPIRIT_COST_TALISMAN
+		spirit -= cost
 		emit_signal("spirit_updated", spirit, SPIRIT_MAX)
 		_check_overdrive_exit()
 		active_talisman.activate(self)
@@ -242,11 +270,46 @@ func _disable_hitbox() -> void:
 	hitbox_shape.disabled = true
 
 
+# ---------------------------------------------------------------------------
+# Talisman flag application — called after base damage is computed, before
+# _enable_hitbox. Applies stacking modifiers from active effect flags.
+#
+# DragonClaw: x3 damage, also overrides in_counter_window so the block-counter
+#             multiplier doesn't stack on top (DragonClaw already ignores block).
+# TigerFang:  x2 damage (post-counter so it stacks with counter window bonus).
+# Both flags are cleared here so they apply to exactly one hit.
+# ---------------------------------------------------------------------------
+
+func _apply_damage_flags() -> void:
+	if dragon_claw_active:
+		dragon_claw_active = false
+		# Override any counter-window state — Dragon Claw bypasses block.
+		_current_hit_is_counter = false
+		in_counter_window = false
+		_current_attack_damage = int(_current_attack_damage * 3.0)
+		print("[Player] DragonClaw — damage -> %d (x3)." % _current_attack_damage)
+
+	if tiger_fang_ready:
+		tiger_fang_ready = false
+		_current_attack_damage = int(_current_attack_damage * 2.0)
+		print("[Player] TigerFang — damage -> %d (x2)." % _current_attack_damage)
+
+
 func _on_hitbox_body_entered(body: Node2D) -> void:
 	if body == self:
 		return
 	emit_signal("attack_landed", _current_attack_name, _current_attack_damage, body.global_position)
 	_register_hit(_current_attack_name)
+
+	# SnakeCoil: chain lightning to nearby enemies after the primary hit.
+	# The SnakeCoil talisman may be in any slot (not necessarily the active one),
+	# so search all player children for the fire_chain method.
+	if snake_coil_active:
+		snake_coil_active = false   # clear before the chain so it's one-shot
+		for child in get_children():
+			if child.has_method("fire_chain"):
+				child.fire_chain(self, body, _current_attack_damage)
+				break
 
 
 # Called every time a hitbox overlap confirms a physical hit on a body.
@@ -265,6 +328,9 @@ func _register_hit(attack_name: String) -> void:
 	spirit = minf(spirit + spirit_gain, SPIRIT_MAX)
 	emit_signal("spirit_updated", spirit, SPIRIT_MAX)
 	_check_overdrive_enter()
+	# Accumulate spirit gained into the run-wide tracker (AutoLoad).
+	if spirit_gain > 0.0:
+		RunStats.spirit_collected += spirit_gain
 
 
 # ---------------------------------------------------------------------------
@@ -285,6 +351,7 @@ func attack_punch(dir: Vector2 = Vector2.ZERO) -> void:
 	var base_dmg: int = int(DAMAGE * stance_damage_mult)
 	_current_attack_damage = int(base_dmg * COUNTER_DAMAGE_MULT) if in_counter_window else base_dmg
 	in_counter_window = false
+	_apply_damage_flags()
 	_enable_hitbox(attack_dir * PUNCH_REACH, Vector2(18.0, 18.0))
 
 	await get_tree().create_timer(recovery * ACTIVE_FRACTION).timeout
@@ -307,6 +374,7 @@ func attack_kick(dir: Vector2 = Vector2.ZERO) -> void:
 	var base_dmg: int = int(DAMAGE * stance_damage_mult)
 	_current_attack_damage = int(base_dmg * COUNTER_DAMAGE_MULT) if in_counter_window else base_dmg
 	in_counter_window = false
+	_apply_damage_flags()
 	var shape: Vector2 = Vector2(20.0, 28.0) if abs(attack_dir.x) > abs(attack_dir.y) else Vector2(28.0, 20.0)
 	_enable_hitbox(attack_dir * KICK_REACH, shape)
 
@@ -330,6 +398,7 @@ func attack_throw(dir: Vector2 = Vector2.ZERO) -> void:
 	var base_dmg: int = int(DAMAGE * stance_damage_mult)
 	_current_attack_damage = int(base_dmg * COUNTER_DAMAGE_MULT) if in_counter_window else base_dmg
 	in_counter_window = false
+	_apply_damage_flags()
 	# Square overlap check — grabbing range is close and centered.
 	_enable_hitbox(attack_dir * THROW_REACH, Vector2(24.0, 24.0))
 
@@ -369,6 +438,7 @@ func attack_dash(dir: Vector2 = Vector2.ZERO) -> void:
 	_current_attack_name = "dash_attack"
 	var base_dmg: int = int(DAMAGE * stance_damage_mult)
 	_current_attack_damage = int(base_dmg * COUNTER_DAMAGE_MULT) if boosted else base_dmg
+	_apply_damage_flags()
 	_enable_hitbox(attack_dir * DASH_REACH * 0.5, Vector2(22.0, 22.0))
 
 	await get_tree().create_timer(recovery * (ACTIVE_FRACTION - 0.25)).timeout
@@ -490,3 +560,16 @@ func recover_from_hurt() -> void:
 func die() -> void:
 	state = State.DEAD
 	velocity = Vector2.ZERO
+
+	# Kill any active overdrive tween so the death flash is not fought.
+	if _overdrive_tween != null and _overdrive_tween.is_valid():
+		_overdrive_tween.kill()
+	_overdrive_tween = null
+
+	# Red full-body flash: bright red → deep red → fade dark over ~0.4 s.
+	var tween: Tween = create_tween()
+	tween.tween_property(sprite, "modulate", Color(3.0, 0.2, 0.2, 1.0), 0.05)
+	tween.tween_property(sprite, "modulate", Color(1.2, 0.05, 0.05, 1.0), 0.15)
+	tween.tween_property(sprite, "modulate", Color(0.3, 0.0, 0.0, 0.6), 0.20)
+
+	emit_signal("player_died")

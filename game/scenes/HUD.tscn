@@ -16,9 +16,11 @@
 ;         SpiritBarBG  — ColorRect (deep purple, 200x16)
 ;           SpiritBarFill — ColorRect (gold, starts at 0x16)
 ;         SpiritLabel  — Label "SP 0 / 100"
-;       ComboLabel — Label "x0" (large, right-aligned below bars)
+;       ComboLabel     — Label "x0" (large, right-aligned below bars)
+;       TalismanLabel  — Label "" (active talisman display name; updated on Tab cycle)
 ;
-; The HUD script drives all visual updates via player signals.
+; The HUD script drives all visual updates via player signals and
+; TalismanManager.active_talisman_changed (via TestRoom._on_active_talisman_changed).
 ; ---------------------------------------------------------------------------
 
 [sub_resource type="LabelSettings" id="2_bar_label_settings"]
@@ -94,3 +96,8 @@ label_settings = SubResource("3_combo_label_settings")
 text = "x0"
 ; Starts invisible — shown only once first hit lands.
 modulate = Color(1.0, 1.0, 1.0, 0.0)
+
+; --- Active talisman name ---
+[node name="TalismanLabel" type="Label" parent="VBox"]
+label_settings = SubResource("2_bar_label_settings")
+text = ""

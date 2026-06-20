@@ -154,6 +154,8 @@ func _begin_transition(dest_id: int, from_direction: String) -> void:
 	var dest_room: RoomData = _rooms.get(dest_id, null)
 	if dest_room != null:
 		dest_room.is_visited = true
+		# Track unique rooms visited for the run-summary screen.
+		RunStats.rooms_visited += 1
 		if room_renderer != null:
 			room_renderer.render_room(dest_room, _rooms)
 
