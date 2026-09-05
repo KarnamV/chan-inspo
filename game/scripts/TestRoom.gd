@@ -14,6 +14,7 @@ const DragonClawScript      = preload("res://scripts/DragonClaw.gd")
 const PhoenixFeatherScript  = preload("res://scripts/PhoenixFeather.gd")
 const TalismanManagerScript = preload("res://scripts/TalismanManager.gd")
 const GoldPickupScript      = preload("res://scripts/GoldPickup.gd")
+const ShopUIScript          = preload("res://scripts/ShopUI.gd")
 const HUDScene              = preload("res://scenes/HUD.tscn")
 
 # YinYang ref kept for stance-label callbacks (it has stance_display_text()).
@@ -27,6 +28,9 @@ var _enemies_dead:  int = 0
 
 # Death-transition state — guards against double-firing if signals stack.
 var _death_triggered: bool = false
+
+# Shop overlay state — guards against opening a second shop over the first.
+var _shop_open: bool = false
 
 # Fade overlay for death sequence (separate from RoomManager's per-room fader).
 var _death_canvas: CanvasLayer = null
@@ -201,6 +205,37 @@ func _on_room_entered(room_data: RoomData) -> void:
 	# Format: "☯ LIGHT  |  [COMBAT]"
 	var stance_text: String = _yin_yang.stance_display_text() if _yin_yang != null else ""
 	stance_label.text = "%s  |  [%s]" % [stance_text, room_data.type_name()]
+
+	# Merchant rooms open the shop overlay on entry.
+	if room_data.type == RoomData.RoomType.SHOP:
+		_open_shop()
+
+
+# ---------------------------------------------------------------------------
+# Shop
+# ---------------------------------------------------------------------------
+
+## Debug/testing hook: press B to open the shop from any room (procedural graphs
+## may not always place a SHOP room, and we still want to exercise the merchant).
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo \
+			and event.keycode == KEY_B:
+		_open_shop()
+
+
+func _open_shop() -> void:
+	if _shop_open or _talisman_manager == null:
+		return
+	_shop_open = true
+	var shop: CanvasLayer = ShopUIScript.new()
+	shop.name = "ShopUI"
+	add_child(shop)
+	shop.closed.connect(_on_shop_closed)
+	shop.open(player, _talisman_manager)
+
+
+func _on_shop_closed() -> void:
+	_shop_open = false
 
 
 func _on_active_talisman_changed(talisman: Node) -> void:

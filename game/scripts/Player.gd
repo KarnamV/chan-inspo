@@ -9,8 +9,8 @@ enum State { IDLE, MOVE, ATTACK, DODGE, BLOCK, HURT, DEAD }
 
 signal attack_landed(attack_name: String, damage: int, hit_position: Vector2)
 
-# Emitted whenever HP changes (take_hit, heal). max_hp is always MAX_HP;
-# included so the HUD does not need to know the constant directly.
+# Emitted whenever HP changes (take_hit, heal, upgrades). Carries the current
+# max_hp so the HUD does not need to read the player's fields directly.
 signal health_updated(current: int, max_hp: int)
 
 # Emitted once when the player's HP reaches 0.  TestRoom listens to this
@@ -59,8 +59,10 @@ var snake_coil_active: bool = false
 # ---------------------------------------------------------------------------
 # HP
 # ---------------------------------------------------------------------------
-const MAX_HP: int = 100
-var current_hp: int = MAX_HP
+# max_hp is a var (not const) so shop/shrine upgrades can raise it at runtime.
+# Starts at 100. health_updated always reports (current_hp, max_hp).
+var max_hp: int = 100
+var current_hp: int = max_hp
 
 # ---------------------------------------------------------------------------
 # Combo + spirit meter
@@ -267,8 +269,12 @@ func _enable_hitbox(offset: Vector2, shape_size: Vector2) -> void:
 
 
 func _disable_hitbox() -> void:
-	hitbox_area.monitoring = false
-	hitbox_shape.disabled = true
+	# Deferred: take_hit() can call this from an enemy's body_entered callback,
+	# which runs while the physics server is flushing queries. Mutating
+	# monitoring/disabled synchronously there throws "Can't change this state
+	# while flushing queries." set_deferred applies it safely after the flush.
+	hitbox_area.set_deferred("monitoring", false)
+	hitbox_shape.set_deferred("disabled", true)
 
 
 # ---------------------------------------------------------------------------
@@ -530,9 +536,30 @@ func take_hit(knockback_vel: Vector2, damage: int = 0) -> void:
 	# Deduct HP and notify HUD. Block path returns early above, so this only
 	# fires for unblocked, non-dodge hits.
 	current_hp = max(0, current_hp - damage)
-	emit_signal("health_updated", current_hp, MAX_HP)
+	emit_signal("health_updated", current_hp, max_hp)
 	if current_hp <= 0:
 		die()
+
+
+# ---------------------------------------------------------------------------
+# Healing / upgrades — used by shops and shrines (spend gold for effect).
+# ---------------------------------------------------------------------------
+
+## Restore up to `amount` HP, capped at max_hp. Emits health_updated.
+func heal(amount: int) -> void:
+	if amount <= 0 or state == State.DEAD:
+		return
+	current_hp = mini(current_hp + amount, max_hp)
+	emit_signal("health_updated", current_hp, max_hp)
+
+
+## Permanently raise max_hp and grant the same amount of current HP.
+func add_max_hp(amount: int) -> void:
+	if amount <= 0:
+		return
+	max_hp += amount
+	current_hp = mini(current_hp + amount, max_hp)
+	emit_signal("health_updated", current_hp, max_hp)
 
 
 func _trigger_block_flash() -> void:

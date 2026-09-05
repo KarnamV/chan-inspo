@@ -21,11 +21,11 @@ func talisman_display_name() -> String:
 
 
 func activate(player: Node) -> void:
-	var heal_amount: int = int(player.MAX_HP * HEAL_FRACTION)
+	var heal_amount: int = int(player.max_hp * HEAL_FRACTION)
 	var old_hp: int = player.current_hp
-	player.current_hp = mini(player.current_hp + heal_amount, player.MAX_HP)
+	player.current_hp = mini(player.current_hp + heal_amount, player.max_hp)
 	var actual_heal: int = player.current_hp - old_hp
-	player.emit_signal("health_updated", player.current_hp, player.MAX_HP)
+	player.emit_signal("health_updated", player.current_hp, player.max_hp)
 	_flash(player)
 	print("[PhoenixFeather] Healed %d HP (%d -> %d)." % [actual_heal, old_hp, player.current_hp])
 

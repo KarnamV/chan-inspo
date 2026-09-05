@@ -39,6 +39,26 @@ func setup(player: Node, talismans: Array) -> void:
 		emit_signal("active_talisman_changed", _slots[0])
 
 
+# Add a talisman bought from a shop. Fills an empty slot if one is free;
+# otherwise replaces the currently-active slot (the player's choice to overwrite).
+# The talisman node must already be a child of the player. Makes it active.
+func add_talisman(t: Node) -> void:
+	if t == null:
+		return
+	if _slots.size() < MAX_SLOTS:
+		_slots.append(t)
+		_active_index = _slots.size() - 1
+	else:
+		_slots[_active_index] = t
+	_player.active_talisman = t
+	emit_signal("active_talisman_changed", t)
+
+
+# True when all MAX_SLOTS talisman slots are filled.
+func is_full() -> bool:
+	return _slots.size() >= MAX_SLOTS
+
+
 # Returns the currently active talisman node (or null if no slots filled).
 func get_active() -> Node:
 	if _slots.is_empty():

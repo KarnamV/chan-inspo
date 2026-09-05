@@ -202,7 +202,7 @@
 <script>
 (function(){
   "use strict";
-  var STORE_KEY = "chanInspoKanban.v14";
+  var STORE_KEY = "chanInspoKanban.v15";
   var COLUMNS = [
     {id:"backlog",  name:"Backlog",     color:"#7d7068"},
     {id:"todo",     name:"To Do",       color:"#4a90d9"},
@@ -245,7 +245,7 @@
 
       // Phase 3 — Progression
       c("Gold drops + spending currency","2d","p3","done","RunStats: run-only gold + gold_earned, signal gold_changed, add_gold()/spend_gold() (spend API ready for the shop). EnemyBase.gold_reward (Beast 6/Demon 8/PW 14). GoldPickup.gd: code-built coin, scatter burst -> magnet homing -> collect awards gold. TestRoom._drop_gold splits reward into 2-4 coins. HUD gold label (code-added) via RunStats signal. Hub shows Gold earned this run."),
-      c("Shop between levels","2d","p3","backlog","Sells talismans, upgrades, healing, info."),
+      c("Shop between levels","2d","p3","done","ShopUI.gd: code-built CanvasLayer overlay, opens on SHOP-room entry (RoomManager.room_entered) or debug key B. Pauses game (process_mode ALWAYS). Stock: Healing Draught (40hp/20g), Full Restore (45g), Vitality Charm (+25 max HP/55g) — repeatable; Tiger Fang (70g) + Snake Coil (80g) talismans — one-time. Buy = RunStats.spend_gold; buttons grey out when unaffordable; live gold label. Esc/Leave closes. Added Player.heal()/add_max_hp() (MAX_HP const -> max_hp var; PhoenixFeather updated), TalismanManager.add_talisman()/is_full()."),
       c("Shrine rooms (blessing or heal)","2d","p3","backlog","Sacrifice gold for random blessing OR restore HP."),
       c("Mini-bosses at realm boundaries","2d","p3","backlog","Drop guaranteed talisman/upgrade."),
       c("Spirit Shard meta-currency","2d","p3","backlog","Earned per run from distance + foes."),
