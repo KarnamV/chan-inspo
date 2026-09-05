@@ -36,6 +36,7 @@ func _ready() -> void:
 	attack_dmg   = 18
 	detect_range = 250.0
 	attack_range = 55.0
+	gold_reward  = 14
 	super._ready()
 
 	# Dark green/grey tint — possessed soldier look.

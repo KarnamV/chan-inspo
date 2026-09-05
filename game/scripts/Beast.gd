@@ -39,6 +39,7 @@ func _ready() -> void:
 	attack_dmg   = 22
 	detect_range = 320.0
 	attack_range = 60.0
+	gold_reward  = 6
 	super._ready()
 
 	# Red-orange tint for the feral beast.

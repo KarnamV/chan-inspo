@@ -21,6 +21,15 @@ func _ready() -> void:
 	spirit_label.text  = "Spirit collected: %d"   % int(RunStats.spirit_collected)
 	shards_label.text  = "Spirit Shards earned: %d" % RunStats.spirit_shards_earned()
 
+	# Gold is run-only (lost on death) — show what the run generated. Label is
+	# created in code so the Hub scene file stays unchanged.
+	var gold_line: Label = shards_label.duplicate()
+	gold_line.name = "GoldLabel"
+	gold_line.text = "Gold earned:      %d" % RunStats.gold_earned
+	var stats: Node = shards_label.get_parent()
+	stats.add_child(gold_line)
+	stats.move_child(gold_line, shards_label.get_index() + 1)
+
 	new_run_button.pressed.connect(_on_new_run_pressed)
 	quit_button.pressed.connect(_on_quit_pressed)
 

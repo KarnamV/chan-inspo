@@ -13,6 +13,7 @@ const TalismanYinYangScript = preload("res://scripts/TalismanYinYang.gd")
 const DragonClawScript      = preload("res://scripts/DragonClaw.gd")
 const PhoenixFeatherScript  = preload("res://scripts/PhoenixFeather.gd")
 const TalismanManagerScript = preload("res://scripts/TalismanManager.gd")
+const GoldPickupScript      = preload("res://scripts/GoldPickup.gd")
 const HUDScene              = preload("res://scenes/HUD.tscn")
 
 # YinYang ref kept for stance-label callbacks (it has stance_display_text()).
@@ -121,13 +122,37 @@ func _connect_enemy_signals() -> void:
 	print("[TestRoom] %d enemies registered for room-clear tracking." % _total_enemies)
 
 
-func _on_enemy_died(_enemy: Node) -> void:
+func _on_enemy_died(enemy: Node) -> void:
 	_enemies_dead += 1
 	RunStats.enemies_killed += 1
 	print("[TestRoom] Enemy down (%d / %d)." % [_enemies_dead, _total_enemies])
 
+	_drop_gold(enemy)
+
 	if _enemies_dead >= _total_enemies:
 		_on_room_cleared()
+
+
+## Scatter a burst of GoldPickup coins at the enemy's position. The enemy's
+## gold_reward is split across a few coins so the drop fans out for game feel.
+func _drop_gold(enemy: Node) -> void:
+	if enemy == null or not is_instance_valid(enemy):
+		return
+	var reward: int = enemy.gold_reward if "gold_reward" in enemy else 0
+	if reward <= 0:
+		return
+	var drop_pos: Vector2 = (enemy as Node2D).global_position
+
+	# 2–4 coins; the first carries any remainder so the total always matches.
+	var coin_count: int = clampi(reward / 3, 2, 4)
+	var base: int = reward / coin_count
+	var remainder: int = reward - base * coin_count
+	for i in coin_count:
+		var v: int = base + (remainder if i == 0 else 0)
+		var coin: Node2D = GoldPickupScript.new()
+		coin.value = v
+		add_child(coin)
+		coin.global_position = drop_pos
 
 
 func _on_room_cleared() -> void:

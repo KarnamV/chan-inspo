@@ -31,6 +31,7 @@ func _ready() -> void:
 	attack_dmg   = 12
 	detect_range = 300.0
 	attack_range = 220.0
+	gold_reward  = 8
 	super._ready()
 
 	# Purple tint to distinguish Demon visually.

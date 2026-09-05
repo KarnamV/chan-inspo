@@ -31,6 +31,9 @@ signal enemy_died(enemy: Node)
 @export var detect_range: float = 300.0
 @export var attack_range: float = 220.0
 
+## Gold dropped on death (scattered as GoldPickup coins by the room).
+@export var gold_reward:  int   = 5
+
 # ---------------------------------------------------------------------------
 # Runtime state
 # ---------------------------------------------------------------------------

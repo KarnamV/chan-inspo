@@ -9,6 +9,13 @@
 extends Node
 
 # ---------------------------------------------------------------------------
+# Signals
+# ---------------------------------------------------------------------------
+## Emitted whenever the run gold balance changes (collected or spent).
+## HUD.gd connects to this to keep the gold label in sync.
+signal gold_changed(current: int)
+
+# ---------------------------------------------------------------------------
 # Run statistics — incremented during gameplay, read by Hub.gd
 # ---------------------------------------------------------------------------
 
@@ -22,6 +29,14 @@ var enemies_killed: int = 0
 ## Tracked as a float internally; Hub displays floor() for clean display.
 var spirit_collected: float = 0.0
 
+## Run-only gold — spent at shops/shrines within the run. Resets every New Run
+## (lost on death, per design). Enemies drop gold on death via GoldPickup.
+var gold: int = 0
+
+## Running total of gold earned this run, for the death summary. Not reduced by
+## spending, so the Hub can show how much the run generated overall.
+var gold_earned: int = 0
+
 # ---------------------------------------------------------------------------
 # Meta-currency formula (placeholder, Phase 3 will flesh this out)
 # ---------------------------------------------------------------------------
@@ -34,6 +49,31 @@ func spirit_shards_earned() -> int:
 
 
 # ---------------------------------------------------------------------------
+# Gold — run-only currency
+# ---------------------------------------------------------------------------
+
+## Add gold to the run balance (called when a GoldPickup is collected).
+func add_gold(amount: int) -> void:
+	if amount <= 0:
+		return
+	gold += amount
+	gold_earned += amount
+	emit_signal("gold_changed", gold)
+
+
+## Attempt to spend gold. Returns true if the player could afford it (and the
+## balance was deducted); false if too poor. Shops/shrines call this.
+func spend_gold(amount: int) -> bool:
+	if amount <= 0:
+		return true
+	if gold < amount:
+		return false
+	gold -= amount
+	emit_signal("gold_changed", gold)
+	return true
+
+
+# ---------------------------------------------------------------------------
 # Lifecycle
 # ---------------------------------------------------------------------------
 
@@ -43,3 +83,6 @@ func reset() -> void:
 	rooms_visited  = 0
 	enemies_killed = 0
 	spirit_collected = 0.0
+	gold = 0
+	gold_earned = 0
+	emit_signal("gold_changed", gold)

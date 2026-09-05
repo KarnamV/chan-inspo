@@ -24,6 +24,10 @@ const BAR_WIDTH: float = 200.0
 @onready var combo_label:    Label = $VBox/ComboLabel
 @onready var talisman_label: Label = $VBox/TalismanLabel
 
+# Gold label is created in code and inserted into VBox (kept out of the .tscn
+# so the scene stays as-is). Driven by the RunStats.gold_changed signal.
+var gold_label: Label = null
+
 # Track last tween for combo pop so we can cancel it on reset.
 var _combo_tween: Tween = null
 
@@ -35,6 +39,25 @@ func _ready() -> void:
 	combo_label.text = "x0"
 	combo_label.modulate.a = 0.0   # invisible until first hit
 	talisman_label.text = ""
+
+	_build_gold_label()
+
+	# RunStats is an AutoLoad — drive the gold label off its signal and prime it
+	# with the current balance (survives scene reloads within a run).
+	RunStats.gold_changed.connect(_on_gold_changed)
+	_on_gold_changed(RunStats.gold)
+
+
+func _build_gold_label() -> void:
+	gold_label = Label.new()
+	gold_label.name = "GoldLabel"
+	if combo_label.label_settings != null:
+		# Reuse the small bar label styling for readability against the floor.
+		gold_label.label_settings = talisman_label.label_settings
+	var vbox: VBoxContainer = $VBox
+	vbox.add_child(gold_label)
+	# Place it just under the bars, above the combo counter.
+	vbox.move_child(gold_label, talisman_label.get_index())
 
 
 # Call this from the owning scene after the player node is ready.
@@ -63,6 +86,11 @@ func _on_spirit_updated(current: float, max_val: float) -> void:
 	var ratio: float = current / max_val if max_val > 0.0 else 0.0
 	_tween_bar(spirit_bar_fill, ratio)
 	spirit_label.text = "SP  %d / %d" % [int(current), int(max_val)]
+
+
+func _on_gold_changed(current: int) -> void:
+	if gold_label != null:
+		gold_label.text = "Gold  %d" % current
 
 
 func _on_combo_updated(count: int) -> void:
