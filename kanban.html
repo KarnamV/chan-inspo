@@ -202,7 +202,7 @@
 <script>
 (function(){
   "use strict";
-  var STORE_KEY = "chanInspoKanban.v22";
+  var STORE_KEY = "chanInspoKanban.v23";
   var COLUMNS = [
     {id:"backlog",  name:"Backlog",     color:"#7d7068"},
     {id:"todo",     name:"To Do",       color:"#4a90d9"},
@@ -256,7 +256,7 @@
 
       // Phase 4 — Polish
       c("Art pass + animations","2d","p4","backlog",""),
-      c("VFX: particles, screen shake, hitstop","2d","p4","backlog",""),
+      c("VFX: particles, screen shake, hitstop","2d","p4","done","FX.gd AutoLoad juice helper: shake(strength) drives Player Camera2D.offset with move_toward decay; hitstop(dur,scale) via Engine.time_scale + ignore-time-scale timer (token-guarded vs overlap); spark(pos,color,amount) one-shot CPUParticles2D burst parented to current scene, auto-freed. Player registers camera on _ready. Wired: enemy hit (shake 3.5 + gold spark), enemy death (shake 8 + hitstop .07 + red burst), player hit (shake 6 + hitstop .05 + red spark), big hits >=30 dmg (shake 5 + hitstop), coin collect (gold sparkle)."),
       c("Sound design + music","2d","p4","backlog",""),
       c("Balance pass","2d","p4","backlog","10–20 min runs max."),
       c("Bug-fix sweep","2d","p4","backlog",""),

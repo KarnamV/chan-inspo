@@ -126,6 +126,9 @@ var in_counter_window: bool = false
 
 func _ready() -> void:
 	add_to_group("player")
+	# Register our camera with the FX helper so hits can shake the screen.
+	if has_node("Camera2D"):
+		FX.register_camera($Camera2D)
 	hitbox_area.monitoring = false
 	hitbox_shape.disabled = true
 	hitbox_area.body_entered.connect(_on_hitbox_body_entered)
@@ -319,6 +322,11 @@ func _on_hitbox_body_entered(body: Node2D) -> void:
 		return
 	emit_signal("attack_landed", _current_attack_name, _current_attack_damage, body.global_position)
 	_register_hit(_current_attack_name)
+
+	# Big hits (counters / talisman-boosted) get extra punch via hitstop + shake.
+	if _current_attack_damage >= 30:
+		FX.shake(5.0)
+		FX.hitstop(0.05)
 
 	# SnakeCoil: chain lightning to nearby enemies after the primary hit.
 	# The SnakeCoil talisman may be in any slot (not necessarily the active one),
@@ -557,6 +565,10 @@ func take_hit(knockback_vel: Vector2, damage: int = 0) -> void:
 	# fires for unblocked, non-dodge hits.
 	current_hp = max(0, current_hp - damage)
 	emit_signal("health_updated", current_hp, max_hp)
+	# Taking a hit shakes the screen and jolts time briefly.
+	FX.shake(6.0)
+	FX.hitstop(0.05)
+	FX.spark(global_position, Color(1.0, 0.3, 0.3, 1.0), 10, 150.0)
 	if current_hp <= 0:
 		die()
 

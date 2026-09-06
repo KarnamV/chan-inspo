@@ -85,6 +85,7 @@ func _collect() -> void:
 		return
 	_collected = true
 	RunStats.add_gold(value)
+	FX.spark(global_position, Color(1.0, 0.85, 0.25, 1.0), 5, 90.0)
 
 	# Rise + fade, then free.
 	var tween: Tween = create_tween()
