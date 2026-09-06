@@ -35,6 +35,10 @@ signal spirit_updated(current: float, max_spirit: float)
 var stance_speed_mult: float = 1.0
 var stance_damage_mult: float = 1.0
 
+# Permanent run-wide damage multiplier — raised by shrine blessings (e.g. Fury).
+# Applied in _apply_damage_flags so it affects every attack uniformly.
+var permanent_damage_mult: float = 1.0
+
 # Talisman node currently active (kept in sync by TalismanManager on each cycle).
 # Must expose activate(player) and deactivate(player) methods.
 var active_talisman: Node = null
@@ -288,6 +292,10 @@ func _disable_hitbox() -> void:
 # ---------------------------------------------------------------------------
 
 func _apply_damage_flags() -> void:
+	# Permanent shrine buff first, so one-shot talisman flags stack on top of it.
+	if permanent_damage_mult != 1.0:
+		_current_attack_damage = int(_current_attack_damage * permanent_damage_mult)
+
 	if dragon_claw_active:
 		dragon_claw_active = false
 		# Override any counter-window state — Dragon Claw bypasses block.
