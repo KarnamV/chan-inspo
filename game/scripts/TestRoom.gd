@@ -19,6 +19,7 @@ const ShrineUIScript        = preload("res://scripts/ShrineUI.gd")
 const TigerFangScript       = preload("res://scripts/TigerFang.gd")
 const SnakeCoilScript       = preload("res://scripts/SnakeCoil.gd")
 const MiniBossScene         = preload("res://scenes/MiniBoss.tscn")
+const RealmDefs             = preload("res://scripts/RealmDefs.gd")
 const HUDScene              = preload("res://scenes/HUD.tscn")
 
 # YinYang ref kept for stance-label callbacks (it has stance_display_text()).
@@ -50,9 +51,31 @@ func _ready() -> void:
 	_setup_talismans()
 	_setup_hud()
 	_apply_meta_upgrades()
+	_apply_realm_theme()
 	_setup_room_manager()
 	_connect_enemy_signals()
 	_build_death_overlay()
+
+
+## Theme the run to the selected realm: tint the floor and scale enemy HP/damage
+## by the realm difficulty. Must run before _setup_room_manager (which triggers
+## the first render_room) and before enemies engage.
+func _apply_realm_theme() -> void:
+	var realm: Dictionary = RealmDefs.get_realm(MetaProgress.selected_realm)
+	room_renderer.realm_floor_color = realm["floor"]
+
+	var hp_mult: float = realm["hp_mult"]
+	var dmg_mult: float = realm["dmg_mult"]
+	for e in enemies_container.get_children():
+		if not ("max_hp" in e):
+			continue
+		e.max_hp = int(e.max_hp * hp_mult)
+		e.current_hp = e.max_hp
+		e.attack_dmg = int(e.attack_dmg * dmg_mult)
+		if e.has_method("_refresh_label"):
+			e._refresh_label()
+
+	_announce("Realm %d — %s" % [MetaProgress.selected_realm + 1, realm["name"]], realm["accent"])
 
 
 ## Apply persistent meta-upgrades (bought in the Hub) to this run's player.
@@ -159,6 +182,7 @@ func _on_enemy_died(enemy: Node) -> void:
 	if "is_miniboss" in enemy and enemy.is_miniboss:
 		_miniboss_alive = false
 		_grant_miniboss_reward()
+		_try_unlock_next_realm()
 
 	if _enemies_dead >= _total_enemies:
 		_on_room_cleared()
@@ -326,6 +350,17 @@ func _grant_miniboss_reward() -> void:
 	else:
 		player.add_max_hp(25)
 		_announce("Reward: +25 Max HP!", Color(0.6, 1.0, 0.6))
+
+
+## Defeating the mini-boss in a BOSS room clears the realm and unlocks the next.
+func _try_unlock_next_realm() -> void:
+	var cur: RoomData = room_manager.current_room()
+	if cur == null or cur.type != RoomData.RoomType.BOSS:
+		return
+	var next: int = MetaProgress.selected_realm + 1
+	if next < RealmDefs.count() and not MetaProgress.is_realm_unlocked(next):
+		MetaProgress.unlock_realm(next)
+		_announce("Realm cleared! %s unlocked." % RealmDefs.realm_name(next), Color(0.4, 1.0, 0.6))
 
 
 ## Show a large centred banner on the HUD that fades out after a couple seconds.

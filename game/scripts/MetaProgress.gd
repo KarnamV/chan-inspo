@@ -122,6 +122,12 @@ func unlock_realm(index: int) -> void:
 func is_realm_unlocked(index: int) -> bool:
 	return index <= max_realm_unlocked
 
+## Choose the realm for the next run (only if unlocked). Persists immediately.
+func select_realm(index: int) -> void:
+	if is_realm_unlocked(index):
+		selected_realm = index
+		save_data()
+
 
 # ---------------------------------------------------------------------------
 # Persistence

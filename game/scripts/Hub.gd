@@ -5,6 +5,8 @@
 
 extends Control
 
+const RealmDefs = preload("res://scripts/RealmDefs.gd")
+
 @onready var title_label:          Label  = $VBox/TitleLabel
 @onready var rooms_label:          Label  = $VBox/Stats/RoomsLabel
 @onready var enemies_label:        Label  = $VBox/Stats/EnemiesLabel
@@ -41,9 +43,73 @@ func _ready() -> void:
 	quit_button.pressed.connect(_on_quit_pressed)
 
 	_build_upgrade_menu()
+	_build_realm_menu()
 
 	# Grab focus on the primary button so keyboard navigation works immediately.
 	new_run_button.grab_focus()
+
+
+# ---------------------------------------------------------------------------
+# Realm selection — pick which realm the next run starts in. Unlocked realms
+# only; beating a realm's boss unlocks the next (MetaProgress.max_realm_unlocked).
+# ---------------------------------------------------------------------------
+
+var _realm_buttons: Array = []
+
+
+func _build_realm_menu() -> void:
+	var panel: Panel = Panel.new()
+	panel.name = "RealmPanel"
+	panel.size = Vector2(360, 544)
+	panel.position = Vector2(24, 88)
+	add_child(panel)
+
+	var margin: MarginContainer = MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override("margin_left", 18)
+	margin.add_theme_constant_override("margin_right", 18)
+	margin.add_theme_constant_override("margin_top", 18)
+	margin.add_theme_constant_override("margin_bottom", 18)
+	panel.add_child(margin)
+
+	var vbox: VBoxContainer = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 8)
+	margin.add_child(vbox)
+
+	var title: Label = Label.new()
+	title.text = "Select Realm"
+	title.add_theme_font_size_override("font_size", 22)
+	vbox.add_child(title)
+
+	vbox.add_child(HSeparator.new())
+
+	for i in RealmDefs.count():
+		var btn: Button = Button.new()
+		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		var idx: int = i
+		btn.pressed.connect(func() -> void: _on_select_realm(idx))
+		vbox.add_child(btn)
+		_realm_buttons.append(btn)
+
+	_refresh_realms()
+
+
+func _on_select_realm(index: int) -> void:
+	MetaProgress.select_realm(index)
+	_refresh_realms()
+
+
+func _refresh_realms() -> void:
+	for i in _realm_buttons.size():
+		var btn: Button = _realm_buttons[i]
+		var unlocked: bool = MetaProgress.is_realm_unlocked(i)
+		var marker: String = "  ◄" if MetaProgress.selected_realm == i else ""
+		if unlocked:
+			btn.text = "%d.  %s%s" % [i + 1, RealmDefs.realm_name(i), marker]
+			btn.disabled = false
+		else:
+			btn.text = "%d.  %s   \U0001F512" % [i + 1, RealmDefs.realm_name(i)]
+			btn.disabled = true
 
 
 # ---------------------------------------------------------------------------

@@ -58,6 +58,10 @@ const GLOW_COLORS: Dictionary = {
 
 const FLOOR_COLOR: Color = Color(0.12, 0.12, 0.14, 1.0)
 
+## Per-realm floor colour override. TestRoom sets this from RealmDefs before the
+## first render_room so the whole run is themed to the selected realm.
+var realm_floor_color: Color = FLOOR_COLOR
+
 # Collision shape sizes and positions for the wall segments on each side.
 # Each wall may have 1 or 2 segments depending on whether a door is present.
 # We build these dynamically in _build_wall().
@@ -99,7 +103,7 @@ func render_room(room_data: RoomData, all_rooms: Dictionary) -> void:
 func _build_floor() -> void:
 	var floor_rect := ColorRect.new()
 	floor_rect.name = "Floor"
-	floor_rect.color = FLOOR_COLOR
+	floor_rect.color = realm_floor_color
 	floor_rect.position = Vector2.ZERO
 	floor_rect.size = Vector2(ROOM_W, ROOM_H)
 	floor_rect.z_index = -1
