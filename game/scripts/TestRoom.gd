@@ -16,6 +16,7 @@ const TalismanManagerScript = preload("res://scripts/TalismanManager.gd")
 const GoldPickupScript      = preload("res://scripts/GoldPickup.gd")
 const ShopUIScript          = preload("res://scripts/ShopUI.gd")
 const ShrineUIScript        = preload("res://scripts/ShrineUI.gd")
+const TemptationUIScript    = preload("res://scripts/TemptationUI.gd")
 const TigerFangScript       = preload("res://scripts/TigerFang.gd")
 const SnakeCoilScript       = preload("res://scripts/SnakeCoil.gd")
 const MiniBossScene         = preload("res://scenes/MiniBoss.tscn")
@@ -264,6 +265,8 @@ func _on_room_entered(room_data: RoomData) -> void:
 			_open_shop()
 		RoomData.RoomType.SHRINE:
 			_open_shrine()
+		RoomData.RoomType.TEMPTATION:
+			_open_temptation()
 		RoomData.RoomType.ELITE, RoomData.RoomType.BOSS:
 			_spawn_miniboss()
 
@@ -282,6 +285,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			_open_shop()
 		KEY_N:
 			_open_shrine()
+		KEY_T:
+			_open_temptation()
 		KEY_M:
 			_spawn_miniboss()
 
@@ -306,6 +311,17 @@ func _open_shrine() -> void:
 	add_child(shrine)
 	shrine.closed.connect(_on_overlay_closed)
 	shrine.open(player)
+
+
+func _open_temptation() -> void:
+	if _overlay_open:
+		return
+	_overlay_open = true
+	var temptation: CanvasLayer = TemptationUIScript.new()
+	temptation.name = "TemptationUI"
+	add_child(temptation)
+	temptation.closed.connect(_on_overlay_closed)
+	temptation.open(player)
 
 
 func _on_overlay_closed() -> void:

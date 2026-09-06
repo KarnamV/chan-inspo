@@ -44,6 +44,7 @@ const WALL_COLORS: Dictionary = {
 	RoomData.RoomType.SHOP:   Color(0.60, 0.50, 0.05, 1.0),  # gold
 	RoomData.RoomType.SHRINE: Color(0.12, 0.20, 0.55, 1.0),  # muted blue
 	RoomData.RoomType.BOSS:   Color(0.12, 0.05, 0.15, 1.0),  # near-black purple
+	RoomData.RoomType.TEMPTATION: Color(0.42, 0.10, 0.38, 1.0),  # cursed magenta
 }
 
 ## Lighter / more saturated glow tint for door arches (destination type).
@@ -54,6 +55,7 @@ const GLOW_COLORS: Dictionary = {
 	RoomData.RoomType.SHOP:   Color(1.00, 0.90, 0.20, 1.0),
 	RoomData.RoomType.SHRINE: Color(0.40, 0.60, 1.00, 1.0),
 	RoomData.RoomType.BOSS:   Color(0.80, 0.20, 1.00, 1.0),
+	RoomData.RoomType.TEMPTATION: Color(1.00, 0.30, 0.90, 1.0),
 }
 
 const FLOOR_COLOR: Color = Color(0.12, 0.12, 0.14, 1.0)

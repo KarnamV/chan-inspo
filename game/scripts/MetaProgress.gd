@@ -62,6 +62,18 @@ func bank_shards(amount: int) -> void:
 	save_data()
 
 
+## Spend banked shards (temptation-room pacts). Returns false if too poor.
+func spend_shards(amount: int) -> bool:
+	if amount <= 0:
+		return true
+	if total_shards < amount:
+		return false
+	total_shards -= amount
+	emit_signal("shards_changed", total_shards)
+	save_data()
+	return true
+
+
 # ---------------------------------------------------------------------------
 # Upgrades
 # ---------------------------------------------------------------------------

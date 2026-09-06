@@ -570,6 +570,20 @@ func add_max_hp(amount: int) -> void:
 	emit_signal("health_updated", current_hp, max_hp)
 
 
+## Adjust max_hp by a signed delta (temptation curses pass a negative value).
+## On an increase the extra HP is granted; on a decrease current HP is clamped.
+## max_hp never drops below 1.
+func modify_max_hp(delta: int) -> void:
+	if delta == 0:
+		return
+	max_hp = maxi(1, max_hp + delta)
+	if delta > 0:
+		current_hp = mini(current_hp + delta, max_hp)
+	else:
+		current_hp = mini(current_hp, max_hp)
+	emit_signal("health_updated", current_hp, max_hp)
+
+
 func _trigger_block_flash() -> void:
 	# Settle back to the current stance tint (or plain white if no talisman).
 	var settle_color: Color = Color.WHITE

@@ -23,22 +23,24 @@ extends Resource
 ## Room type enum
 ## ------------------------------------------------------------------
 enum RoomType {
-	START   = 0,   ## Always depth 0; one per graph
-	COMBAT  = 1,   ## Standard enemy encounter  (70 % of non-special rooms)
-	ELITE   = 2,   ## Harder enemy, better drop  (15 %)
-	SHOP    = 3,   ## Merchant; spend gold        ( 5 %)
-	SHRINE  = 4,   ## HP / blessing choice        ( 5 %)
-	BOSS    = 5,   ## Realm boss; always deepest room
+	START      = 0,   ## Always depth 0; one per graph
+	COMBAT     = 1,   ## Standard enemy encounter  (70 % of non-special rooms)
+	ELITE      = 2,   ## Harder enemy, better drop  (15 %)
+	SHOP       = 3,   ## Merchant; spend gold        ( 5 %)
+	SHRINE     = 4,   ## HP / blessing choice        ( 5 %)
+	BOSS       = 5,   ## Realm boss; always deepest room
+	TEMPTATION = 6,   ## Cursed power-up; risk gold/shards for a buff + curse
 }
 
 ## Human-readable name for debug output
 const TYPE_NAMES: Dictionary = {
-	RoomType.START:  "START",
-	RoomType.COMBAT: "COMBAT",
-	RoomType.ELITE:  "ELITE",
-	RoomType.SHOP:   "SHOP",
-	RoomType.SHRINE: "SHRINE",
-	RoomType.BOSS:   "BOSS",
+	RoomType.START:      "START",
+	RoomType.COMBAT:     "COMBAT",
+	RoomType.ELITE:      "ELITE",
+	RoomType.SHOP:       "SHOP",
+	RoomType.SHRINE:     "SHRINE",
+	RoomType.BOSS:       "BOSS",
+	RoomType.TEMPTATION: "TEMPTATION",
 }
 
 ## ------------------------------------------------------------------

@@ -64,7 +64,7 @@ const TYPE_WEIGHT_POOL: Array = [
 	RoomData.RoomType.ELITE,
 	RoomData.RoomType.SHOP,
 	RoomData.RoomType.SHRINE,
-	RoomData.RoomType.COMBAT,  # fills the last 5% → COMBAT to honour 70%+ target
+	RoomData.RoomType.TEMPTATION,  # last 5% → a cursed-power-up room
 ]
 
 ## ------------------------------------------------------------------
