@@ -202,7 +202,7 @@
 <script>
 (function(){
   "use strict";
-  var STORE_KEY = "chanInspoKanban.v16";
+  var STORE_KEY = "chanInspoKanban.v17";
   var COLUMNS = [
     {id:"backlog",  name:"Backlog",     color:"#7d7068"},
     {id:"todo",     name:"To Do",       color:"#4a90d9"},
@@ -248,7 +248,7 @@
       c("Shop between levels","2d","p3","done","ShopUI.gd: code-built CanvasLayer overlay, opens on SHOP-room entry (RoomManager.room_entered) or debug key B. Pauses game (process_mode ALWAYS). Stock: Healing Draught (40hp/20g), Full Restore (45g), Vitality Charm (+25 max HP/55g) — repeatable; Tiger Fang (70g) + Snake Coil (80g) talismans — one-time. Buy = RunStats.spend_gold; buttons grey out when unaffordable; live gold label. Esc/Leave closes. Added Player.heal()/add_max_hp() (MAX_HP const -> max_hp var; PhoenixFeather updated), TalismanManager.add_talisman()/is_full()."),
       c("Shrine rooms (blessing or heal)","2d","p3","done","ShrineUI.gd: code-built overlay (ShopUI pattern), opens on SHRINE-room entry or debug key N, pauses game. One boon per shrine: Pray for Renewal (25g -> heal to full, disabled at full HP) OR Offer to the Shrine (40g -> random blessing: Iron Body +25 max HP / Fury +15% dmg / Swiftness +12% speed). spend_gold-gated, buttons grey when unaffordable, result line shows the boon. Added Player.permanent_damage_mult (applied in _apply_damage_flags). TestRoom overlay guard generalized (_overlay_open) so shop+shrine can't stack; B=shop, N=shrine."),
       c("Mini-bosses at realm boundaries","2d","p3","backlog","Drop guaranteed talisman/upgrade."),
-      c("Spirit Shard meta-currency","2d","p3","backlog","Earned per run from distance + foes."),
+      c("Spirit Shard meta-currency","2d","p3","done","MetaProgress.gd AutoLoad — PERSISTENT (user://meta.cfg via ConfigFile), survives app restarts. Holds total_shards, upgrade levels, realm unlocks. bank_shards/buy_upgrade/save_data/load_data + run-start bonus getters + realm unlock API + signals. RunStats.spirit_shards_earned formula now distance+foes+spirit: floor(spirit/50) + rooms_visited + floor(kills/2). TestRoom banks earned shards into MetaProgress on death. Hub shows persistent shard bank."),
       c("Hub area UI + perma-upgrade menu","2d","p3","backlog","More slots, new moves, stat boosts, variants."),
       c("7 realm themes + unlock logic","2d","p3","backlog","Unlock next realm after beating previous max."),
       c("Temptation rooms (cursed power-ups)","2d","p3","backlog","Risk gold/shards for powerful but cursed buffs."),

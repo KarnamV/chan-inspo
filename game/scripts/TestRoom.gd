@@ -297,6 +297,9 @@ func _on_player_died() -> void:
 
 	print("[TestRoom] Player died — starting death sequence.")
 
+	# Bank this run's Spirit Shards into persistent meta-progression.
+	MetaProgress.bank_shards(RunStats.spirit_shards_earned())
+
 	# Freeze player physics and input for the cinematic pause.
 	player.set_process_unhandled_input(false)
 	player.set_physics_process(false)

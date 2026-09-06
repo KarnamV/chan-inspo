@@ -30,6 +30,13 @@ func _ready() -> void:
 	stats.add_child(gold_line)
 	stats.move_child(gold_line, shards_label.get_index() + 1)
 
+	# Persistent Spirit Shard bank (survives across runs).
+	var bank_line: Label = shards_label.duplicate()
+	bank_line.name = "ShardBankLabel"
+	bank_line.text = "Spirit Shards (bank): %d" % MetaProgress.total_shards
+	stats.add_child(bank_line)
+	stats.move_child(bank_line, gold_line.get_index() + 1)
+
 	new_run_button.pressed.connect(_on_new_run_pressed)
 	quit_button.pressed.connect(_on_quit_pressed)
 

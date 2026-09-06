@@ -38,14 +38,20 @@ var gold: int = 0
 var gold_earned: int = 0
 
 # ---------------------------------------------------------------------------
-# Meta-currency formula (placeholder, Phase 3 will flesh this out)
+# Meta-currency formula — Spirit Shards from distance + foes + spirit.
+# Banked into MetaProgress.total_shards on death (see TestRoom._on_player_died).
 # ---------------------------------------------------------------------------
-## Spirit Shards earned this run.  Phase 3 will tie these to a real shop.
-## Formula: floor(spirit_collected / 50) — 50 spirit points = 1 shard.
+## 50 spirit points = 1 shard.
 const SPIRIT_PER_SHARD: float = 50.0
+## Each room entered awards this many shards (distance reward).
+const SHARDS_PER_ROOM: int = 1
+## Enemies defeated per shard (foes reward).
+const KILLS_PER_SHARD: int = 2
 
 func spirit_shards_earned() -> int:
-	return int(spirit_collected / SPIRIT_PER_SHARD)
+	return int(spirit_collected / SPIRIT_PER_SHARD) \
+		+ rooms_visited * SHARDS_PER_ROOM \
+		+ int(enemies_killed / KILLS_PER_SHARD)
 
 
 # ---------------------------------------------------------------------------
