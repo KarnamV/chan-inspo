@@ -202,7 +202,7 @@
 <script>
 (function(){
   "use strict";
-  var STORE_KEY = "chanInspoKanban.v21";
+  var STORE_KEY = "chanInspoKanban.v22";
   var COLUMNS = [
     {id:"backlog",  name:"Backlog",     color:"#7d7068"},
     {id:"todo",     name:"To Do",       color:"#4a90d9"},
@@ -252,7 +252,7 @@
       c("Hub area UI + perma-upgrade menu","2d","p3","done","Hub.gd: code-built Perma-Upgrades panel (right side) spends banked MetaProgress shards on 4 perks: Iron Constitution (+20 max HP, L5), Honed Strikes (+10% dmg, L5), Fleet Footwork (+6% speed, L4), Talisman Attunement (+1 slot, L2). Cost = 3 + 2*level shards; live level/cost/afford states; MAX when capped. TalismanManager.MAX_SLOTS const -> max_slots var. TestRoom._apply_meta_upgrades() applies bonuses to player at run start (add_max_hp, permanent_damage_mult, speed, +slots before setup)."),
       c("7 realm themes + unlock logic","2d","p3","done","RealmDefs.gd: 7 realms (Ember Wastes -> Demon Throne) each with name, floor color, accent, hp_mult 1.0->2.4, dmg_mult 1.0->2.0. MetaProgress stores selected_realm/max_realm_unlocked (persisted) + select_realm/unlock_realm. Hub 'Select Realm' panel (left) — unlocked selectable (◄ marker), locked show 🔒. TestRoom._apply_realm_theme tints RoomRenderer floor (realm_floor_color) + scales enemy HP/dmg by realm; announces realm on start. Beating a BOSS-room mini-boss unlocks next realm (_try_unlock_next_realm)."),
       c("Temptation rooms (cursed power-ups)","2d","p3","done","New RoomData.RoomType.TEMPTATION (6) in enum/TYPE_NAMES; RoomGraph pool last 5% slot -> TEMPTATION; RoomRenderer cursed-magenta wall/glow. TemptationUI.gd overlay (ShrineUI pattern), opens on TEMPTATION entry or debug key T. 3 cursed pacts (one per room): Reckless Might (+30% dmg / -25% max HP, 15g), Hollow Speed (+20% spd +15% dmg / -20% max HP, 25g), Soul Barter (+50 max HP + full heal / -20% dmg, 2 shards). Added Player.modify_max_hp(signed delta) for curses + MetaProgress.spend_shards(). Refuse to leave."),
-      c("Remaining talismans (10 total)","2d","p3","backlog","Dragon Claw, Phoenix Feather, Tiger Fang, Snake Coil, Monkey Step, Crane Wing, Demon Seal, Void Star, Heaven's Token."),
+      c("Remaining talismans (10 total)","2d","p3","done","All 10 implemented. Existing 5: YinYang, DragonClaw, PhoenixFeather, TigerFang, SnakeCoil. New 5: MonkeyStep (extra dodge + 1.6x speed 3s, 15sp), CraneWing (2s parry counter window, 20sp), DemonSeal (absorb next hit then 60dmg AoE r=190, 30sp — via new Player.demon_seal_active hook in take_hit), VoidStar (blink 220px + fading decoy sprite, 20sp), HeavensToken (random boon: heal/spirit refill/+8% dmg/+15 max HP, 30sp). All obtainable via shop (10-item stock) + mini-boss reward pool."),
 
       // Phase 4 — Polish
       c("Art pass + animations","2d","p4","backlog",""),

@@ -19,6 +19,11 @@ const ShrineUIScript        = preload("res://scripts/ShrineUI.gd")
 const TemptationUIScript    = preload("res://scripts/TemptationUI.gd")
 const TigerFangScript       = preload("res://scripts/TigerFang.gd")
 const SnakeCoilScript       = preload("res://scripts/SnakeCoil.gd")
+const MonkeyStepScript      = preload("res://scripts/MonkeyStep.gd")
+const CraneWingScript       = preload("res://scripts/CraneWing.gd")
+const DemonSealScript       = preload("res://scripts/DemonSeal.gd")
+const VoidStarScript        = preload("res://scripts/VoidStar.gd")
+const HeavensTokenScript    = preload("res://scripts/HeavensToken.gd")
 const MiniBossScene         = preload("res://scenes/MiniBoss.tscn")
 const RealmDefs             = preload("res://scripts/RealmDefs.gd")
 const HUDScene              = preload("res://scenes/HUD.tscn")
@@ -353,7 +358,8 @@ func _spawn_miniboss() -> void:
 ## "Drop guaranteed talisman/upgrade"). Bonus gold comes from its gold_reward.
 func _grant_miniboss_reward() -> void:
 	if randi() % 2 == 0 and _talisman_manager != null:
-		var scripts: Array = [TigerFangScript, SnakeCoilScript]
+		var scripts: Array = [TigerFangScript, SnakeCoilScript, MonkeyStepScript,
+			CraneWingScript, DemonSealScript, VoidStarScript, HeavensTokenScript]
 		var s: Script = scripts[randi() % scripts.size()]
 		var t: Node = s.new()
 		t.name = s.resource_path.get_file().get_basename()

@@ -18,11 +18,16 @@ extends CanvasLayer
 
 signal closed
 
-const PANEL_SIZE: Vector2 = Vector2(560.0, 500.0)
+const PANEL_SIZE: Vector2 = Vector2(560.0, 664.0)
 
 # Talismans the merchant can sell (not in the starting loadout).
-const SnakeCoilScript = preload("res://scripts/SnakeCoil.gd")
-const TigerFangScript = preload("res://scripts/TigerFang.gd")
+const SnakeCoilScript    = preload("res://scripts/SnakeCoil.gd")
+const TigerFangScript    = preload("res://scripts/TigerFang.gd")
+const MonkeyStepScript   = preload("res://scripts/MonkeyStep.gd")
+const CraneWingScript    = preload("res://scripts/CraneWing.gd")
+const DemonSealScript    = preload("res://scripts/DemonSeal.gd")
+const VoidStarScript     = preload("res://scripts/VoidStar.gd")
+const HeavensTokenScript = preload("res://scripts/HeavensToken.gd")
 
 var _player: Node = null
 var _talisman_manager: Node = null
@@ -93,6 +98,41 @@ func _catalogue() -> Array:
 			"price": 80,
 			"one_time": true,
 			"apply": func() -> void: _buy_talisman(SnakeCoilScript),
+		},
+		{
+			"name": "Monkey Step Talisman",
+			"desc": "Extra dodge + speed burst",
+			"price": 60,
+			"one_time": true,
+			"apply": func() -> void: _buy_talisman(MonkeyStepScript),
+		},
+		{
+			"name": "Crane Wing Talisman",
+			"desc": "Open a parry counter window",
+			"price": 65,
+			"one_time": true,
+			"apply": func() -> void: _buy_talisman(CraneWingScript),
+		},
+		{
+			"name": "Demon Seal Talisman",
+			"desc": "Absorb a hit, then explode",
+			"price": 95,
+			"one_time": true,
+			"apply": func() -> void: _buy_talisman(DemonSealScript),
+		},
+		{
+			"name": "Void Star Talisman",
+			"desc": "Blink teleport + decoy",
+			"price": 70,
+			"one_time": true,
+			"apply": func() -> void: _buy_talisman(VoidStarScript),
+		},
+		{
+			"name": "Heaven's Token Talisman",
+			"desc": "Call a random power-up",
+			"price": 110,
+			"one_time": true,
+			"apply": func() -> void: _buy_talisman(HeavensTokenScript),
 		},
 	]
 

@@ -60,6 +60,10 @@ var tiger_fang_ready: bool = false
 # SnakeCoil: next hit chains 50% damage to up to 2 nearby enemies.
 var snake_coil_active: bool = false
 
+# DemonSeal: absorb the next incoming hit (no damage/knockback), then the seal
+# talisman explodes, damaging nearby enemies. Consumed on the absorbed hit.
+var demon_seal_active: bool = false
+
 # ---------------------------------------------------------------------------
 # HP
 # ---------------------------------------------------------------------------
@@ -536,6 +540,14 @@ func take_hit(knockback_vel: Vector2, damage: int = 0) -> void:
 		emit_signal("attack_landed", "blocked_hit", blocked_damage, global_position)
 		_trigger_block_flash()
 		_start_counter_window()
+		return
+	# DemonSeal: absorb this hit entirely, then detonate around the player.
+	if demon_seal_active:
+		demon_seal_active = false
+		for child in get_children():
+			if child.has_method("demon_seal_explode"):
+				child.demon_seal_explode(self)
+				break
 		return
 	_is_lunging = false
 	_disable_hitbox()
