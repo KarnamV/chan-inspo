@@ -40,8 +40,115 @@ func _ready() -> void:
 	new_run_button.pressed.connect(_on_new_run_pressed)
 	quit_button.pressed.connect(_on_quit_pressed)
 
+	_build_upgrade_menu()
+
 	# Grab focus on the primary button so keyboard navigation works immediately.
 	new_run_button.grab_focus()
+
+
+# ---------------------------------------------------------------------------
+# Perma-upgrade menu — spend banked Spirit Shards on permanent perks.
+# Built in code so Hub.tscn stays unchanged. Applied to each run by
+# TestRoom._apply_meta_upgrades().
+# ---------------------------------------------------------------------------
+
+const UPGRADE_KEYS: Array = ["max_hp", "damage", "speed", "slots"]
+
+var _shard_label: Label = null
+# Each entry: { "key": String, "level": Label, "cost": Label, "button": Button }
+var _upgrade_rows: Array = []
+
+
+func _build_upgrade_menu() -> void:
+	var panel: Panel = Panel.new()
+	panel.name = "UpgradePanel"
+	panel.size = Vector2(400, 544)
+	panel.position = Vector2(858, 88)
+	add_child(panel)
+
+	var margin: MarginContainer = MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override("margin_left", 20)
+	margin.add_theme_constant_override("margin_right", 20)
+	margin.add_theme_constant_override("margin_top", 18)
+	margin.add_theme_constant_override("margin_bottom", 18)
+	panel.add_child(margin)
+
+	var vbox: VBoxContainer = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 12)
+	margin.add_child(vbox)
+
+	var title: Label = Label.new()
+	title.text = "Perma-Upgrades"
+	title.add_theme_font_size_override("font_size", 22)
+	vbox.add_child(title)
+
+	_shard_label = Label.new()
+	_shard_label.add_theme_font_size_override("font_size", 16)
+	_shard_label.add_theme_color_override("font_color", Color(0.90, 0.72, 0.10))
+	vbox.add_child(_shard_label)
+
+	vbox.add_child(HSeparator.new())
+
+	for key in UPGRADE_KEYS:
+		vbox.add_child(_build_upgrade_row(key))
+
+	_refresh_upgrades()
+
+
+func _build_upgrade_row(key: String) -> Control:
+	var row: VBoxContainer = VBoxContainer.new()
+	row.add_theme_constant_override("separation", 2)
+
+	var name_label: Label = Label.new()
+	name_label.text = MetaProgress.UPGRADE_LABELS.get(key, key)
+	name_label.add_theme_font_size_override("font_size", 14)
+	row.add_child(name_label)
+
+	var line: HBoxContainer = HBoxContainer.new()
+	line.add_theme_constant_override("separation", 10)
+
+	var level_label: Label = Label.new()
+	level_label.add_theme_font_size_override("font_size", 13)
+	level_label.add_theme_color_override("font_color", Color(0.72, 0.68, 0.62))
+	level_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	line.add_child(level_label)
+
+	var cost_label: Label = Label.new()
+	cost_label.add_theme_font_size_override("font_size", 13)
+	cost_label.add_theme_color_override("font_color", Color(0.90, 0.72, 0.10))
+	line.add_child(cost_label)
+
+	var buy: Button = Button.new()
+	buy.text = "Buy"
+	buy.custom_minimum_size = Vector2(70, 0)
+	buy.pressed.connect(func() -> void: _on_buy_upgrade(key))
+	line.add_child(buy)
+
+	row.add_child(line)
+
+	_upgrade_rows.append({ "key": key, "level": level_label, "cost": cost_label, "button": buy })
+	return row
+
+
+func _on_buy_upgrade(key: String) -> void:
+	if MetaProgress.buy_upgrade(key):
+		_refresh_upgrades()
+
+
+func _refresh_upgrades() -> void:
+	_shard_label.text = "Spirit Shards: %d" % MetaProgress.total_shards
+	for row in _upgrade_rows:
+		var key: String = row["key"]
+		var lvl: int = MetaProgress.upgrade_level(key)
+		var maxl: int = MetaProgress.upgrade_max(key)
+		row["level"].text = "Lv %d / %d" % [lvl, maxl]
+		if MetaProgress.is_maxed(key):
+			row["cost"].text = "MAX"
+			row["button"].disabled = true
+		else:
+			row["cost"].text = "%d sh" % MetaProgress.upgrade_cost(key)
+			row["button"].disabled = not MetaProgress.can_buy_upgrade(key)
 
 
 func _on_new_run_pressed() -> void:

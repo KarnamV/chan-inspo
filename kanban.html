@@ -202,7 +202,7 @@
 <script>
 (function(){
   "use strict";
-  var STORE_KEY = "chanInspoKanban.v17";
+  var STORE_KEY = "chanInspoKanban.v18";
   var COLUMNS = [
     {id:"backlog",  name:"Backlog",     color:"#7d7068"},
     {id:"todo",     name:"To Do",       color:"#4a90d9"},
@@ -249,7 +249,7 @@
       c("Shrine rooms (blessing or heal)","2d","p3","done","ShrineUI.gd: code-built overlay (ShopUI pattern), opens on SHRINE-room entry or debug key N, pauses game. One boon per shrine: Pray for Renewal (25g -> heal to full, disabled at full HP) OR Offer to the Shrine (40g -> random blessing: Iron Body +25 max HP / Fury +15% dmg / Swiftness +12% speed). spend_gold-gated, buttons grey when unaffordable, result line shows the boon. Added Player.permanent_damage_mult (applied in _apply_damage_flags). TestRoom overlay guard generalized (_overlay_open) so shop+shrine can't stack; B=shop, N=shrine."),
       c("Mini-bosses at realm boundaries","2d","p3","backlog","Drop guaranteed talisman/upgrade."),
       c("Spirit Shard meta-currency","2d","p3","done","MetaProgress.gd AutoLoad — PERSISTENT (user://meta.cfg via ConfigFile), survives app restarts. Holds total_shards, upgrade levels, realm unlocks. bank_shards/buy_upgrade/save_data/load_data + run-start bonus getters + realm unlock API + signals. RunStats.spirit_shards_earned formula now distance+foes+spirit: floor(spirit/50) + rooms_visited + floor(kills/2). TestRoom banks earned shards into MetaProgress on death. Hub shows persistent shard bank."),
-      c("Hub area UI + perma-upgrade menu","2d","p3","backlog","More slots, new moves, stat boosts, variants."),
+      c("Hub area UI + perma-upgrade menu","2d","p3","done","Hub.gd: code-built Perma-Upgrades panel (right side) spends banked MetaProgress shards on 4 perks: Iron Constitution (+20 max HP, L5), Honed Strikes (+10% dmg, L5), Fleet Footwork (+6% speed, L4), Talisman Attunement (+1 slot, L2). Cost = 3 + 2*level shards; live level/cost/afford states; MAX when capped. TalismanManager.MAX_SLOTS const -> max_slots var. TestRoom._apply_meta_upgrades() applies bonuses to player at run start (add_max_hp, permanent_damage_mult, speed, +slots before setup)."),
       c("7 realm themes + unlock logic","2d","p3","backlog","Unlock next realm after beating previous max."),
       c("Temptation rooms (cursed power-ups)","2d","p3","backlog","Risk gold/shards for powerful but cursed buffs."),
       c("Remaining talismans (10 total)","2d","p3","backlog","Dragon Claw, Phoenix Feather, Tiger Fang, Snake Coil, Monkey Step, Crane Wing, Demon Seal, Void Star, Heaven's Token."),

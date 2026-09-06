@@ -43,9 +43,22 @@ func _ready() -> void:
 	player.player_died.connect(_on_player_died)
 	_setup_talismans()
 	_setup_hud()
+	_apply_meta_upgrades()
 	_setup_room_manager()
 	_connect_enemy_signals()
 	_build_death_overlay()
+
+
+## Apply persistent meta-upgrades (bought in the Hub) to this run's player.
+## Called after the HUD is wired so the boosted Max HP shows immediately.
+func _apply_meta_upgrades() -> void:
+	var bonus_hp: int = MetaProgress.bonus_max_hp()
+	if bonus_hp > 0:
+		player.add_max_hp(bonus_hp)   # also grants the HP, so the run starts full
+	player.permanent_damage_mult *= MetaProgress.damage_mult()
+	var sm: float = MetaProgress.speed_mult()
+	player.speed_run  *= sm
+	player.speed_walk *= sm
 
 
 func _setup_talismans() -> void:
@@ -65,6 +78,8 @@ func _setup_talismans() -> void:
 	# --- Create TalismanManager and attach it. ---
 	_talisman_manager = TalismanManagerScript.new()
 	_talisman_manager.name = "TalismanManager"
+	# Meta-upgrade "Talisman Attunement" grants extra starting slots.
+	_talisman_manager.max_slots = 3 + MetaProgress.bonus_slots()
 	player.add_child(_talisman_manager)
 	_talisman_manager.setup(player, [_yin_yang, dragon_claw, phoenix_feather])
 	player.talisman_manager = _talisman_manager

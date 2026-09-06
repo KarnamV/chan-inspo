@@ -11,7 +11,9 @@ extends Node
 # player.active_talisman (kept in sync by this manager after each cycle).
 # ---------------------------------------------------------------------------
 
-const MAX_SLOTS: int = 3
+# Slot capacity — a var (not const) so the "Talisman Attunement" meta-upgrade
+# can raise it above the default 3 at run start (set by TestRoom before setup).
+var max_slots: int = 3
 
 # Populated by setup() before the scene starts gameplay.
 var _slots: Array = []         # Array[Talisman]
@@ -29,7 +31,7 @@ func setup(player: Node, talismans: Array) -> void:
 	_player = player
 	_slots.clear()
 	for t in talismans:
-		if _slots.size() >= MAX_SLOTS:
+		if _slots.size() >= max_slots:
 			break
 		_slots.append(t)
 
@@ -45,7 +47,7 @@ func setup(player: Node, talismans: Array) -> void:
 func add_talisman(t: Node) -> void:
 	if t == null:
 		return
-	if _slots.size() < MAX_SLOTS:
+	if _slots.size() < max_slots:
 		_slots.append(t)
 		_active_index = _slots.size() - 1
 	else:
@@ -54,9 +56,9 @@ func add_talisman(t: Node) -> void:
 	emit_signal("active_talisman_changed", t)
 
 
-# True when all MAX_SLOTS talisman slots are filled.
+# True when all talisman slots are filled.
 func is_full() -> bool:
-	return _slots.size() >= MAX_SLOTS
+	return _slots.size() >= max_slots
 
 
 # Returns the currently active talisman node (or null if no slots filled).
