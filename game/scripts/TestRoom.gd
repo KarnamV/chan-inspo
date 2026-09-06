@@ -16,6 +16,9 @@ const TalismanManagerScript = preload("res://scripts/TalismanManager.gd")
 const GoldPickupScript      = preload("res://scripts/GoldPickup.gd")
 const ShopUIScript          = preload("res://scripts/ShopUI.gd")
 const ShrineUIScript        = preload("res://scripts/ShrineUI.gd")
+const TigerFangScript       = preload("res://scripts/TigerFang.gd")
+const SnakeCoilScript       = preload("res://scripts/SnakeCoil.gd")
+const MiniBossScene         = preload("res://scenes/MiniBoss.tscn")
 const HUDScene              = preload("res://scenes/HUD.tscn")
 
 # YinYang ref kept for stance-label callbacks (it has stance_display_text()).
@@ -32,6 +35,9 @@ var _death_triggered: bool = false
 
 # Overlay guard — only one interactive overlay (shop/shrine) open at a time.
 var _overlay_open: bool = false
+
+# Mini-boss guard — at most one realm-boundary mini-boss active at a time.
+var _miniboss_alive: bool = false
 
 # Fade overlay for death sequence (separate from RoomManager's per-room fader).
 var _death_canvas: CanvasLayer = null
@@ -149,6 +155,11 @@ func _on_enemy_died(enemy: Node) -> void:
 
 	_drop_gold(enemy)
 
+	# Mini-bosses drop a guaranteed reward on top of their gold.
+	if "is_miniboss" in enemy and enemy.is_miniboss:
+		_miniboss_alive = false
+		_grant_miniboss_reward()
+
 	if _enemies_dead >= _total_enemies:
 		_on_room_cleared()
 
@@ -222,12 +233,15 @@ func _on_room_entered(room_data: RoomData) -> void:
 	var stance_text: String = _yin_yang.stance_display_text() if _yin_yang != null else ""
 	stance_label.text = "%s  |  [%s]" % [stance_text, room_data.type_name()]
 
-	# Interstitial rooms open their overlay on entry.
+	# Interstitial rooms open their overlay on entry; realm-boundary rooms
+	# (ELITE / BOSS) spawn a mini-boss guarding a guaranteed reward.
 	match room_data.type:
 		RoomData.RoomType.SHOP:
 			_open_shop()
 		RoomData.RoomType.SHRINE:
 			_open_shrine()
+		RoomData.RoomType.ELITE, RoomData.RoomType.BOSS:
+			_spawn_miniboss()
 
 
 # ---------------------------------------------------------------------------
@@ -244,6 +258,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			_open_shop()
 		KEY_N:
 			_open_shrine()
+		KEY_M:
+			_spawn_miniboss()
 
 
 func _open_shop() -> void:
@@ -270,6 +286,65 @@ func _open_shrine() -> void:
 
 func _on_overlay_closed() -> void:
 	_overlay_open = false
+
+
+# ---------------------------------------------------------------------------
+# Mini-boss (realm boundary)
+# ---------------------------------------------------------------------------
+
+func _spawn_miniboss() -> void:
+	if _miniboss_alive:
+		return
+	_miniboss_alive = true
+
+	var boss: Node = MiniBossScene.instantiate()
+	boss.name = "MiniBoss"
+	boss.position = Vector2(640, 150)
+	enemies_container.add_child(boss)
+
+	# Count it toward room-clear and route its death through the shared handler.
+	_total_enemies += 1
+	boss.enemy_died.connect(_on_enemy_died)
+
+	_announce("A mini-boss appears!", Color(1.0, 0.35, 0.55))
+
+
+## Guaranteed mini-boss reward: a talisman OR a permanent upgrade (design:
+## "Drop guaranteed talisman/upgrade"). Bonus gold comes from its gold_reward.
+func _grant_miniboss_reward() -> void:
+	if randi() % 2 == 0 and _talisman_manager != null:
+		var scripts: Array = [TigerFangScript, SnakeCoilScript]
+		var s: Script = scripts[randi() % scripts.size()]
+		var t: Node = s.new()
+		t.name = s.resource_path.get_file().get_basename()
+		player.add_child(t)
+		_talisman_manager.add_talisman(t)
+		_announce("Reward: %s talisman!" % t.name, Color(0.7, 0.85, 1.0))
+	elif randi() % 2 == 0:
+		player.permanent_damage_mult *= 1.15
+		_announce("Reward: +15% damage!", Color(1.0, 0.8, 0.3))
+	else:
+		player.add_max_hp(25)
+		_announce("Reward: +25 Max HP!", Color(0.6, 1.0, 0.6))
+
+
+## Show a large centred banner on the HUD that fades out after a couple seconds.
+func _announce(text: String, color: Color = Color.WHITE) -> void:
+	var label: Label = Label.new()
+	label.text = text
+	label.add_theme_font_size_override("font_size", 26)
+	label.add_theme_color_override("font_color", color)
+	label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
+	label.position = Vector2(240, 120)
+	label.size = Vector2(800, 40)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var hud: CanvasLayer = $HUD
+	hud.add_child(label)
+
+	var tween: Tween = create_tween()
+	tween.tween_interval(2.0)
+	tween.tween_property(label, "modulate:a", 0.0, 0.8)
+	tween.tween_callback(label.queue_free)
 
 
 func _on_active_talisman_changed(talisman: Node) -> void:
