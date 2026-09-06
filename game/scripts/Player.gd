@@ -195,6 +195,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		emit_signal("spirit_updated", spirit, SPIRIT_MAX)
 		_check_overdrive_exit()
 		active_talisman.activate(self)
+		AudioManager.play_sfx("talisman")
 		return
 
 	if state == State.ATTACK:
@@ -327,6 +328,7 @@ func _on_hitbox_body_entered(body: Node2D) -> void:
 	if _current_attack_damage >= 30:
 		FX.shake(5.0)
 		FX.hitstop(0.05)
+		AudioManager.play_sfx("big_hit")
 
 	# SnakeCoil: chain lightning to nearby enemies after the primary hit.
 	# The SnakeCoil talisman may be in any slot (not necessarily the active one),
@@ -569,6 +571,7 @@ func take_hit(knockback_vel: Vector2, damage: int = 0) -> void:
 	FX.shake(6.0)
 	FX.hitstop(0.05)
 	FX.spark(global_position, Color(1.0, 0.3, 0.3, 1.0), 10, 150.0)
+	AudioManager.play_sfx("player_hurt")
 	if current_hp <= 0:
 		die()
 

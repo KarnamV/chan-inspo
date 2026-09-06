@@ -26,6 +26,7 @@ config/icon="res://icon.svg"
 RunStats="*res://scripts/RunStats.gd"
 MetaProgress="*res://scripts/MetaProgress.gd"
 FX="*res://scripts/FX.gd"
+AudioManager="*res://scripts/AudioManager.gd"
 
 [display]
 

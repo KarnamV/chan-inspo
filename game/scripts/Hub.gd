@@ -45,6 +45,8 @@ func _ready() -> void:
 	_build_upgrade_menu()
 	_build_realm_menu()
 
+	AudioManager.play_music("hub")
+
 	# Grab focus on the primary button so keyboard navigation works immediately.
 	new_run_button.grab_focus()
 

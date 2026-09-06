@@ -209,6 +209,7 @@ func _try_take(index: int) -> void:
 	MetaProgress.spend_shards(def["shards"])
 
 	def["apply"].call()
+	AudioManager.play_sfx("purchase")
 
 	_taken = true
 	_result_label.text = "You take %s. %s, but %s." % [def["name"], def["boon"], def["curse"]]

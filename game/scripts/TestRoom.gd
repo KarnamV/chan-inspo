@@ -82,6 +82,7 @@ func _apply_realm_theme() -> void:
 			e._refresh_label()
 
 	_announce("Realm %d — %s" % [MetaProgress.selected_realm + 1, realm["name"]], realm["accent"])
+	AudioManager.play_music("realm_%d" % MetaProgress.selected_realm)
 
 
 ## Apply persistent meta-upgrades (bought in the Hub) to this run's player.
@@ -305,6 +306,7 @@ func _open_shop() -> void:
 	add_child(shop)
 	shop.closed.connect(_on_overlay_closed)
 	shop.open(player, _talisman_manager)
+	AudioManager.play_sfx("ui_open")
 
 
 func _open_shrine() -> void:
@@ -316,6 +318,7 @@ func _open_shrine() -> void:
 	add_child(shrine)
 	shrine.closed.connect(_on_overlay_closed)
 	shrine.open(player)
+	AudioManager.play_sfx("ui_open")
 
 
 func _open_temptation() -> void:
@@ -327,6 +330,7 @@ func _open_temptation() -> void:
 	add_child(temptation)
 	temptation.closed.connect(_on_overlay_closed)
 	temptation.open(player)
+	AudioManager.play_sfx("ui_open")
 
 
 func _on_overlay_closed() -> void:
@@ -351,6 +355,7 @@ func _spawn_miniboss() -> void:
 	_total_enemies += 1
 	boss.enemy_died.connect(_on_enemy_died)
 
+	AudioManager.play_sfx("miniboss")
 	_announce("A mini-boss appears!", Color(1.0, 0.35, 0.55))
 
 

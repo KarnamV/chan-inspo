@@ -170,6 +170,7 @@ func _on_offer() -> void:
 
 func _finish(message: String) -> void:
 	_spent = true
+	AudioManager.play_sfx("purchase")
 	_result_label.text = message
 	_heal_button.disabled = true
 	_bless_button.disabled = true

@@ -108,6 +108,7 @@ func take_damage(dmg: int) -> void:
 	# Impact juice: light shake + a spark burst at the hit location.
 	FX.shake(3.5)
 	FX.spark(global_position, Color(1.0, 0.85, 0.4, 1.0), 8, 130.0)
+	AudioManager.play_sfx("hit")
 	if current_hp <= 0:
 		_die()
 
@@ -123,6 +124,7 @@ func _die() -> void:
 	FX.shake(8.0)
 	FX.hitstop(0.07)
 	FX.spark(global_position, Color(1.0, 0.35, 0.3, 1.0), 18, 200.0)
+	AudioManager.play_sfx("enemy_death")
 
 	# Disable physics + collision so the enemy stops interacting.
 	set_process(false)

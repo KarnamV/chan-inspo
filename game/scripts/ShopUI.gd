@@ -258,6 +258,7 @@ func _try_buy(index: int) -> void:
 		return
 
 	def["apply"].call()
+	AudioManager.play_sfx("purchase")
 
 	if def["one_time"]:
 		row["sold"] = true
