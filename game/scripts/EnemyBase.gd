@@ -167,6 +167,29 @@ func _flash_telegraph() -> void:
 	tween.tween_property(sprite, "modulate", Color(1.0, 0.3, 0.3, 1.0), 0.1)
 
 
+## Full pre-attack telegraph: the orange flash PLUS a floating "!" that pops
+## above the enemy for `duration` seconds. Subclasses call this at the start of
+## their windup so the player has a clear, readable window to dodge or parry.
+func _show_telegraph(duration: float) -> void:
+	_flash_telegraph()
+
+	var mark: Label = Label.new()
+	mark.text = "!"
+	mark.add_theme_font_size_override("font_size", 30)
+	mark.add_theme_color_override("font_color", Color(1.0, 0.78, 0.1))
+	mark.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0))
+	mark.add_theme_constant_override("outline_size", 5)
+	mark.position = Vector2(-7, -84)
+	mark.z_index = 50
+	add_child(mark)
+
+	var t: Tween = create_tween()
+	t.tween_property(mark, "scale", Vector2(1.3, 1.3), duration * 0.35) \
+		.from(Vector2(0.3, 0.3)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	t.tween_property(mark, "modulate:a", 0.0, duration * 0.65)
+	t.tween_callback(mark.queue_free)
+
+
 func _refresh_label() -> void:
 	if hp_label == null:
 		return

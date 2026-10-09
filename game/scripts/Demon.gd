@@ -12,15 +12,17 @@
 
 extends EnemyBase
 
-enum State { IDLE, CHASE, ATTACK, HURT, DEAD }
+enum State { IDLE, CHASE, ATTACK, WINDUP, HURT, DEAD }
 
 const FIRE_INTERVAL: float = 1.8
+const WINDUP_DURATION: float = 0.5   # telegraph before a shot — time to break line/dodge
 const HURT_DURATION: float = 0.25
 
 const ProjectileScene: PackedScene = preload("res://scenes/DemonProjectile.tscn")
 
 var _state: State = State.IDLE
 var _fire_timer: float = 0.0
+var _windup_timer: float = 0.0
 var _hurt_timer: float = 0.0
 
 
@@ -49,6 +51,8 @@ func _physics_process(delta: float) -> void:
 			_tick_chase(delta)
 		State.ATTACK:
 			_tick_attack(delta)
+		State.WINDUP:
+			_tick_windup(delta)
 		State.HURT:
 			_tick_hurt(delta)
 
@@ -94,8 +98,32 @@ func _tick_attack(delta: float) -> void:
 
 	_fire_timer -= delta
 	if _fire_timer <= 0.0:
-		_fire_timer = FIRE_INTERVAL
+		_enter_windup()
+
+
+## Telegraph, then fire once the windup elapses. Cancels back to CHASE if the
+## player escapes attack range during the wind-up.
+func _enter_windup() -> void:
+	_state = State.WINDUP
+	_windup_timer = WINDUP_DURATION
+	velocity = Vector2.ZERO
+	_show_telegraph(WINDUP_DURATION)
+
+
+func _tick_windup(delta: float) -> void:
+	velocity = Vector2.ZERO
+	var dist: float = _dist_to_player()
+	if dist > detect_range:
+		_state = State.IDLE
+		return
+	if dist > attack_range:
+		_state = State.CHASE
+		return
+	_windup_timer -= delta
+	if _windup_timer <= 0.0:
 		_shoot()
+		_fire_timer = FIRE_INTERVAL
+		_state = State.ATTACK
 
 
 func _tick_hurt(delta: float) -> void:
@@ -113,9 +141,6 @@ func _shoot() -> void:
 	var p: CharacterBody2D = _get_player()
 	if p == null:
 		return
-
-	# Telegraph flash before the projectile fires.
-	_flash_telegraph()
 
 	var proj: Node2D = ProjectileScene.instantiate()
 	# Add to the same parent so the projectile is not destroyed with the enemy.

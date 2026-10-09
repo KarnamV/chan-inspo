@@ -17,6 +17,7 @@ const GoldPickupScript      = preload("res://scripts/GoldPickup.gd")
 const ShopUIScript          = preload("res://scripts/ShopUI.gd")
 const ShrineUIScript        = preload("res://scripts/ShrineUI.gd")
 const TemptationUIScript    = preload("res://scripts/TemptationUI.gd")
+const PauseMenuScript        = preload("res://scripts/PauseMenu.gd")
 const TigerFangScript       = preload("res://scripts/TigerFang.gd")
 const SnakeCoilScript       = preload("res://scripts/SnakeCoil.gd")
 const MonkeyStepScript      = preload("res://scripts/MonkeyStep.gd")
@@ -42,6 +43,9 @@ var _death_triggered: bool = false
 
 # Overlay guard — only one interactive overlay (shop/shrine) open at a time.
 var _overlay_open: bool = false
+
+# Pause-menu guard — true while the Esc pause menu is open.
+var _paused_menu_open: bool = false
 
 # Mini-boss guard — at most one realm-boundary mini-boss active at a time.
 var _miniboss_alive: bool = false
@@ -287,6 +291,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey and event.pressed and not event.echo):
 		return
 	match event.keycode:
+		KEY_ESCAPE:
+			_toggle_pause()
 		KEY_B:
 			_open_shop()
 		KEY_N:
@@ -295,6 +301,31 @@ func _unhandled_input(event: InputEvent) -> void:
 			_open_temptation()
 		KEY_M:
 			_spawn_miniboss()
+
+
+# ---------------------------------------------------------------------------
+# Pause menu (Esc)
+# ---------------------------------------------------------------------------
+
+## Open the pause menu on Esc. Skipped while an interstitial overlay
+## (shop/shrine/temptation) is up — those handle their own Esc to close.
+## The menu closes itself (and clears _paused_menu_open via its `closed` signal).
+func _toggle_pause() -> void:
+	if _overlay_open or _paused_menu_open:
+		return
+	_paused_menu_open = true
+	var menu: CanvasLayer = PauseMenuScript.new()
+	menu.name = "PauseMenu"
+	add_child(menu)
+	menu.closed.connect(_on_pause_closed)
+	menu.open()
+	AudioManager.play_sfx("ui_open")
+	# Consume this Esc so the freshly-opened menu doesn't also see it and close.
+	get_viewport().set_input_as_handled()
+
+
+func _on_pause_closed() -> void:
+	_paused_menu_open = false
 
 
 func _open_shop() -> void:

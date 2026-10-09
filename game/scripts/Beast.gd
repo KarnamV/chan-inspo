@@ -17,8 +17,9 @@
 
 extends EnemyBase
 
-enum State { IDLE, CHASE, RUSH, COOLDOWN, HURT, DEAD }
+enum State { IDLE, CHASE, WINDUP, RUSH, COOLDOWN, HURT, DEAD }
 
+const WINDUP_DURATION:    float = 0.35   # telegraph before the rush — time to dodge
 const RUSH_SPEED:         float = 350.0
 const RUSH_MAX_DURATION:  float = 0.55   # safety cap so it doesn't fly forever
 const COOLDOWN_DURATION:  float = 0.8
@@ -59,6 +60,8 @@ func _physics_process(delta: float) -> void:
 			_tick_idle()
 		State.CHASE:
 			_tick_chase(delta)
+		State.WINDUP:
+			_tick_windup(delta)
 		State.RUSH:
 			_tick_rush(delta)
 		State.COOLDOWN:
@@ -86,10 +89,25 @@ func _tick_chase(delta: float) -> void:
 		velocity = Vector2.ZERO
 		return
 	if dist <= attack_range:
-		_start_rush()
+		_enter_windup()
 		return
 	var dir: Vector2 = _nav_direction(delta)
 	velocity = dir * move_speed
+
+
+## Brief pause + telegraph before launching, so the rush can be dodged.
+func _enter_windup() -> void:
+	_state = State.WINDUP
+	_state_timer = WINDUP_DURATION
+	velocity = Vector2.ZERO
+	_show_telegraph(WINDUP_DURATION)
+
+
+func _tick_windup(delta: float) -> void:
+	velocity = Vector2.ZERO
+	_state_timer -= delta
+	if _state_timer <= 0.0:
+		_start_rush()
 
 
 func _start_rush() -> void:
@@ -107,9 +125,6 @@ func _start_rush() -> void:
 	# Enable hitbox.
 	_rush_shape.disabled    = false
 	_rush_hitbox.monitoring = true
-
-	# Orange pre-rush telegraph (very brief — beast telegraphs less than warrior).
-	_flash_telegraph()
 
 	velocity = _rush_dir * RUSH_SPEED
 

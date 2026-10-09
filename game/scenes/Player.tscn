@@ -22,6 +22,24 @@ texture = SubResource("3_placeholder_tex")
 ; Offset so the sprite's feet sit at the node's origin (Y-sort pivot = feet).
 offset = Vector2(0, -16)
 
+; --- Fists ---------------------------------------------------------------
+; Two hands rest at the player's sides and thrust forward on each attack
+; (see Player.gd _thrust_hand). HandPivot rotates to face facing_dir so the
+; thrust works in all 8 directions. Placeholder skin-tone squares until the
+; real sprite art lands.
+[node name="HandPivot" type="Node2D" parent="."]
+position = Vector2(0, -16)
+
+[node name="HandR" type="Polygon2D" parent="HandPivot"]
+position = Vector2(7, 8)
+color = Color(0.98, 0.82, 0.62, 1)
+polygon = PackedVector2Array(-4, -4, 4, -4, 4, 4, -4, 4)
+
+[node name="HandL" type="Polygon2D" parent="HandPivot"]
+position = Vector2(7, -8)
+color = Color(0.98, 0.82, 0.62, 1)
+polygon = PackedVector2Array(-4, -4, 4, -4, 4, 4, -4, 4)
+
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("2_col_shape")
 ; The collision box is centered on the node origin (feet area).

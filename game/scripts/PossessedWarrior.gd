@@ -96,7 +96,7 @@ func _enter_windup() -> void:
 	_state = State.WINDUP
 	_state_timer = WINDUP_DURATION
 	velocity = Vector2.ZERO
-	_flash_telegraph()
+	_show_telegraph(WINDUP_DURATION)
 
 
 func _tick_windup(delta: float) -> void:

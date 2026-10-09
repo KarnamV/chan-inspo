@@ -113,6 +113,11 @@ const DASH_REACH: float = 80.0
 const COUNTER_WINDOW_DURATION: float = 0.2
 const COUNTER_DAMAGE_MULT: float = 1.5
 
+# How long the player is staggered after an unblocked hit before control
+# returns. Without this the HURT state was never left — the player froze
+# permanently after the first hit (couldn't move, attack, dodge or block).
+const HURT_DURATION: float = 0.25
+
 var state: State = State.IDLE
 var facing_dir: Vector2 = Vector2.RIGHT
 var _is_lunging: bool = false
@@ -122,6 +127,14 @@ var in_counter_window: bool = false
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var hitbox_area: Area2D = $HitboxArea
 @onready var hitbox_shape: CollisionShape2D = $HitboxArea/HitboxShape
+
+# Fists — the pivot rotates to face facing_dir so a thrust reads in all 8
+# directions; the hands animate their local +x (forward) out and back.
+@onready var _hand_pivot: Node2D = $HandPivot
+@onready var _hand_r: Node2D = $HandPivot/HandR
+@onready var _hand_l: Node2D = $HandPivot/HandL
+const HAND_REST_X: float = 7.0        # local x hands sit at when idle
+var _next_punch_right: bool = true    # alternate fists on repeated punches
 
 
 func _ready() -> void:
@@ -147,6 +160,9 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	_tick_combo(delta)
 	_tick_spirit_decay(delta)
+	# Keep the fists oriented toward whatever way the player is facing.
+	if _hand_pivot != null:
+		_hand_pivot.rotation = facing_dir.angle()
 
 
 func _tick_combo(delta: float) -> void:
@@ -375,6 +391,7 @@ func attack_punch(dir: Vector2 = Vector2.ZERO) -> void:
 	var recovery: float = RECOVERY * stance_speed_mult
 
 	state = State.ATTACK
+	_thrust_jab(recovery)
 	_current_attack_name = "punch"
 	_current_hit_is_counter = in_counter_window
 	var base_dmg: int = int(DAMAGE * stance_damage_mult)
@@ -398,6 +415,7 @@ func attack_kick(dir: Vector2 = Vector2.ZERO) -> void:
 	var recovery: float = RECOVERY * stance_speed_mult
 
 	state = State.ATTACK
+	_thrust_both(20.0, recovery)
 	_current_attack_name = "kick"
 	_current_hit_is_counter = in_counter_window
 	var base_dmg: int = int(DAMAGE * stance_damage_mult)
@@ -422,6 +440,7 @@ func attack_throw(dir: Vector2 = Vector2.ZERO) -> void:
 	var recovery: float = RECOVERY * stance_speed_mult
 
 	state = State.ATTACK
+	_thrust_both(24.0, recovery)
 	_current_attack_name = "throw"
 	_current_hit_is_counter = in_counter_window
 	var base_dmg: int = int(DAMAGE * stance_damage_mult)
@@ -456,6 +475,7 @@ func attack_dash(dir: Vector2 = Vector2.ZERO) -> void:
 	_is_lunging = true
 	facing_dir = attack_dir
 	_update_sprite_flip()
+	_thrust_both(26.0, recovery)
 
 	velocity = attack_dir * LUNGE_SPEED
 
@@ -481,6 +501,34 @@ func _finish_attack() -> void:
 	_is_dodging = false
 	if state == State.ATTACK:
 		state = State.IDLE
+
+
+# ---------------------------------------------------------------------------
+# Fist visuals — punch out and back along the pivot's forward axis. Purely
+# cosmetic; damage is still driven by the HitboxArea.
+# ---------------------------------------------------------------------------
+
+func _thrust_hand(hand: Node2D, reach: float, dur: float) -> void:
+	if hand == null:
+		return
+	var t: Tween = create_tween()
+	t.tween_property(hand, "position:x", reach, dur * 0.3) \
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	t.tween_property(hand, "position:x", HAND_REST_X, dur * 0.7) \
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+
+
+## Jab a single alternating fist (punch).
+func _thrust_jab(dur: float) -> void:
+	var hand: Node2D = _hand_r if _next_punch_right else _hand_l
+	_next_punch_right = not _next_punch_right
+	_thrust_hand(hand, 24.0, dur)
+
+
+## Drive both fists forward together (throw / dash / kick lunge).
+func _thrust_both(reach: float, dur: float) -> void:
+	_thrust_hand(_hand_r, reach, dur)
+	_thrust_hand(_hand_l, reach, dur)
 
 
 # ---------------------------------------------------------------------------
@@ -574,6 +622,18 @@ func take_hit(knockback_vel: Vector2, damage: int = 0) -> void:
 	AudioManager.play_sfx("player_hurt")
 	if current_hp <= 0:
 		die()
+		return
+	# Schedule recovery so control returns after a short stagger. Nothing else
+	# clears the HURT state, so skipping this leaves the player frozen forever.
+	_begin_hurt_recovery()
+
+
+## Wait out the stagger, then hand control back (unless another state — death,
+## a fresh hit — took over in the meantime).
+func _begin_hurt_recovery() -> void:
+	await get_tree().create_timer(HURT_DURATION).timeout
+	if state == State.HURT:
+		state = State.IDLE
 
 
 # ---------------------------------------------------------------------------
