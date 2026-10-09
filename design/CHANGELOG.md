@@ -20,3 +20,12 @@
 - M3: all 12 talismans + shared ally AI; Monkey = full boss kit (BossKit shared by boss AI and player). Bot 19/19.
 - M4: run state + meta save, realm 1 = 10 rooms (combat, 2 helper story rooms, shop, shrine/vault, elite, Butcher King), reward doors, 12 boons, move draft, tea-house hub. Full-run bot 10/10.
 - Design changes made during the run (user to confirm): Sheep 40 spirit = requirement, no up-front charge (drains 7/s); thief fights when nothing to steal, throws loot after ~5 s; shield demon turn speed 1.5 rad/s + guard break.
+
+## 2026-10-10 retro
+- Lesson: gameplay bots in the real scene found 8 bugs unit tests missed → keep per-milestone bots (memory + pipeline gotchas).
+- Lesson: show visuals colored and in motion; user had to ask for colors and animations (memory).
+- Lesson: TRELLIS fails on thin/open/see-through props; prompt "solid, opaque, chunky", review every asset, time-box re-rolls (pipeline gotchas). Bucket, stool, shard still bad.
+- Lesson: asset runner bugs (relative paths, silent stages, VRAM, boss folder name) are fixed and documented; run one runner per manifest.
+- Lesson: Godot traps (spawn order, autoloads in -s scripts, class cache, paused bots, typed arrays) → pipeline references/gotchas.md.
+- Lesson: on Windows, write scripts to files; run long jobs in the background (memory).
+- Drift: no PRD / slices / board for v2 (auto mode skipped them). Decide at next session: create via concept-to-prd + game-board before M5.
