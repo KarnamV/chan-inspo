@@ -55,7 +55,7 @@ Meta:
   5. Bone Temple: bells, staves, statues, incense urns (magic). Boss: Temple Guardian.
   6. Void Bamboo Forest: bamboo poles, rope bridges, boulders. Boss: Shadow Twin.
   7. Demon Palace: thrones, gongs, weapon racks, everything. Boss: Demon Lord.
-  - **Delivery:** design all 7. **Milestone 1 = realms 1–3 fully playable start to end** (3 bosses, 3 Monkey kits). Realms 4–7 are later milestones.
+  - **Delivery:** design all 7. **Milestone 1 = realms 1–3 fully playable start to end** (3 bosses, each a full playable Monkey form). Realms 4–7 are later milestones.
   - **Special rooms:**
     - Shop (gold → talismans, food, upgrades).
     - Shrine (trade HP/gold for a blessing).
@@ -111,7 +111,7 @@ Meta:
   - **Ally AI is shared:** Tiger twin, Rat props and the Dog convert all use one ally-AI system. Build it once.
   - **Pig: feast (magic).** Food props (buns, roast duck, fruit carts) can be eaten for chi. Chi powers magic belly-slam and burp-blast. New prop category: food.
   - **Dragon: dragon fire (magic).** Ignite whatever you're holding. A burning prop deals magic damage and sets enemies alight. Magic works *with* props. Synergies: Rat (flaming animated props), Tiger Yin (magic glass cannon). Reusable v1 ideas: Dragon AoE, Snake chain lightning, extra dash charges, parry window.
-- **Sheep vs Monkey (keep distinct):** Sheep = regular demons, needs knockdown in the room, temporary host with its own HP. Monkey = bosses only, on demand, from kill history.
+- **Sheep vs Monkey (keep distinct):** Sheep = regular demons, needs knockdown in the room, temporary host with its own HP. Monkey = bosses only, on demand, from kill history, limited by attack count (Sheep is limited by meter + host HP).
 - **Enemies (realms 1–3):** mostly humanoid, so they share one animation library and Sheep can possess them cheaply.
   - **Shield demon:** blocks prop hits. Flank it, or Shatter it.
   - **Brute:** knocks you down. Ideal Sheep host (heavy moveset).
