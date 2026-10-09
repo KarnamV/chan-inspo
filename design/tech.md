@@ -11,6 +11,13 @@ Project: `game/`. Main scene `scenes/levels/test_room.tscn` (M1 arena).
 - **Autoloads**: `Inputs` (all bindings in code), `Events` (signal bus), `Juice` (hitstop, camera shake).
 - **Level root**: loose props/pieces parent to the node in group `level_root` (Arena), not `current_scene`.
 
+## Talismans, boons, run
+- `scripts/talismans/zodiac.gd`: all 12 (`Zodiac.make(id)`), base `Talisman` (equip/unequip/activate/tick/on_controlled_changed/on_room_cleared). PlayerController holds `equipped` (3) + `boons`.
+- `scripts/fighters/boss_kit.gd`: boss signature moves used by both `BossBrain` and the player's Monkey form (light = melee, heavy = ground pound, grab = meat hook, chi_mod + button = specials).
+- `scripts/run/`: `meta.gd` (autoload Meta, user://meta.json), `run_state.gd` (autoload Run, realm 1 room list, doors, waves), `rewards.gd` (offers: talisman/boon/draft/gold, shop, shrine), `boons.gd` (12 boons; one-time effects in `apply_once`, behaviour hooks re-equipped per room), `run_room.gd` (RunRoom extends Arena), `door.gd`, `npc.gd`, `hub.gd`.
+- UI: `ChoicePanel` (modal pick-one, pauses tree), `DialoguePanel`, `Hud`, `BossBar`.
+- Main scene: `scenes/run/hub.tscn`. Test scenes: `scenes/levels/test_room.tscn` (M1), `combat_arena.tscn` (M2 waves). Test keys in arenas: 1-0,-,= swap talismans.
+
 ## Data
 `game/tools/build_data.gd` generates `data/fighters/*.tres`, `data/props/*.tres` once (ResourceSaver). After that, tune the .tres in the Inspector. Re-running overwrites.
 
@@ -27,5 +34,5 @@ Project: `game/`. Main scene `scenes/levels/test_room.tscn` (M1 arena).
 ## Checks
 - Unit: `godot --headless --path . -s addons/gut/gut_cmdln.gd -gexit`
 - Boot: `godot --headless --path . --quit-after 300`
-- Bot loop: `godot --headless --path . res://tests/bot/bot_m1.tscn` (exit 0 = all pass)
+- Bots (exit 0 = pass): `bot_m1` (core loop), `bot_m2` (6 demon types), `bot_m3` (12 talismans), `bot_run` (full realm-1 run). Run with `--fixed-fps 60`. Bots that drive UI must set `process_mode = ALWAYS` (panels pause the tree).
 - Visual: Movie Maker capture (`--write-movie movie/f.png --fixed-fps 24`).

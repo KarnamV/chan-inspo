@@ -250,6 +250,18 @@ func _open_shrine() -> void:
 		Events.run_reward.emit(&"shrine", StringName(opts[i].title)))
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed(&"pause") and not _ending and get_tree().get_nodes_in_group(&"modal").is_empty():
+		var p := ChoicePanel.open(self, "Paused", [{"title": "Resume", "text": "", "icon": ""},
+			{"title": "Abandon run", "text": "Back to the tea house. You keep shards for rooms cleared.", "icon": ""}])
+		p.add_to_group(&"modal")
+		p.chosen.connect(func(i: int) -> void:
+			if i == 1:
+				_ending = true
+				Run.end_run(false)
+				Run.go_hub())
+
+
 # ---------------------------------------------------------------- life / death / victory
 func _on_hero_died() -> void:
 	if Run.extra_lives > 0:

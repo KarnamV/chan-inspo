@@ -93,6 +93,8 @@ func _process(_d: float) -> void:
 	if tiger and tiger.twin:
 		who = "TIGER %s · %.0fs" % ["YANG" if f == controller.hero else "YIN", tiger.left]
 	info.text = "%s  ·  %s" % [who, held]
+	if Run.active:
+		info.text += "\nRoom %d/%d  ·  %d gold  ·  %d extra lives" % [Run.room_i + 1, Run.REALM1.size(), Run.gold, Run.extra_lives]
 	for i in _slot_nodes.size():
 		var t: Talisman = _slot_nodes[i][3]
 		var lbl: Label = _slot_nodes[i][2]

@@ -25,3 +25,10 @@ Rules for this run:
 - **Balance is untested:** bots run with god-mode HP and 3× damage to prove the loop. Expect tuning needs (enemy HP, spirit costs, boss damage).
 - Thief imps still kite a lot (room 9 took ~70 s for the bot). Might need a slower imp or a 'grab' counter.
 - M1 'is it fun?' gate: please play `game/scenes/levels/test_room.tscn` (F6) — I can only verify it works.
+
+## Pick up next (usage limit hit 2026-10-09 ~21:30)
+1. Asset batch M2→M3→M4 was still running in the background (runner writes assets/run_M2/M3/M4.log). If it died, resume: `python <skill>/scripts/asset_runner.py --manifest assets/manifest.csv --art art --phase M2` (then M3, M4); it skips finished stages.
+2. Then: `python tools/sync_assets.py`, `godot --headless --path game --import`, `godot --headless --path game -s tools/build_data.gd` (gives M2 demons, boss, M4 props their models).
+3. Review renders of M2/M4 assets (art/*/<id>/review.png), re-roll bad ones (stake needed a 'thick chunky' prompt).
+4. Re-run all checks: GUT, bot_m1, bot_m2, bot_m3, bot_run. Then Movie Maker captures of a run room, boss fight, hub for the visual pass.
+5. Record the stake prompt change in assets/make_manifest.py.

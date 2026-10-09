@@ -12,3 +12,11 @@
 - Monkey changed: full boss moveset (not 3 moves), other talismans usable while transformed, limited by an attack count before a forced revert ("lose yourself to the demon"); boss ledger now raises the attack limit.
 - Plan: `design/roadmap.md` (M0 style lock → M1 prototype go/no-go → M2 combat → M3 talismans → M4 realm 1 slice → M5 realms 1–3 release → M6–M9 realms 4–7) + `design/assets.md` (23 chars, 42 props, 6 pieces, 50 decor, 19 textures, 69 icons, 72 clips; generated just in time per milestone, ≈12 h GPU total).
 - **Art style locked: stylized low-poly** (`design/art-bible.md`). Chosen after all 4 styles ran the full chain (rig + walk/run + Godot); chunky rejected for animation cost, painterly for readability. Hero + chair promoted to `art/`. Git LFS for .glb/.fbx/.blend/audio/.mp4; style-test intermediates ignored.
+
+## 2026-10-09 (auto run M0 → M4)
+- M0: icon style flat vector; asset runner + manifest (83 rows); Godot 4.7 skeleton (GUT, iso camera).
+- M1: fighters with swappable brains (possession = brain swap), props degrade into pieces, Sheep. Bot 7/7.
+- M2: parry, catch, shield block (+ guard break on heavy/knockdown hits, magic passes through, slow turn so flanking works), fire/water/magic elements, chi palm/wave/pull/blink (locked until drafted), thief + archer AI, projectiles, kickable props, hanging lanterns, weapon rack. Bot: all 6 demon types.
+- M3: all 12 talismans + shared ally AI; Monkey = full boss kit (BossKit shared by boss AI and player). Bot 19/19.
+- M4: run state + meta save, realm 1 = 10 rooms (combat, 2 helper story rooms, shop, shrine/vault, elite, Butcher King), reward doors, 12 boons, move draft, tea-house hub. Full-run bot 10/10.
+- Design changes made during the run (user to confirm): Sheep 40 spirit = requirement, no up-front charge (drains 7/s); thief fights when nothing to steal, throws loot after ~5 s; shield demon turn speed 1.5 rad/s + guard break.
