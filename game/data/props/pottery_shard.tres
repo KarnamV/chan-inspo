@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="PropData" format=3]
+
+[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="1_e4vmj"]
+
+[resource]
+script = ExtResource("1_e4vmj")
+id = &"pottery_shard"
+durability = 1
+damage = 8.0
+reach = 0.9

@@ -7,7 +7,7 @@ signal controlled_changed(f: Fighter)
 
 @export var spirit_max := 100.0
 @export var spirit_per_hit := 5.0
-@export var sheep_cost := 40.0
+@export var sheep_cost := 40.0          ## spirit needed to start possessing
 @export var sheep_drain := 7.0          ## spirit per second while possessing
 @export var sheep_range := 3.0
 @export var body_hit_penalty := 10.0    ## extra damage when Jackie's body is hit mid-possession
@@ -17,8 +17,17 @@ var controlled: Fighter
 var host: Fighter          ## possessed demon, or null
 var camera: IsoCamera
 var spirit := 0.0
-var brain: PlayerBrain
+var brain: Brain          ## PlayerBrain normally; bots swap in a scripted brain
 var _host_old_brain: Brain
+var equipped: Array[Talisman] = []
+## Monkey: boss id -> times killed (meta; persisted by the run/meta system in M4)
+var boss_ledger := {}
+var monkey_pick := 0
+## Chi (magic) variants of the four buttons. Locked until unlocked by the move draft (M4).
+var chi_unlocked := {&"palm": false, &"wave": false, &"pull": false, &"blink": false}
+var chi_level := {&"palm": 1, &"wave": 1, &"pull": 1, &"blink": 1}
+const CHI_COST := {&"palm": 12.0, &"wave": 25.0, &"pull": 10.0, &"blink": 8.0}
+const CHI_SLOTS := [&"palm", &"wave", &"pull", &"blink"]
 
 
 func setup(p_hero: Fighter, p_camera: IsoCamera) -> void:
@@ -37,17 +46,146 @@ func add_spirit(v: float) -> void:
 	Events.spirit_changed.emit(spirit, spirit_max)
 
 
-func _on_landed(_info: DamageInfo, amount: float) -> void:
+func _on_landed(_info: DamageInfo, amount: float, _target: Node = null) -> void:
 	if amount > 0.0:
 		add_spirit(spirit_per_hit)
 
 
-func use_talisman(slot: int) -> void:
-	if slot == 0:   # M1: slot 1 is the Sheep talisman
-		if host:
-			end_possession(&"released")
-		else:
-			try_possess()
+func unlock_all_chi() -> void:
+	for k in chi_unlocked:
+		chi_unlocked[k] = true
+
+
+## slot: 0 light -> palm, 1 heavy -> wave, 2 grab -> pull, 3 dodge -> blink
+func use_chi(slot: int) -> bool:
+	var id: StringName = CHI_SLOTS[slot]
+	var f := controlled
+	if not chi_unlocked[id] or spirit < CHI_COST[id] or f == null or not f.can_act():
+		return false
+	var lvl: int = chi_level[id]
+	match id:
+		&"palm":
+			var a := AttackData.new()
+			a.clip = &"chi_cast"
+			a.duration = 0.5
+			a.active_start = 0.2
+			a.active_end = 0.32
+			a.damage = 14.0 * (1.0 + 0.35 * (lvl - 1))
+			a.magic = true
+			a.knockback = 6.0
+			a.lunge = 0.5
+			a.hit_size = Vector3(1.2, 1.4, 2.6)
+			a.hit_offset = Vector3(0, 1.1, 1.6)
+			f.request_attack(a)
+		&"wave":
+			var w := AttackData.new()
+			w.clip = &"chi_cast"
+			w.duration = 0.7
+			w.active_start = 0.3
+			w.active_end = 0.42
+			w.damage = 12.0 * (1.0 + 0.35 * (lvl - 1))
+			w.magic = true
+			w.knockback = 7.0
+			w.knockdown = true
+			w.lunge = 0.0
+			w.hit_size = Vector3(4.6, 1.6, 4.6)
+			w.hit_offset = Vector3(0, 0.8, 0)
+			f.request_attack(w)
+		&"pull":
+			if not _chi_pull(f, 7.0 + lvl):
+				return false
+		&"blink":
+			_chi_blink(f, 3.5 + 0.5 * lvl)
+	add_spirit(-CHI_COST[id])
+	Events.chi_used.emit(f, id)
+	return true
+
+
+func _chi_pull(f: Fighter, reach: float) -> bool:
+	if f.held_prop == null:
+		var best: Prop = null
+		var bd := reach
+		for n in get_tree().get_nodes_in_group(&"props"):
+			var p := n as Prop
+			if p and p.can_pick_up() and f.global_position.distance_to(p.global_position) < bd:
+				bd = f.global_position.distance_to(p.global_position)
+				best = p
+		if best:
+			best.attach_to(f)
+			f.held_prop = best
+			return true
+	var target: Fighter = null
+	var td := reach
+	for n in get_tree().get_nodes_in_group(&"fighters"):
+		var o := n as Fighter
+		if o and o.team != f.team and not o.is_dead() and f.global_position.distance_to(o.global_position) < td:
+			td = f.global_position.distance_to(o.global_position)
+			target = o
+	if target == null:
+		return false
+	var info := DamageInfo.make(2.0, f, DamageInfo.Type.MAGIC)
+	info.knockback = (f.global_position - target.global_position).normalized() * 11.0
+	info.stun = 0.7
+	target.receive_hit(info)
+	return true
+
+
+func _chi_blink(f: Fighter, dist: float) -> void:
+	var dir := f.intent_move.normalized() if f.intent_move.length() > 0.1 else f.facing
+	f.facing = dir
+	f.health.invulnerable = true
+	var col := f.move_and_collide(dir * dist)
+	f.health.invulnerable = false
+	if col == null:
+		Juice.shake(0.08)
+
+
+func equip(ids: Array) -> void:
+	for t in equipped:
+		t.unequip()
+	equipped.clear()
+	for id in ids:
+		if equipped.size() >= 3:
+			break
+		var t := Zodiac.make(id)
+		t.equip(self)
+		equipped.append(t)
+	Events.talismans_changed.emit()
+
+
+var boons: Array[Talisman] = []
+
+
+func add_boon(id: StringName) -> void:
+	var b := Boons.make(id)
+	b.equip(self)
+	boons.append(b)
+
+
+func has_talisman(id: StringName) -> bool:
+	for t in equipped:
+		if t.id == id:
+			return true
+	return false
+
+
+func talisman(id: StringName) -> Talisman:
+	for t in equipped:
+		if t.id == id:
+			return t
+	return null
+
+
+func use_talisman(slot: int) -> bool:
+	if slot >= equipped.size():
+		return false
+	var t := equipped[slot]
+	if not t.is_active_talisman():
+		return false
+	var ok := t.activate()
+	if ok:
+		Events.talisman_used.emit(t.id)
+	return ok
 
 
 func sheep_target() -> Fighter:
@@ -70,7 +208,8 @@ func try_possess() -> bool:
 	var t := sheep_target()
 	if t == null:
 		return false
-	add_spirit(-sheep_cost)
+	# sheep_cost is the spirit needed to start; possession then drains the meter (no up-front charge,
+	# otherwise possessing at exactly the cost ended instantly)
 	host = t
 	_host_old_brain = t.brain
 	t.set_team(Fighter.Team.PLAYER)
@@ -104,7 +243,7 @@ func end_possession(reason: StringName) -> void:
 	hero.leave_body_state()
 	hero.set_brain(brain)
 	_set_controlled(hero)
-	Events.possession_ended.emit(h)
+	Events.possession_ended.emit(h, reason)
 	if reason == &"body_hit":
 		var info := DamageInfo.make(body_hit_penalty, null)
 		hero.health.take(info)
@@ -122,10 +261,24 @@ func _set_controlled(f: Fighter) -> void:
 	controlled = f
 	if camera:
 		camera.target = f
+	for t in equipped:
+		t.on_controlled_changed(f)
+	for b in boons:
+		b.on_controlled_changed(f)
 	controlled_changed.emit(f)
 
 
+func _ready() -> void:
+	Events.room_cleared.connect(func(_r: Node) -> void:
+		for t in equipped + boons:
+			t.on_room_cleared())
+
+
 func _physics_process(delta: float) -> void:
+	for t in equipped:
+		t.tick(delta)
+	for b in boons:
+		b.tick(delta)
 	if host:
 		add_spirit(-sheep_drain * delta)
 		if spirit <= 0.0:

@@ -1,0 +1,16 @@
+addon_utils.disable: bl_ext.lab_blender_org.mcp not enabled
+20:43:49 | INFO: Data are loaded, start creating Blender stuff
+20:43:49 | INFO: Blender create Mesh node Mesh_0
+20:43:49 | INFO: glTF import finished in 0.01s
+00:02.485  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmpft9mndhn\front.png'
+00:02.594  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmpft9mndhn\three.png'
+00:02.735  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmpft9mndhn\side.png'
+00:02.828  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmpft9mndhn\back.png'
+00:02.953  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmpft9mndhn\iso.png'
+DIMS 0.42 0.43 0.90 TRIS 1976
+REVIEW D:\Projects\Games\chan-inspo\art\pieces\barrel_stave\review.png
+Blender 5.1.2 (hash ec6e62d40fa9 built 2026-05-19 01:37:34)
+
+Blender quit
+C:\Users\karna\.claude\skills\personal-skills\skills\asset-gen\ai-gamedev-pipeline\scripts\review_render.py:45: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
+  sc.world.use_nodes = True

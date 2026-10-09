@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="FighterData" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/attack_data.gd" id="1_twyx3"]
+[ext_resource type="Script" path="res://scripts/fighters/fighter_data.gd" id="2_14use"]
+
+[sub_resource type="Resource" id="Resource_wxadf"]
+script = ExtResource("1_twyx3")
+id = &"ghoul_maul"
+clip = &"swing"
+duration = 1.0
+active_start = 0.55
+active_end = 0.72
+combo_window = 0.72
+damage = 14.0
+knockback = 5.0
+knockdown = true
+stun = 0.45
+lunge = 1.0
+hit_size = Vector3(1.6, 1.5, 1.7)
+hit_offset = Vector3(0, 1, 1)
+
+[resource]
+script = ExtResource("2_14use")
+id = &"armored_ghoul"
+radius = 0.45
+max_hp = 110.0
+resist_physical = 0.5
+resist_magic = 0.8
+move_speed = 2.6
+stagger_scale = 0.6
+light_combo = Array[ExtResource("1_twyx3")]([SubResource("Resource_wxadf")])
+heavy = SubResource("Resource_wxadf")
+attack_cooldown = 2.0
+ai_attacks = Array[ExtResource("1_twyx3")]([SubResource("Resource_wxadf")])

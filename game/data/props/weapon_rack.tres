@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="PropData" format=3]
+
+[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="1_q0tva"]
+[ext_resource type="Resource" path="res://data/props/plank.tres" id="2_80rlb"]
+[ext_resource type="Resource" path="res://data/props/stake.tres" id="3_5ds4q"]
+
+[resource]
+script = ExtResource("1_q0tva")
+id = &"weapon_rack"
+weight = 1
+damage = 16.0
+knockback = 6.0
+reach = 1.4
+pieces = Array[ExtResource("1_q0tva")]([ExtResource("2_80rlb"), ExtResource("3_5ds4q")])

@@ -1,0 +1,46 @@
+[gd_resource type="Resource" script_class="FighterData" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/attack_data.gd" id="1_3v8p8"]
+[ext_resource type="Script" path="res://scripts/fighters/fighter_data.gd" id="2_lgv60"]
+
+[sub_resource type="Resource" id="Resource_bbdwj"]
+script = ExtResource("1_3v8p8")
+id = &"cleaver_slash"
+clip = &"swing"
+duration = 0.7
+active_start = 0.32
+active_end = 0.48
+combo_window = 0.48
+damage = 14.0
+knockback = 5.0
+hit_size = Vector3(2.2, 1.8, 2.2)
+hit_offset = Vector3(0, 1.2, 1.3)
+
+[sub_resource type="Resource" id="Resource_an7p1"]
+script = ExtResource("1_3v8p8")
+id = &"cleaver_backhand"
+clip = &"punch_cross"
+duration = 0.65
+active_start = 0.3
+active_end = 0.45
+combo_window = 0.45
+damage = 12.0
+knockback = 6.0
+hit_size = Vector3(2.2, 1.8, 2.2)
+hit_offset = Vector3(0, 1.2, 1.3)
+
+[resource]
+script = ExtResource("2_lgv60")
+id = &"butcher_king"
+height = 2.6
+radius = 0.75
+max_hp = 600.0
+move_speed = 3.0
+stagger_scale = 0.15
+light_combo = Array[ExtResource("1_3v8p8")]([SubResource("Resource_bbdwj"), SubResource("Resource_an7p1")])
+heavy = SubResource("Resource_bbdwj")
+knockdown_immune = true
+kit = &"butcher"
+boss = true
+attack_cooldown = 1.4
+ai_attacks = Array[ExtResource("1_3v8p8")]([SubResource("Resource_bbdwj"), SubResource("Resource_an7p1")])

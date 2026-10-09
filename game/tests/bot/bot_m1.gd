@@ -110,9 +110,9 @@ func _ready() -> void:
 	arena.hero.set_brain(bot)
 	Events.prop_broken.connect(func(_p, _pieces): counts.broken += 1)
 	Events.knocked_down.connect(func(_f): counts.knockdowns += 1)
-	Events.possession_started.connect(func(_h): counts.possess_start += 1)
-	Events.possession_ended.connect(func(_h): counts.possess_end += 1)
-	Events.entity_died.connect(func(_f): counts.deaths += 1)
+	Events.possession_started.connect(func(_h): counts.possess_start += 1; print("t=%.1f possess start, spirit %.0f" % [t, pc.spirit]))
+	Events.possession_ended.connect(func(_h, r): counts.possess_end += 1; print("t=%.1f possess end: %s" % [t, r]))
+	Events.entity_died.connect(func(f): counts.deaths += 1; print("t=%.1f died: %s (host=%s)" % [t, f.data.id, f == pc.host]))
 	Events.damage_dealt.connect(_on_damage)
 
 
@@ -127,7 +127,7 @@ func _physics_process(delta: float) -> void:
 	t += delta
 	if arena.hero.held_prop:
 		counts.picked = maxi(counts.picked, 1)
-	var finished := counts.possess_end >= 1 and counts.deaths >= 1
+	var finished: bool = counts.possess_end >= 1 and counts.deaths >= 1
 	if t >= LIMIT_S or finished:
 		done = true
 		_report()

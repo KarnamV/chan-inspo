@@ -14,6 +14,8 @@ signal died
 var hp := 0.0
 var invulnerable := false
 var shattered_left := 0.0
+## Dog talisman: called on a lethal hit; returning true leaves 1 HP instead of dying.
+var lethal_guard: Callable
 
 
 func _ready() -> void:
@@ -37,6 +39,8 @@ func take(info: DamageInfo) -> float:
 	if info.shatter:
 		shattered_left = shatter_seconds
 	var amount := info.amount * (1.0 - resist_for(info.type))
+	if hp - amount <= 0.0 and lethal_guard.is_valid() and lethal_guard.call(info):
+		amount = maxf(hp - 1.0, 0.0)
 	hp = maxf(hp - amount, 0.0)
 	damaged.emit(info, amount)
 	if is_dead():

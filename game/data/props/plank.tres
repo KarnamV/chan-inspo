@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="PropData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/pieces/plank.glb" id="1_5ohdw"]
+[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="2_tn65n"]
+[ext_resource type="Resource" path="res://data/props/stake.tres" id="3_0u4ru"]
+
+[resource]
+script = ExtResource("2_tn65n")
+id = &"plank"
+model = ExtResource("1_5ohdw")
+durability = 3
+damage = 10.0
+pieces = Array[ExtResource("2_tn65n")]([ExtResource("3_0u4ru")])

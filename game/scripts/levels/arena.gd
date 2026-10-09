@@ -6,14 +6,30 @@ extends Node3D
 
 const ROOM := 18.0
 var HERO: FighterData
-var BRUTE: FighterData
-const PROP_LAYOUT := [
-	[&"chair", Vector3(-3, 0, 2)], [&"chair", Vector3(4, 0, -1)], [&"bench", Vector3(-4, 0, -3)],
-	[&"crate", Vector3(2, 0, 4)], [&"crate", Vector3(5, 0, 3)], [&"barrel", Vector3(-5, 0, 4)],
-	[&"barrel", Vector3(0, 0, -5)], [&"pole", Vector3(3, 0, -4)],
-]
-const ENEMY_SPAWNS := [Vector3(-2, 0, -6), Vector3(3, 0, -6)]
+const PRESETS := {
+	"m1": {
+		"props": [[&"chair", Vector3(-3, 0, 2)], [&"chair", Vector3(4, 0, -1)], [&"bench", Vector3(-4, 0, -3)],
+			[&"crate", Vector3(2, 0, 4)], [&"crate", Vector3(5, 0, 3)], [&"barrel", Vector3(-5, 0, 4)],
+			[&"barrel", Vector3(0, 0, -5)], [&"pole", Vector3(3, 0, -4)]],
+		"waves": [[&"brute", &"brute"]],
+		"fixed": [],
+	},
+	"m2": {
+		"props": [[&"chair", Vector3(-3, 0, 2)], [&"bench", Vector3(-4, 0, -3)], [&"crate", Vector3(2, 0, 4)],
+			[&"barrel", Vector3(-5, 0, 4)], [&"pole", Vector3(3, 0, -4)], [&"lantern", Vector3(4, 0, 1)],
+			[&"bucket", Vector3(-1, 0, 5)], [&"spirit_urn", Vector3(6, 0, -2)], [&"stool", Vector3(-6, 0, 0)],
+			[&"spear", Vector3(1, 0, -2)], [&"bun_basket", Vector3(-2, 0, -1)], [&"roast_duck", Vector3(5, 0, 5)]],
+		"waves": [[&"brute", &"shield_demon"], [&"thief_imp", &"archer_demon", &"wraith"],
+			[&"armored_ghoul", &"shield_demon", &"thief_imp", &"archer_demon", &"wraith", &"brute"]],
+		"fixed": [[&"hanging_lantern", Vector3(-3, 2.6, -2)], [&"hanging_lantern", Vector3(3, 2.6, 2)],
+			[&"weapon_rack", Vector3(-7.6, 0, -5)]],
+	},
+}
+const ENEMY_SPAWNS := [Vector3(-2, 0, -6), Vector3(3, 0, -6), Vector3(-6, 0, -4), Vector3(6, 0, -4),
+	Vector3(0, 0, -7), Vector3(-5, 0, -7)]
 
+@export var preset := "m1"
+@export var talismans: Array[StringName] = [&"sheep", &"tiger", &"rat"]
 @export var spawn_enemies := true
 @export var with_hud := true
 
@@ -27,7 +43,6 @@ var _respawn_t := -1.0
 func _ready() -> void:
 	add_to_group(&"level_root")
 	HERO = load("res://data/fighters/hero.tres")
-	BRUTE = load("res://data/fighters/brute.tres")
 	_build_environment()
 	_build_room()
 	camera = IsoCamera.new()
@@ -38,6 +53,7 @@ func _ready() -> void:
 	controller = PlayerController.new()
 	add_child(controller)
 	controller.setup(hero, camera)
+	controller.equip(talismans)
 	camera.snap()
 	reset_props()
 	if spawn_enemies:
@@ -62,8 +78,11 @@ func spawn_fighter(d: FighterData, team: Fighter.Team, at: Vector3) -> Fighter:
 
 func spawn_wave() -> void:
 	wave += 1
-	for p in ENEMY_SPAWNS:
-		spawn_fighter(BRUTE, Fighter.Team.ENEMY, p)
+	var waves: Array = PRESETS[preset]["waves"]
+	var list: Array = waves[(wave - 1) % waves.size()]
+	for i in list.size():
+		var d: FighterData = load("res://data/fighters/%s.tres" % list[i])
+		spawn_fighter(d, Fighter.Team.ENEMY, ENEMY_SPAWNS[i % ENEMY_SPAWNS.size()])
 
 
 func spawn_prop(id: StringName, at: Vector3) -> Prop:
@@ -79,8 +98,25 @@ func reset_props() -> void:
 	for n in get_tree().get_nodes_in_group(&"props"):
 		if (n as Prop).mode != Prop.Mode.HELD:
 			n.queue_free()
-	for e in PROP_LAYOUT:
+	for e in PRESETS[preset]["props"]:
 		spawn_prop(e[0], e[1])
+	for n in get_tree().get_nodes_in_group(&"fixed_props"):
+		n.queue_free()
+	for e in PRESETS[preset]["fixed"]:
+		spawn_fixed(e[0], e[1])
+
+
+func spawn_fixed(id: StringName, at: Vector3) -> FixedProp:
+	var fp := FixedProp.new()
+	if id == &"hanging_lantern":
+		fp.kind = FixedProp.Kind.HANGING_LANTERN
+		fp.drop_data = load("res://data/props/lantern.tres")
+	else:
+		fp.kind = FixedProp.Kind.WEAPON_RACK
+		fp.drop_data = load("res://data/props/spear.tres")
+	fp.position = at
+	add_child(fp)
+	return fp
 
 
 func living_enemies() -> int:
@@ -90,6 +126,29 @@ func living_enemies() -> int:
 		if f and not f.is_dead() and f.team == Fighter.Team.ENEMY:
 			c += 1
 	return c
+
+
+## Test keys: 1-9, 0, -, = put talisman #1..#12 (Zodiac.ALL order) into the next slot.
+var _next_slot := 0
+
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	var k := event as InputEventKey
+	if k == null or not k.pressed or k.echo:
+		return
+	var keys := [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9, KEY_0, KEY_MINUS, KEY_EQUAL]
+	var i := keys.find(k.physical_keycode)
+	if i < 0:
+		return
+	var ids: Array = controller.equipped.map(func(t: Talisman) -> StringName: return t.id)
+	var id: StringName = Zodiac.ALL[i]
+	if id in ids:
+		return
+	while ids.size() < 3:
+		ids.append(&"")
+	ids[_next_slot] = id
+	_next_slot = (_next_slot + 1) % 3
+	controller.equip(ids.filter(func(x: StringName) -> bool: return x != &""))
 
 
 func _process(delta: float) -> void:

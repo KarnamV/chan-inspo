@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="PropData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/pieces/stake.glb" id="1_vtby6"]
+[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="2_sn551"]
+
+[resource]
+script = ExtResource("2_sn551")
+id = &"stake"
+model = ExtResource("1_vtby6")
+durability = 2
+damage = 11.0
+reach = 1.1

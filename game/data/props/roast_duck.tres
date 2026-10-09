@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="PropData" format=3]
+
+[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="1_vnerc"]
+
+[resource]
+script = ExtResource("1_vnerc")
+id = &"roast_duck"
+durability = 1
+damage = 7.0
+reach = 1.0
+element = &"food"

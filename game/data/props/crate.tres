@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="PropData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/props/crate.glb" id="1_myyl7"]
+[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="2_yqj8v"]
+[ext_resource type="Resource" path="res://data/props/plank.tres" id="3_3lwih"]
+
+[resource]
+script = ExtResource("2_yqj8v")
+id = &"crate"
+model = ExtResource("1_myyl7")
+weight = 1
+durability = 3
+damage = 16.0
+knockback = 6.0
+pieces = Array[ExtResource("2_yqj8v")]([ExtResource("3_3lwih"), ExtResource("3_3lwih")])

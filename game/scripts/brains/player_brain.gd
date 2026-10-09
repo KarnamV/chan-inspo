@@ -21,6 +21,20 @@ func think(f: Fighter, _delta: float) -> void:
 			if Input.is_action_just_pressed(act):
 				controller.use_talisman(i)
 		return
+	if Input.is_action_pressed(&"chi_mod") and f.data.kit != &"":
+		for i in 3:   # boss forms (Monkey): chi_mod + button = boss specials
+			var act: StringName = [&"attack_light", &"attack_heavy", &"grab"][i]
+			if Input.is_action_just_pressed(act):
+				BossKit.special(f, i)
+		return
+	if Input.is_action_pressed(&"chi_mod"):
+		for i in 4:
+			var act: StringName = [&"attack_light", &"attack_heavy", &"grab", &"dodge"][i]
+			if Input.is_action_just_pressed(act):
+				controller.use_chi(i)
+		return
+	if Input.is_action_just_pressed(&"parry"):
+		f.request_parry()
 	if Input.is_action_just_pressed(&"attack_light"):
 		f.request_light()
 	if Input.is_action_just_pressed(&"attack_heavy"):

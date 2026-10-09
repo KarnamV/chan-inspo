@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="PropData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/props/bench.glb" id="1_lhef1"]
+[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="2_2qrdm"]
+[ext_resource type="Resource" path="res://data/props/plank.tres" id="3_gwoio"]
+[ext_resource type="Resource" path="res://data/props/wood_leg.tres" id="4_yusts"]
+
+[resource]
+script = ExtResource("2_2qrdm")
+id = &"bench"
+model = ExtResource("1_lhef1")
+weight = 1
+durability = 5
+damage = 18.0
+knockback = 6.0
+reach = 1.8
+pieces = Array[ExtResource("2_2qrdm")]([ExtResource("3_gwoio"), ExtResource("4_yusts")])

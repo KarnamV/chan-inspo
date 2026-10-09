@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="PropData" format=3]
+
+[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="1_rf1ey"]
+[ext_resource type="Resource" path="res://data/props/pottery_shard.tres" id="2_wu276"]
+
+[resource]
+script = ExtResource("1_rf1ey")
+id = &"spirit_urn"
+durability = 3
+damage = 16.0
+reach = 1.2
+pieces = Array[ExtResource("1_rf1ey")]([ExtResource("2_wu276"), ExtResource("2_wu276")])
+element = &"magic"

@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="FighterData" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/attack_data.gd" id="1_f75q0"]
+[ext_resource type="Script" path="res://scripts/fighters/fighter_data.gd" id="2_is5e4"]
+
+[sub_resource type="Resource" id="Resource_fg2v8"]
+script = ExtResource("1_f75q0")
+id = &"shield_bash"
+clip = &"punch_cross"
+duration = 0.7
+active_start = 0.35
+active_end = 0.5
+combo_window = 0.5
+damage = 9.0
+knockback = 5.0
+hit_size = Vector3(1.4, 1.5, 1.3)
+hit_offset = Vector3(0, 1, 0.9)
+
+[resource]
+script = ExtResource("2_is5e4")
+id = &"shield_demon"
+height = 1.9
+radius = 0.45
+max_hp = 90.0
+move_speed = 3.6
+stagger_scale = 0.8
+light_combo = Array[ExtResource("1_f75q0")]([SubResource("Resource_fg2v8")])
+heavy = SubResource("Resource_fg2v8")
+front_block = true
+attack_range = 1.9
+ai_attacks = Array[ExtResource("1_f75q0")]([SubResource("Resource_fg2v8")])

@@ -20,7 +20,17 @@ extends Resource
 @export var dodge_speed := 11.0
 @export var dodge_iframes := 0.3
 @export var dodge_cooldown := 0.35
+@export var parry_window := 0.22      ## a hit landing this soon after pressing parry is parried
+@export var parry_recovery := 0.3
+@export var front_block := false      ## shield: blocks hits from the front unless shatter / from behind
+@export var hover := 0.0              ## wraith: floats this high, ignores gravity
+@export var knockdown_immune := false
+@export var kit: StringName = &""     ## boss signature kit (BossKit), e.g. &"butcher"
+@export var boss := false
 # AI
+enum AiKind { MELEE, THIEF, RANGED }
+@export var ai_kind: AiKind = AiKind.MELEE
+@export var keep_distance := 7.0      ## RANGED: preferred distance to the target
 @export var aggro_range := 14.0
 @export var attack_range := 1.8
 @export var attack_cooldown := 1.6

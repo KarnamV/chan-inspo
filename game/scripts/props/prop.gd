@@ -13,6 +13,15 @@ const HEAVY_MASS := 14.0
 var mode: Mode = Mode.FREE
 var durability := 0
 var thrower: Node = null
+var fire_burst := false   ## dropped lantern: bursts into fire where it lands
+var ignited := 0.0        ## Dragon: seconds left burning (fire element + magic damage)
+var _fire_light: OmniLight3D
+var animator: Fighter     ## Rat: the fighter this prop now fights for
+var anim_life := 0.0
+var bonus_applied := false
+var _hop_t := 0.0
+var _rat_light: OmniLight3D
+var hurtbox: Hurtbox
 var _visual: Node3D
 var _shape := CollisionShape3D.new()
 var _size := Vector3.ONE * 0.5
@@ -37,6 +46,16 @@ func _ready() -> void:
 	_shape.shape = box
 	_shape.position = Vector3(0, _size.y * 0.5, 0)
 	add_child(_shape)
+	# loose props can be hit: smack a barrel and it flies into whoever is in the way
+	hurtbox = Hurtbox.new()
+	var hb_shape := BoxShape3D.new()
+	hb_shape.size = _size * 1.1
+	hurtbox.setup(self, FixedProp.NEUTRAL_TEAM, hb_shape, _shape.position)
+	add_child(hurtbox)
+	# long thin props (poles, spears, planks) spawn lying down instead of balancing upright
+	if _size.y > 1.8 * maxf(_size.x, _size.z):
+		rotate_object_local(Vector3.RIGHT, PI / 2.0)
+		position.y += maxf(_size.x, _size.z) * 0.5 + 0.05
 
 
 static func _measure(root: Node3D) -> Vector3:
@@ -58,6 +77,76 @@ func _level() -> Node:
 	return get_tree().current_scene if get_tree().current_scene else get_tree().root
 
 
+## Rat: bring this prop to life; it hops at demons for `life` seconds.
+func animate(owner_f: Fighter, life: float) -> void:
+	animator = owner_f
+	anim_life = life
+	_hop_t = 0.3
+	if _rat_light == null:
+		_rat_light = OmniLight3D.new()
+		_rat_light.light_color = Color(0.4, 1.0, 0.5)
+		_rat_light.light_energy = 1.2
+		_rat_light.omni_range = 2.0
+		_rat_light.position = Vector3(0, _size.y, 0)
+		add_child(_rat_light)
+	Events.prop_animated.emit(self)
+
+
+func _physics_process(delta: float) -> void:
+	if animator == null:
+		return
+	anim_life -= delta
+	if anim_life <= 0.0 or not is_instance_valid(animator) or mode == Mode.HELD:
+		animator = null
+		if _rat_light:
+			_rat_light.queue_free()
+			_rat_light = null
+		return
+	_hop_t -= delta
+	if _hop_t > 0.0 or linear_velocity.length() > 1.5:
+		return
+	_hop_t = 1.6 if data.weight == PropData.Weight.HEAVY else 1.0
+	var best: Fighter = null
+	var bd := 10.0
+	for n in get_tree().get_nodes_in_group(&"fighters"):
+		var f := n as Fighter
+		if f and f.team != animator.team and not f.is_dead() and global_position.distance_to(f.global_position) < bd:
+			bd = global_position.distance_to(f.global_position)
+			best = f
+	if best == null:
+		return
+	var to := (best.global_position + Vector3.UP * 0.8) - global_position
+	var speed := 7.0 if data.weight == PropData.Weight.HEAVY else 10.0
+	mode = Mode.THROWN
+	thrower = animator
+	collision_mask = 1 | (1 << 3) | (1 << 2) | (1 << 1)
+	linear_velocity = to.normalized() * speed + Vector3.UP * 3.0
+	angular_velocity = Vector3(randf_range(-4, 4), randf_range(-4, 4), randf_range(-4, 4))
+
+
+func current_element() -> StringName:
+	return &"fire" if ignited > 0.0 else data.element
+
+
+func ignite(seconds: float) -> void:
+	ignited = seconds
+	if _fire_light == null:
+		_fire_light = OmniLight3D.new()
+		_fire_light.light_color = Color(1.0, 0.45, 0.1)
+		_fire_light.light_energy = 2.5
+		_fire_light.omni_range = 3.0
+		_fire_light.position = Vector3(0, _size.y * 0.8, 0)
+		add_child(_fire_light)
+
+
+func _process(delta: float) -> void:
+	if ignited > 0.0:
+		ignited -= delta
+		if ignited <= 0.0 and _fire_light:
+			_fire_light.queue_free()
+			_fire_light = null
+
+
 func can_pick_up() -> bool:
 	return mode == Mode.FREE
 
@@ -66,8 +155,24 @@ func durability_left() -> int:
 	return durability
 
 
+## Hit by an attack while lying around: get knocked flying (and hurt whoever it hits).
+func receive_hit(info: DamageInfo) -> float:
+	if mode == Mode.HELD or mode == Mode.BROKEN:
+		return 0.0
+	var push := info.knockback * (3.0 if data.weight == PropData.Weight.LIGHT else 1.6)
+	push.y = maxf(push.y, 2.0)
+	linear_velocity = push
+	if push.length() > 6.0 and info.source:
+		mode = Mode.THROWN
+		thrower = info.source
+		collision_mask = 1 | (1 << 3) | (1 << 2) | (1 << 1)
+	return 0.0
+
+
 func attach_to(f: Node3D) -> void:
 	mode = Mode.HELD
+	if hurtbox:
+		hurtbox.monitorable = false
 	freeze = true
 	collision_layer = 0
 	collision_mask = 0
@@ -87,6 +192,8 @@ func release(impulse: Vector3, by: Node) -> void:
 	reparent(_level(), false)
 	global_transform = xf
 	freeze = false
+	if hurtbox:
+		hurtbox.monitorable = true
 	collision_layer = 1 << 3
 	collision_mask = 1 | (1 << 3) | (1 << 2) | (1 << 1)   # thrown props also hit fighters
 	thrower = by
@@ -104,6 +211,19 @@ func wear(amount: int, _by: Node = null) -> bool:
 		shatter()
 		return true
 	return false
+
+
+func _burst_fire() -> void:
+	fire_burst = false
+	for n in get_tree().get_nodes_in_group(&"fighters"):
+		var f := n as Fighter
+		if f and not f.is_dead() and f.global_position.distance_to(global_position) < 1.8:
+			var info := DamageInfo.make(8.0, null, DamageInfo.Type.MAGIC)
+			info.element = &"fire"
+			info.knockback = (f.global_position - global_position).normalized() * 3.0
+			f.receive_hit(info)
+	Juice.shake(0.15)
+	shatter()
 
 
 func shatter() -> void:
@@ -128,21 +248,27 @@ func shatter() -> void:
 
 
 func _on_body_entered(body: Node) -> void:
+	if fire_burst:
+		_burst_fire()
+		return
 	if mode != Mode.THROWN:
 		return
 	if body == thrower:
 		return
 	var f := body as Fighter
 	if f and not f.is_dead() and (thrower == null or f.team != thrower.team):
-		var info := DamageInfo.make(data.damage * data.throw_mult, thrower)
+		var tm := 1.0
+		if thrower is Fighter:
+			tm = float((thrower as Fighter).data_mods.get("throw_mult", 1.0))
+		var info := DamageInfo.make(data.damage * data.throw_mult * tm, thrower)
 		info.knockback = linear_velocity.normalized() * data.knockback * 1.4 + Vector3.UP * 2.0
 		info.knockdown = true
 		info.stun = 0.5
 		info.shatter = durability <= 2
-		info.element = data.element
+		info.element = current_element()
 		var amount := f.receive_hit(info)
 		if thrower and thrower.has_signal("attack_landed"):
-			thrower.attack_landed.emit(info, amount)
+			thrower.attack_landed.emit(info, amount, f)
 		Juice.hitstop(0.07)
 		wear(2)
 	else:

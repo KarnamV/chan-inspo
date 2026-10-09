@@ -3,12 +3,18 @@ extends CharacterBody3D
 ## Shared body for Jackie and every demon. A swappable Brain decides what to do each frame; the
 ## Fighter does it (move, attack, swing/throw props, dodge, react to hits). Possession = brain swap.
 
-signal attack_landed(info: DamageInfo, amount: float)
+signal attack_landed(info: DamageInfo, amount: float, target: Node)
+signal attack_started(a: AttackData)
+signal perfect_dodge
+signal dodged
 signal knocked_down
 signal died
 signal body_hit(info: DamageInfo)   ## hit while lying as a possession body (Sheep)
+signal parried(attacker: Node)
+signal caught(prop: Node)
+signal blocked(info: DamageInfo)
 
-enum State { IDLE, ATTACK, DODGE, STAGGER, KNOCKDOWN, GETUP, DEAD, BODY, PICKUP, THROW }
+enum State { IDLE, ATTACK, DODGE, STAGGER, KNOCKDOWN, GETUP, DEAD, BODY, PICKUP, THROW, PARRY }
 enum Team { PLAYER, ENEMY }
 
 const GRAVITY := 20.0
@@ -19,6 +25,18 @@ const PICKUP_RANGE := 1.7
 
 var brain: Brain
 var health: Health
+var status: StatusFx
+var parry_mult := 1.0    ## Rabbit widens the parry/perfect-dodge window
+var dmg_mult_physical := 1.0   ## Tiger Yang
+var dmg_mult_magic := 1.0      ## Tiger Yin
+var crit_next := false         ## Snake: next hit from stealth crits and spares the prop
+var stealthed := false         ## Snake: AI ignores you
+var heavy_one_hand := false    ## Ox: heavy props swing at light speed
+var launch_bonus := 0.0        ## Rooster: extra upward knock on knockdowns
+var grab_override: Callable    ## Ox: grab a knocked-down demon instead of a prop
+var hidden := false            ## Monkey: Jackie is 'inside' the boss form
+var shield_guard: Callable     ## Wok Shield boon: returns true to block a hit
+var data_mods := {}            ## run modifiers (Run.mods): bare/prop/light/fire/throw multipliers
 var hurtbox: Hurtbox
 var hitbox: Hitbox
 var model: Node3D
@@ -61,6 +79,9 @@ func _ready() -> void:
 	health.resist_magic = data.resist_magic
 	add_child(health)
 	health.died.connect(_on_died)
+	status = StatusFx.new()
+	status.fighter = self
+	add_child(status)
 
 	hurtbox = Hurtbox.new()
 	var hcap := CapsuleShape3D.new()
@@ -131,6 +152,8 @@ func request_heavy() -> void:
 		return
 	if held_prop:
 		_start_attack(_prop_attack(true), held_prop)
+	elif data.kit != &"":
+		BossKit.special(self, 1)   # boss forms: heavy = signature heavy (ground pound)
 	elif data.heavy:
 		_start_attack(data.heavy, null)
 
@@ -141,12 +164,23 @@ func request_grab() -> void:
 	if held_prop:
 		_set_state(State.THROW)
 		anim.play(&"throw", 0.08, 0.38)
+	elif grab_override.is_valid() and grab_override.call(self):
+		return
+	elif data.kit != &"" and BossKit.grab(self):
+		return
 	else:
 		var p := nearest_prop()
 		if p:
 			attack_with_prop = p   # remembered until the pickup frame
 			_set_state(State.PICKUP)
 			anim.play(&"pickup", 0.08, 0.3)
+		else:
+			for n in get_tree().get_nodes_in_group(&"fixed_props"):
+				var fp := n as FixedProp
+				if fp and fp.kind == FixedProp.Kind.WEAPON_RACK and global_position.distance_to(fp.global_position) < 2.2:
+					if fp.give_to(self):
+						anim.play(&"pickup", 0.08, 0.3)
+					return
 
 
 func request_dodge() -> void:
@@ -156,12 +190,33 @@ func request_dodge() -> void:
 		facing = intent_move.normalized()
 	_set_state(State.DODGE)
 	health.invulnerable = true
+	dodged.emit()
 	anim.play(&"dodge", 0.05, data.dodge_time)
+
+
+func request_parry() -> void:
+	if not can_act():
+		return
+	_set_state(State.PARRY)
+	anim.play(&"guard", 0.04)
 
 
 func request_attack(a: AttackData) -> void:
 	if can_act():
 		_start_attack(a, null)
+
+
+func set_hidden(h: bool) -> void:
+	hidden = h
+	visible = not h
+	hitbox.deactivate()
+	hurtbox.monitorable = not h
+	collision_layer = 0 if h else (1 << (1 if team == Team.PLAYER else 2))
+	set_physics_process(not h)
+	if h:
+		drop_prop()
+		velocity = Vector3.ZERO
+		_set_state(State.IDLE)
 
 
 func is_knocked_down() -> bool:
@@ -202,7 +257,7 @@ func _prop_attack(heavy: bool) -> AttackData:
 	var a := AttackData.new()
 	a.id = &"prop_heavy" if heavy else &"prop_light"
 	a.clip = &"heavy" if heavy else &"swing"
-	var slow := 1.35 if pd.weight == PropData.Weight.HEAVY else 1.0
+	var slow := 1.35 if pd.weight == PropData.Weight.HEAVY and not heavy_one_hand else 1.0
 	a.duration = (0.75 if heavy else 0.5) * slow
 	a.active_start = a.duration * 0.42
 	a.active_end = a.duration * 0.68
@@ -227,26 +282,42 @@ func _start_attack(a: AttackData, prop: Prop) -> void:
 	queued_light = false
 	_set_state(State.ATTACK)
 	anim.play(a.clip, 0.06, a.duration)
+	attack_started.emit(a)
 
 
 func _attack_info(a: AttackData) -> DamageInfo:
 	var info := DamageInfo.make(a.damage, self, DamageInfo.Type.MAGIC if a.magic else DamageInfo.Type.PHYSICAL)
-	info.knockback = facing * a.knockback + Vector3.UP * (2.0 if a.knockdown else 0.0)
+	info.knockback = facing * a.knockback + Vector3.UP * ((2.0 + launch_bonus) if a.knockdown else 0.0)
 	info.knockdown = a.knockdown
 	info.stun = a.stun
 	if attack_with_prop:
 		info.shatter = attack_with_prop.durability_left() <= a.prop_wear
 		info.element = attack_with_prop.data.element
+		info.element = attack_with_prop.current_element()
+		if info.element == &"magic" or info.element == &"fire" and attack_with_prop.ignited > 0.0:
+			info.type = DamageInfo.Type.MAGIC
+	info.amount *= dmg_mult_magic if info.type == DamageInfo.Type.MAGIC else dmg_mult_physical
+	if not data_mods.is_empty():
+		info.amount *= float(data_mods.get("prop_mult", 1.0)) if attack_with_prop else float(data_mods.get("bare_mult", 1.0))
+		if a in data.light_combo:
+			info.amount *= float(data_mods.get("light_mult", 1.0))
+		if info.element == &"fire":
+			info.amount *= float(data_mods.get("fire_mult", 1.0))
+	if crit_next:
+		info.amount *= 2.0
 	return info
 
 
-func _on_hit_landed(_hb: Hurtbox, info: DamageInfo, amount: float) -> void:
+func _on_hit_landed(hb: Hurtbox, info: DamageInfo, amount: float) -> void:
+	if not (hb.owner_fighter is Fighter):
+		return   # knocking a loose prop around doesn't wear the one in hand
 	if not attack_hit_any and attack_with_prop and is_instance_valid(attack_with_prop) and state == State.ATTACK:
 		attack_hit_any = true
 		var p := attack_with_prop
-		if p.wear(attack.prop_wear, self):
+		if not crit_next and p.wear(attack.prop_wear, self):
 			held_prop = null
-	attack_landed.emit(info, amount)
+	crit_next = false
+	attack_landed.emit(info, amount, hb.owner_fighter)
 	Juice.hitstop(0.05 if not info.knockdown else 0.09)
 
 
@@ -254,9 +325,35 @@ func _on_hit_landed(_hb: Hurtbox, info: DamageInfo, amount: float) -> void:
 func receive_hit(info: DamageInfo) -> float:
 	if state == State.DEAD:
 		return 0.0
+	if state == State.PARRY and state_t <= data.parry_window * parry_mult:
+		var atk := info.source as Fighter
+		if atk and not atk.is_dead():
+			atk.hitbox.deactivate()
+			atk._set_state(State.STAGGER)
+			atk.knock_time = 0.9
+			atk.anim.play(&"hit", 0.05, 0.6)
+		parried.emit(info.source)
+		Juice.hitstop(0.1)
+		return 0.0
+	if shield_guard.is_valid() and shield_guard.call(info):
+		_flash_t = 0.12
+		blocked.emit(info)
+		return 0.0
+	if data.front_block and not info.shatter and info.source is Node3D and state != State.KNOCKDOWN:
+		var to_src: Vector3 = (info.source as Node3D).global_position - global_position
+		to_src.y = 0.0
+		if to_src.length() > 0.01 and facing.dot(to_src.normalized()) > 0.35:
+			velocity += -to_src.normalized() * 2.0
+			blocked.emit(info)
+			return 0.0
+	if health.invulnerable and state == State.DODGE and state_t <= data.dodge_iframes:
+		perfect_dodge.emit()
+		return 0.0
 	var amount := health.take(info)
 	if health.invulnerable:
 		return 0.0
+	if info.element != &"" and amount > 0.0:
+		status.apply_element(info.element, info.source)
 	Events.damage_dealt.emit(self, info, amount)
 	_flash_t = 0.09
 	if state == State.BODY:
@@ -264,8 +361,10 @@ func receive_hit(info: DamageInfo) -> float:
 		return amount
 	if health.is_dead():
 		return amount
+	if data.ai_kind == FighterData.AiKind.THIEF and team == Team.ENEMY and amount > 0.0:
+		drop_prop()
 	velocity += info.knockback
-	if info.knockdown and state != State.KNOCKDOWN:
+	if info.knockdown and state != State.KNOCKDOWN and not data.knockdown_immune:
 		_knockdown()
 	elif state != State.KNOCKDOWN and info.stun * data.stagger_scale > 0.05:
 		hitbox.deactivate()
@@ -322,7 +421,7 @@ func leave_body_state() -> void:
 func _set_state(s: State) -> void:
 	if state == State.DODGE and s != State.DODGE:
 		health.invulnerable = false
-		dodge_cd = data.dodge_cooldown
+		dodge_cd = data.dodge_cooldown * float(data_mods.get("dodge_cd_mult", 1.0))
 	if state == State.ATTACK and s != State.ATTACK:
 		hitbox.deactivate()
 	state = s
@@ -361,6 +460,8 @@ func _physics_process(delta: float) -> void:
 					request_light()
 		State.DODGE:
 			target_vel = facing * data.dodge_speed
+			if held_prop == null and state_t <= 0.2 * parry_mult:
+				_try_catch()
 			if state_t >= data.dodge_iframes:
 				health.invulnerable = false
 			if state_t >= data.dodge_time:
@@ -384,7 +485,14 @@ func _physics_process(delta: float) -> void:
 				if is_instance_valid(p) and p.can_pick_up():
 					p.attach_to(self)
 					held_prop = p
+					if not data_mods.is_empty() and not p.bonus_applied:
+						p.durability += int(data_mods.get("durability_bonus", 0))
+						p.bonus_applied = true
+					Events.prop_picked.emit(self, p)
 			if state_t >= 0.3:
+				_set_state(State.IDLE)
+		State.PARRY:
+			if state_t >= data.parry_window * parry_mult + data.parry_recovery:
 				_set_state(State.IDLE)
 		State.THROW:
 			if state_t >= 0.16 and held_prop:
@@ -399,11 +507,27 @@ func _physics_process(delta: float) -> void:
 	horiz = horiz.move_toward(target_vel, accel * delta)
 	velocity.x = horiz.x
 	velocity.z = horiz.z
-	velocity.y = 0.0 if is_on_floor() and velocity.y < 0.0 else velocity.y - GRAVITY * delta
+	if data.hover > 0.0:
+		velocity.y = (data.hover - global_position.y) * 6.0
+	else:
+		velocity.y = 0.0 if is_on_floor() and velocity.y < 0.0 else velocity.y - GRAVITY * delta
 	move_and_slide()
 	if facing.length() > 0.01:
 		rotation.y = atan2(facing.x, facing.z)
 	_update_flash(delta)
+
+
+## Perfect dodge into a thrown prop (yours or an enemy's) snatches it out of the air.
+func _try_catch() -> void:
+	for n in get_tree().get_nodes_in_group(&"props"):
+		var p := n as Prop
+		if p == null or p.mode != Prop.Mode.THROWN or p.thrower == self:
+			continue
+		if global_position.distance_to(p.global_position) < 1.4:
+			p.attach_to(self)
+			held_prop = p
+			caught.emit(p)
+			return
 
 
 func _update_flash(delta: float) -> void:

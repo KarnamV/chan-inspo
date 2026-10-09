@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="PropData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/props/pole.glb" id="1_uu0o0"]
+[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="2_xsv6f"]
+[ext_resource type="Resource" path="res://data/props/stake.tres" id="3_twu3d"]
+
+[resource]
+script = ExtResource("2_xsv6f")
+id = &"pole"
+model = ExtResource("1_uu0o0")
+durability = 6
+reach = 2.2
+pieces = Array[ExtResource("2_xsv6f")]([ExtResource("3_twu3d")])

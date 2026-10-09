@@ -1,0 +1,55 @@
+[gd_resource type="Resource" script_class="FighterData" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/attack_data.gd" id="1_rrd3l"]
+[ext_resource type="PackedScene" path="res://assets/characters/hero.glb" id="2_7c5ig"]
+[ext_resource type="Script" path="res://scripts/fighters/fighter_data.gd" id="3_4h1pg"]
+
+[sub_resource type="Resource" id="Resource_sw4kn"]
+script = ExtResource("1_rrd3l")
+id = &"bare_heavy"
+clip = &"punch_cross"
+duration = 0.7
+active_start = 0.34
+active_end = 0.48
+combo_window = 0.48
+damage = 10.0
+knockback = 5.0
+knockdown = true
+stun = 0.45
+lunge = 3.5
+hit_size = Vector3(1.1, 1.3, 1.3)
+hit_offset = Vector3(0, 1, 0.9)
+
+[sub_resource type="Resource" id="Resource_eqjbd"]
+script = ExtResource("1_rrd3l")
+id = &"jab"
+duration = 0.36
+active_start = 0.11
+active_end = 0.22
+combo_window = 0.16
+knockback = 2.0
+lunge = 2.5
+hit_size = Vector3(0.9, 1.2, 1.1)
+hit_offset = Vector3(0, 1.1, 0.8)
+
+[sub_resource type="Resource" id="Resource_7b047"]
+script = ExtResource("1_rrd3l")
+id = &"cross"
+clip = &"punch_cross"
+duration = 0.42
+active_start = 0.14
+active_end = 0.26
+combo_window = 0.2
+damage = 8.0
+knockback = 3.0
+lunge = 2.5
+hit_size = Vector3(0.9, 1.2, 1.1)
+hit_offset = Vector3(0, 1.1, 0.8)
+
+[resource]
+script = ExtResource("3_4h1pg")
+id = &"hero"
+model = ExtResource("2_7c5ig")
+knockdown_time = 1.0
+light_combo = Array[ExtResource("1_rrd3l")]([SubResource("Resource_eqjbd"), SubResource("Resource_7b047")])
+heavy = SubResource("Resource_sw4kn")

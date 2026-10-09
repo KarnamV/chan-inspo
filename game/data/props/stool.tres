@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="PropData" format=3]
+
+[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="1_uakbf"]
+[ext_resource type="Resource" path="res://data/props/wood_leg.tres" id="2_ehrlr"]
+
+[resource]
+script = ExtResource("1_uakbf")
+id = &"stool"
+durability = 3
+damage = 11.0
+reach = 1.1
+pieces = Array[ExtResource("1_uakbf")]([ExtResource("2_ehrlr")])

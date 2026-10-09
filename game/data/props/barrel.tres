@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PropData" format=3]
+
+[ext_resource type="PackedScene" path="res://assets/props/barrel.glb" id="1_86lhp"]
+[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="2_v1jbd"]
+[ext_resource type="Resource" path="res://data/props/barrel_stave.tres" id="3_n03ys"]
+[ext_resource type="Resource" path="res://data/props/metal_scrap.tres" id="4_5xvg1"]
+
+[resource]
+script = ExtResource("2_v1jbd")
+id = &"barrel"
+model = ExtResource("1_86lhp")
+weight = 1
+damage = 16.0
+knockback = 6.0
+reach = 1.4
+pieces = Array[ExtResource("2_v1jbd")]([ExtResource("3_n03ys"), ExtResource("4_5xvg1")])

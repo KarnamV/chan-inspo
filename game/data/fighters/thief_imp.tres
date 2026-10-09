@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="FighterData" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/attack_data.gd" id="1_41t4i"]
+[ext_resource type="Script" path="res://scripts/fighters/fighter_data.gd" id="2_e0hr0"]
+
+[sub_resource type="Resource" id="Resource_itc4m"]
+script = ExtResource("1_41t4i")
+id = &"imp_scratch"
+duration = 0.4
+active_end = 0.26
+combo_window = 0.26
+damage = 4.0
+knockback = 1.5
+hit_size = Vector3(0.8, 1, 0.9)
+hit_offset = Vector3(0, 0.6, 0.6)
+
+[resource]
+script = ExtResource("2_e0hr0")
+id = &"thief_imp"
+height = 1.3
+radius = 0.3
+max_hp = 45.0
+move_speed = 6.0
+knockdown_time = 1.6
+light_combo = Array[ExtResource("1_41t4i")]([SubResource("Resource_itc4m")])
+heavy = SubResource("Resource_itc4m")
+ai_kind = 1
+attack_cooldown = 1.4
+ai_attacks = Array[ExtResource("1_41t4i")]([SubResource("Resource_itc4m")])

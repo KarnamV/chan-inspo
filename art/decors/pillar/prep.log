@@ -1,0 +1,17 @@
+addon_utils.disable: bl_ext.lab_blender_org.mcp not enabled
+20:41:35 | INFO: Data are loaded, start creating Blender stuff
+20:41:35 | INFO: Blender create Mesh node 0
+20:41:35 | INFO: glTF import finished in 0.02s
+INFO Draco mesh compression is available, use library at C:\Program Files\Blender Foundation\Blender 5.1\5.1\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+20:41:35 | INFO: Starting glTF 2.0 export
+20:41:35 | INFO: Extracting primitive: Mesh_0
+20:41:35 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+20:41:35 | INFO: Primitives created: 1
+20:41:35 | INFO: Finished glTF 2.0 export in 0.11276102066040039 s
+
+ok    pillar.glb: 7996 -> 7996 tris, size 0.87 x 0.87 x 3.00 m
+
+Done.
+Blender 5.1.2 (hash ec6e62d40fa9 built 2026-05-19 01:37:34)
+
+Blender quit

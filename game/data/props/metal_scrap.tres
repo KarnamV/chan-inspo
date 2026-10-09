@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="PropData" format=3]
+
+[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="1_fmud8"]
+
+[resource]
+script = ExtResource("1_fmud8")
+id = &"metal_scrap"
+durability = 2
+damage = 9.0
+reach = 1.0

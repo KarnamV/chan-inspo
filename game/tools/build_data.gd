@@ -74,6 +74,82 @@ func _fighters() -> void:
 	brute.light_combo = attacks([punch])
 	brute.heavy = slam
 	_save(brute, "res://data/fighters/brute.tres")
+	_m2_enemies()
+	_bosses()
+
+
+func _enemy(id: StringName, hp: float, speed: float, h: float, r: float, attacks_list: Array) -> FighterData:
+	var d := FighterData.new()
+	d.id = id
+	d.model = _model("res://assets/characters/%s.glb" % id)
+	d.max_hp = hp
+	d.move_speed = speed
+	d.height = h
+	d.radius = r
+	d.ai_attacks = attacks(attacks_list)
+	d.light_combo = attacks([attacks_list[0]])
+	d.heavy = attacks_list[-1]
+	return d
+
+
+func _m2_enemies() -> void:
+	var bash := atk(&"shield_bash", &"punch_cross", 0.7, 0.35, 0.5, 9.0, 5.0, false, 2.0, Vector3(1.4, 1.5, 1.3), Vector3(0, 1.0, 0.9))
+	var shield := _enemy(&"shield_demon", 90.0, 3.6, 1.9, 0.45, [bash])
+	shield.front_block = true
+	shield.stagger_scale = 0.8
+	shield.attack_range = 1.9
+	_save(shield, "res://data/fighters/shield_demon.tres")
+
+	var scratch := atk(&"imp_scratch", &"punch_jab", 0.4, 0.15, 0.26, 4.0, 1.5, false, 2.0, Vector3(0.8, 1.0, 0.9), Vector3(0, 0.6, 0.6))
+	var imp := _enemy(&"thief_imp", 45.0, 6.0, 1.3, 0.3, [scratch])
+	imp.ai_kind = FighterData.AiKind.THIEF
+	imp.attack_cooldown = 1.4
+	imp.knockdown_time = 1.6
+	_save(imp, "res://data/fighters/thief_imp.tres")
+
+	var stab := atk(&"archer_stab", &"punch_jab", 0.45, 0.18, 0.3, 6.0, 2.0, false, 1.5)
+	var archer := _enemy(&"archer_demon", 60.0, 4.2, 1.8, 0.35, [stab])
+	archer.ai_kind = FighterData.AiKind.RANGED
+	archer.keep_distance = 7.0
+	archer.attack_cooldown = 2.0
+	_save(archer, "res://data/fighters/archer_demon.tres")
+
+	var claw := atk(&"wraith_claw", &"chi_cast", 0.7, 0.3, 0.45, 10.0, 4.0, false, 1.0, Vector3(1.2, 1.4, 2.0), Vector3(0, 1.1, 1.2))
+	claw.magic = true
+	var wraith := _enemy(&"wraith", 70.0, 3.8, 1.9, 0.4, [claw])
+	wraith.resist_physical = 0.75
+	wraith.hover = 0.25
+	wraith.attack_range = 2.2
+	_save(wraith, "res://data/fighters/wraith.tres")
+
+	var maul := atk(&"ghoul_maul", &"swing", 1.0, 0.55, 0.72, 14.0, 5.0, true, 1.0, Vector3(1.6, 1.5, 1.7), Vector3(0, 1.0, 1.0))
+	var ghoul := _enemy(&"armored_ghoul", 110.0, 2.6, 1.8, 0.45, [maul])
+	ghoul.resist_physical = 0.5
+	ghoul.resist_magic = 0.8
+	ghoul.stagger_scale = 0.6
+	ghoul.attack_cooldown = 2.0
+	_save(ghoul, "res://data/fighters/armored_ghoul.tres")
+
+
+func _bosses() -> void:
+	var slash := atk(&"cleaver_slash", &"swing", 0.7, 0.32, 0.48, 14.0, 5.0, false, 2.0, Vector3(2.2, 1.8, 2.2), Vector3(0, 1.2, 1.3))
+	var slash2 := atk(&"cleaver_backhand", &"punch_cross", 0.65, 0.3, 0.45, 12.0, 6.0, false, 2.0, Vector3(2.2, 1.8, 2.2), Vector3(0, 1.2, 1.3))
+	var b := FighterData.new()
+	b.id = &"butcher_king"
+	b.model = _model("res://assets/characters/butcher_king.glb")
+	b.max_hp = 600.0
+	b.move_speed = 3.0
+	b.height = 2.6
+	b.radius = 0.75
+	b.stagger_scale = 0.15
+	b.knockdown_immune = true
+	b.kit = &"butcher"
+	b.boss = true
+	b.attack_cooldown = 1.4
+	b.light_combo = attacks([slash, slash2])
+	b.heavy = slash
+	b.ai_attacks = attacks([slash, slash2])
+	_save(b, "res://data/fighters/butcher_king.tres")
 
 
 func _props() -> void:
@@ -82,29 +158,46 @@ func _props() -> void:
 	var wood_leg := _prop(&"wood_leg", PropData.Weight.LIGHT, 2, 9.0, 1.0, [])
 	var stave := _prop(&"barrel_stave", PropData.Weight.LIGHT, 2, 9.0, 1.2, [])
 	var plank := _prop(&"plank", PropData.Weight.LIGHT, 3, 10.0, 1.3, [stake])
+	var shard := _prop(&"pottery_shard", PropData.Weight.LIGHT, 1, 8.0, 0.9, [])
+	var scrap := _prop(&"metal_scrap", PropData.Weight.LIGHT, 2, 9.0, 1.0, [])
 	_prop(&"chair", PropData.Weight.LIGHT, 4, 14.0, 1.3, [wood_leg, wood_leg])
 	_prop(&"bench", PropData.Weight.HEAVY, 5, 18.0, 1.8, [plank, wood_leg])
 	_prop(&"crate", PropData.Weight.HEAVY, 3, 16.0, 1.3, [plank, plank])
-	_prop(&"barrel", PropData.Weight.HEAVY, 4, 16.0, 1.4, [stave, stave])
+	_prop(&"barrel", PropData.Weight.HEAVY, 4, 16.0, 1.4, [stave, scrap])
 	_prop(&"pole", PropData.Weight.LIGHT, 6, 12.0, 2.2, [stake])
+	# M2: element + food props
+	_prop(&"lantern", PropData.Weight.LIGHT, 2, 10.0, 1.1, [], &"fire")
+	_prop(&"bucket", PropData.Weight.LIGHT, 2, 9.0, 1.1, [plank], &"water")
+	_prop(&"spirit_urn", PropData.Weight.LIGHT, 3, 16.0, 1.2, [shard, shard], &"magic")
+	_prop(&"spear", PropData.Weight.LIGHT, 5, 13.0, 2.4, [stake])
+	_prop(&"stool", PropData.Weight.LIGHT, 3, 11.0, 1.1, [wood_leg])
+	_prop(&"bun_basket", PropData.Weight.LIGHT, 1, 6.0, 1.0, [], &"food")
+	_prop(&"roast_duck", PropData.Weight.LIGHT, 1, 7.0, 1.0, [], &"food")
+	_prop(&"fruit_cart", PropData.Weight.HEAVY, 4, 18.0, 1.6, [plank, plank], &"food")
+	_prop(&"weapon_rack", PropData.Weight.HEAVY, 4, 16.0, 1.4, [plank, stake])
 
 
-func _prop(id: StringName, w: PropData.Weight, dur: int, dmg: float, reach: float, pieces: Array) -> PropData:
+func _prop(id: StringName, w: PropData.Weight, dur: int, dmg: float, reach: float, pieces: Array, element: StringName = &"") -> PropData:
 	var p := PropData.new()
 	p.id = id
-	var cat := "pieces" if id in [&"stake", &"wood_leg", &"barrel_stave", &"plank"] else "props"
-	p.model = load("res://assets/%s/%s.glb" % [cat, id])
+	var cat := "pieces" if id in [&"stake", &"wood_leg", &"barrel_stave", &"plank", &"pottery_shard", &"metal_scrap"] else "props"
+	p.model = _model("res://assets/%s/%s.glb" % [cat, id])
 	p.weight = w
 	p.durability = dur
 	p.damage = dmg
 	p.reach = reach
 	p.knockback = 6.0 if w == PropData.Weight.HEAVY else 4.0
+	p.element = element
 	var typed: Array[PropData] = []
 	for x in pieces:
 		typed.append(x)
 	p.pieces = typed
 	_save(p, "res://data/props/%s.tres" % id)
 	return load("res://data/props/%s.tres" % id)
+
+
+func _model(path: String) -> PackedScene:
+	return load(path) if ResourceLoader.exists(path) else null
 
 
 func _save(r: Resource, path: String) -> void:

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="PropData" format=3]
+
+[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="1_6cqci"]
+[ext_resource type="Resource" path="res://data/props/plank.tres" id="2_5447r"]
+
+[resource]
+script = ExtResource("1_6cqci")
+id = &"bucket"
+durability = 2
+damage = 9.0
+reach = 1.1
+pieces = Array[ExtResource("1_6cqci")]([ExtResource("2_5447r")])
+element = &"water"

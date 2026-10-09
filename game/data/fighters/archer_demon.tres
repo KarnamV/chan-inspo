@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="FighterData" format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/attack_data.gd" id="1_xj54s"]
+[ext_resource type="Script" path="res://scripts/fighters/fighter_data.gd" id="2_sjbq2"]
+
+[sub_resource type="Resource" id="Resource_ixhxm"]
+script = ExtResource("1_xj54s")
+id = &"archer_stab"
+active_start = 0.18
+active_end = 0.3
+combo_window = 0.3
+knockback = 2.0
+lunge = 1.5
+
+[resource]
+script = ExtResource("2_sjbq2")
+id = &"archer_demon"
+max_hp = 60.0
+move_speed = 4.2
+light_combo = Array[ExtResource("1_xj54s")]([SubResource("Resource_ixhxm")])
+heavy = SubResource("Resource_ixhxm")
+ai_kind = 2
+attack_cooldown = 2.0
+ai_attacks = Array[ExtResource("1_xj54s")]([SubResource("Resource_ixhxm")])
