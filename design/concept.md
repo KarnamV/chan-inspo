@@ -32,15 +32,28 @@ Meta:
   - Magic = chi attacks + Pig and Dragon talismans.
   - Enemies get physical/magic resist profiles so both builds matter.
 - **Moves + move draft (roguelite layer):** Jackie starts physical-only and learns magic moves during the run. Rewards offer magic versions of physical moves he already has (e.g. palm strike → chi palm, sweep kick → chi wave). Pick one per reward, so a build drifts physical → magic over the run. *(User idea 2026-10-09; exact rule set in PRD.)*
-- **Talismans:** 12 zodiac talismans, equip 3. Powers stay original, not copied 1:1 from the show. Set so far:
+- **Talismans:** 12 zodiac talismans, equip 3. Powers stay original, not copied 1:1 from the show. All 12 set 2026-10-09:
   - **Sheep: possession.** Fixed rule: the only way to possess. Target must be knocked down (regular demons only). Costs spirit meter. Lasts until the meter drains or the host's HP is gone, then you snap back. What happens to Jackie's body meanwhile is still open (see risks).
   - **Tiger: split.** Jackie splits into two:
     - **Yin:** more magic damage, less HP.
     - **Yang:** more physical damage, more HP.
     - Both fight. You control one and AI runs the other; tap to swap control. If one dies, you continue as the survivor.
   - **Monkey: boss shapeshift.** Turn into any boss you have **ever** killed (persists across runs, meta-unlocked). Keeps at least 3 of that boss's moves. On demand, unlike Sheep. Monkey's pool grows as you beat more bosses → "one more run" pull.
-  - **Pig, Dragon: magic damage** sources (details in PRD).
-  - Remaining 7 (Rat, Ox, Rabbit, Snake, Horse, Rooster, Dog) set in PRD. Reusable v1 ideas: Dragon AoE, Snake chain lightning, extra dash charges, parry window.
+  - **Rat: animate.** Throw the talisman at a prop, and the prop comes alive and fights beside you. Defaults:
+    - Costs spirit.
+    - Max 2 animated at once.
+    - Lasts until it breaks or 15 s, then goes inert and can be grabbed again.
+    - Behaviour by weight class: light = darts and pecks fast, heavy = slow, hard slams.
+    - Fights in character: chair kicks, ladder spins, lantern spits fire. *(User pick 2026-10-09; the show's Rat also animated objects, so in-character prop behaviour is the original twist.)*
+  - **Ox: strongman.** Swing heavy props one-handed. Pick up a stunned/knocked-down demon and swing it as a weapon (it takes damage too). Combos: Sheep (possessed brute swings demons), Rat (lift an animated prop?).
+  - **Rabbit: quick feet.** Widens the perfect dodge/parry timing window (e.g. ~2×). A perfect dodge slows time for 1.5 s and refills your dash. Makes the skill move easy to hit.
+  - **Snake: shadow coil.** After any dodge you're unseen for 2 s. Hits from stealth are crits and never break the prop. Synergy: Rabbit + Snake = assassin build.
+  - **Horse: lifesteal (the healing talisman).** Heal 8% of damage dealt. Breaking a prop on an enemy heals a burst (5% max HP), so wearing props out = healing. Capped per room (boss safety). Numbers are first-pass defaults.
+  - **Rooster: juggle.** Launchers keep enemies airborne longer. Aerial hits refund spirit, which feeds the Sheep, Tiger, Monkey and Rat costs.
+  - **Dog: loyal.** Survive one lethal hit per room. The demon that "killed" you turns into a temporary ally.
+  - **Ally AI is shared:** Tiger twin, Rat props and the Dog convert all use one ally-AI system. Build it once.
+  - **Pig: feast (magic).** Food props (buns, roast duck, fruit carts) can be eaten for chi. Chi powers magic belly-slam and burp-blast. New prop category: food.
+  - **Dragon: dragon fire (magic).** Ignite whatever you're holding. A burning prop deals magic damage and sets enemies alight. Magic works *with* props. Synergies: Rat (flaming animated props), Tiger Yin (magic glass cannon). Reusable v1 ideas: Dragon AoE, Snake chain lightning, extra dash charges, parry window.
 - **Sheep vs Monkey (keep distinct):** Sheep = regular demons, needs knockdown in the room, temporary host with its own HP. Monkey = bosses only, on demand, from kill history.
 - **Enemies:** demons, possessed warriors, beasts. v1 = humanoid-shaped so they share one animation library (makes them possessable cheaply).
 
