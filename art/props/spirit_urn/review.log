@@ -1,13 +1,13 @@
 addon_utils.disable: bl_ext.lab_blender_org.mcp not enabled
-21:39:49 | INFO: Data are loaded, start creating Blender stuff
-21:39:49 | INFO: Blender create Mesh node Mesh_0
-21:39:49 | INFO: glTF import finished in 0.02s
-00:02.469  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmpktzzyb3j\front.png'
-00:02.578  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmpktzzyb3j\three.png'
-00:02.687  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmpktzzyb3j\side.png'
-00:02.797  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmpktzzyb3j\back.png'
-00:02.906  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmpktzzyb3j\iso.png'
-DIMS 0.63 0.61 0.60 TRIS 3209
+23:13:40 | INFO: Data are loaded, start creating Blender stuff
+23:13:40 | INFO: Blender create Mesh node Mesh_0
+23:13:40 | INFO: glTF import finished in 0.02s
+00:02.484  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmpa7lp2cge\front.png'
+00:02.594  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmpa7lp2cge\three.png'
+00:02.719  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmpa7lp2cge\side.png'
+00:02.828  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmpa7lp2cge\back.png'
+00:02.937  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmpa7lp2cge\iso.png'
+DIMS 0.37 0.38 0.60 TRIS 3909
 REVIEW D:\Projects\Games\chan-inspo\art\props\spirit_urn\review.png
 Blender 5.1.2 (hash ec6e62d40fa9 built 2026-05-19 01:37:34)
 

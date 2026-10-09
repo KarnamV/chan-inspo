@@ -3,7 +3,8 @@ extends Arena
 ## One room of a run (realm 1: Ember Night Market). Reads Run.spec(): combat / story / shop /
 ## shrine / vault / boss. Clear it -> reward (from the door you came through) -> exit doors.
 
-const MARKET_PROPS := [&"chair", &"bench", &"crate", &"barrel", &"pole", &"lantern", &"bucket", &"stool",
+## bucket + stool left out: their meshes reconstruct badly (open/thin shapes), see STATUS
+const MARKET_PROPS := [&"chair", &"bench", &"crate", &"barrel", &"pole", &"lantern",
 	&"spear", &"bun_basket", &"roast_duck", &"spirit_urn", &"market_stall_cart", &"wok", &"crate_of_fish",
 	&"fruit_cart"]
 const RARE_PROPS := [&"spirit_urn", &"spear", &"lantern", &"fruit_cart", &"market_stall_cart", &"roast_duck"]

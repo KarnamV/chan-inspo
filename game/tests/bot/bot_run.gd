@@ -117,6 +117,9 @@ func _reparent_to_root() -> void:
 	r.add_child(self)
 	_moved = true
 	Run.start_run([&"sheep", &"tiger", &"rat"], 7)
+	for arg in OS.get_cmdline_user_args():   # e.g. -- --start=9 jumps to the boss room (captures)
+		if arg.begins_with("--start="):
+			Run.room_i = int(arg.split("=")[1])
 	get_tree().change_scene_to_file(Run.ROOM_SCENE)
 
 

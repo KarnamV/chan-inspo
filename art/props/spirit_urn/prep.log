@@ -1,15 +1,15 @@
 addon_utils.disable: bl_ext.lab_blender_org.mcp not enabled
-21:30:26 | INFO: Data are loaded, start creating Blender stuff
-21:30:26 | INFO: Blender create Mesh node 0
-21:30:26 | INFO: glTF import finished in 0.01s
+23:13:22 | INFO: Data are loaded, start creating Blender stuff
+23:13:22 | INFO: Blender create Mesh node 0
+23:13:22 | INFO: glTF import finished in 0.01s
 INFO Draco mesh compression is available, use library at C:\Program Files\Blender Foundation\Blender 5.1\5.1\scripts\addons_core\io_scene_gltf2\extern_draco.dll
-21:30:27 | INFO: Starting glTF 2.0 export
-21:30:27 | INFO: Extracting primitive: Mesh_0
-21:30:27 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
-21:30:27 | INFO: Primitives created: 1
-21:30:27 | INFO: Finished glTF 2.0 export in 0.10874247550964355 s
+23:13:23 | INFO: Starting glTF 2.0 export
+23:13:23 | INFO: Extracting primitive: Mesh_0
+23:13:23 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+23:13:23 | INFO: Primitives created: 1
+23:13:23 | INFO: Finished glTF 2.0 export in 0.11552286148071289 s
 
-ok    spirit_urn.glb: 3209 -> 3209 tris, size 0.63 x 0.61 x 0.60 m
+ok    spirit_urn.glb: 3909 -> 3909 tris, size 0.37 x 0.38 x 0.60 m
 
 Done.
 Blender 5.1.2 (hash ec6e62d40fa9 built 2026-05-19 01:37:34)

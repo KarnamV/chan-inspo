@@ -1,13 +1,13 @@
 addon_utils.disable: bl_ext.lab_blender_org.mcp not enabled
-22:18:23 | INFO: Data are loaded, start creating Blender stuff
-22:18:23 | INFO: Blender create Mesh node Mesh_0
-22:18:23 | INFO: glTF import finished in 0.01s
-00:02.453  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmpjwmuc7zn\front.png'
-00:02.562  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmpjwmuc7zn\three.png'
-00:02.672  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmpjwmuc7zn\side.png'
-00:02.797  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmpjwmuc7zn\back.png'
-00:02.906  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmpjwmuc7zn\iso.png'
-DIMS 3.16 3.00 0.60 TRIS 2500
+23:13:50 | INFO: Data are loaded, start creating Blender stuff
+23:13:50 | INFO: Blender create Mesh node Mesh_0
+23:13:50 | INFO: glTF import finished in 0.01s
+00:02.407  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmpw0d41040\front.png'
+00:02.547  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmpw0d41040\three.png'
+00:02.657  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmpw0d41040\side.png'
+00:02.766  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmpw0d41040\back.png'
+00:02.875  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmpw0d41040\iso.png'
+DIMS 0.44 0.44 0.60 TRIS 2997
 REVIEW D:\Projects\Games\chan-inspo\art\props\hanging_lantern\review.png
 Blender 5.1.2 (hash ec6e62d40fa9 built 2026-05-19 01:37:34)
 

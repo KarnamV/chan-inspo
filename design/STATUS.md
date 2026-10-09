@@ -13,22 +13,20 @@ Rules for this run:
   - Runner gotchas fixed: relative paths (Blender cwd), output checks per stage, free ComfyUI VRAM before mesh/rig, lighter TRELLIS for props (box props 5 min → 3 min).
 - [x] M1 prototype (functional gate passed 2026-10-09): bot playtest 7/7 (grab, break, knockdown, possess, host hits, release, kill); captures in assets/M1_bot_sheet.png + M1_bot.gif. **Fun = user's call.**
   - Bugs found + fixed: spawn order (bodies stacking), Sheep cost made possession end instantly at exactly 40 spirit (now: 40 = requirement, then drains), long props spawned balancing upright (now lie down), stake mesh fragmented (re-rolled, prompt 'thick chunky').
-- [ ] M2 combat kit: parry, catch, shield block, elements (fire/water/magic), chi palm/wave/pull/blink, thief + archer AI, projectiles, kickable props, hanging lanterns, weapon rack written + unit-tested. Needs M2 assets + combat_arena bot.
-- [ ] M3 talismans
-- [ ] M4 realm 1 slice: run loop works end to end (bot_run 10/10: 10 rooms, 2 helpers, shop, shrine, 10 rewards, Butcher King, ledger, shards, hub). Waiting: M2-M4 assets (models for demons/boss/helpers/market), visual pass.
+- [x] M2 combat kit (bot_m2: all 6 types): parry, catch, shield block, elements (fire/water/magic), chi palm/wave/pull/blink, thief + archer AI, projectiles, kickable props, hanging lanterns, weapon rack written + unit-tested. Needs M2 assets + combat_arena bot.
+- [x] M3 talismans (bot_m3 19/19, stable 3 runs)
+- [x] M4 realm 1 slice (2026-10-10): all art synced, full-run bot passes with real models, captures in assets/captures/ (combat, boss, hub). Run loop works end to end (bot_run 10/10: 10 rooms, 2 helpers, shop, shrine, 10 rewards, Butcher King, ledger, shards, hub). Waiting: M2-M4 assets (models for demons/boss/helpers/market), visual pass.
   - Bugs found + fixed by the run bot: panels paused the bot (deadlock), thief imp kited forever (unkillable), shield demon snapped to face you (flanking impossible) → turn rate + guard break + magic bypass, double-counted boon rewards.
 
 ## For user review (collected during the run)
 - Icon style picked by me: flat vector (most readable at 48 px). Low-poly faceted is an option for big reward cards.
 - Heavy smash + throw clips are procedural placeholders (stiff). Upgrade path: Kimodo.
 - Sheep economy changed: 40 spirit needed to start, no up-front charge; drains 7/s (≈6–14 s of possession).
+- **3 props still look bad** after 3 re-roll attempts: bucket, stool, pottery shard (TRELLIS struggles with open/thin shapes even at full quality; concepts are clean). Bucket + stool removed from the realm-1 random pool; shard only appears as brief debris. Fix ideas: closed-lid bucket / thick-seat stool prompts, or Hunyuan3D 2.1 shape + hand texture.
+- 4 other broken props fixed by re-roll with 'solid, opaque, chunky' prompts (spirit urn, hanging lantern, lantern post, rice sacks).
 - **Balance is untested:** bots run with god-mode HP and 3× damage to prove the loop. Expect tuning needs (enemy HP, spirit costs, boss damage).
 - Thief imps still kite a lot (room 9 took ~70 s for the bot). Might need a slower imp or a 'grab' counter.
 - M1 'is it fun?' gate: please play `game/scenes/levels/test_room.tscn` (F6) — I can only verify it works.
 
-## Pick up next (usage limit hit 2026-10-09 ~21:30)
-1. Asset batch M2→M3→M4 was still running in the background (runner writes assets/run_M2/M3/M4.log). If it died, resume: `python <skill>/scripts/asset_runner.py --manifest assets/manifest.csv --art art --phase M2` (then M3, M4); it skips finished stages.
-2. Then: `python tools/sync_assets.py`, `godot --headless --path game --import`, `godot --headless --path game -s tools/build_data.gd` (gives M2 demons, boss, M4 props their models).
-3. Review renders of M2/M4 assets (art/*/<id>/review.png), re-roll bad ones (stake needed a 'thick chunky' prompt).
-4. Re-run all checks: GUT, bot_m1, bot_m2, bot_m3, bot_run. Then Movie Maker captures of a run room, boss fight, hub for the visual pass.
-5. Record the stake prompt change in assets/make_manifest.py.
+## Pick up next
+- M0–M4 done. Waiting on user review (see list above). Next milestone after review: M5 (realms 2–3) per roadmap.

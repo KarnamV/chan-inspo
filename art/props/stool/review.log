@@ -1,13 +1,13 @@
 addon_utils.disable: bl_ext.lab_blender_org.mcp not enabled
-21:39:59 | INFO: Data are loaded, start creating Blender stuff
-21:39:59 | INFO: Blender create Mesh node Mesh_0
-21:39:59 | INFO: glTF import finished in 0.02s
-00:02.484  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmp6otaq9rz\front.png'
-00:02.609  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmp6otaq9rz\three.png'
-00:02.719  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmp6otaq9rz\side.png'
-00:02.828  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmp6otaq9rz\back.png'
-00:02.953  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmp6otaq9rz\iso.png'
-DIMS 0.39 0.40 0.45 TRIS 2554
+00:08:49 | INFO: Data are loaded, start creating Blender stuff
+00:08:49 | INFO: Blender create Mesh node Mesh_0
+00:08:49 | INFO: glTF import finished in 0.04s
+00:02.546  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmppbr_tp4k\front.png'
+00:02.671  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmppbr_tp4k\three.png'
+00:02.796  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmppbr_tp4k\side.png'
+00:02.890  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmppbr_tp4k\back.png'
+00:03.015  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmppbr_tp4k\iso.png'
+DIMS 0.72 0.61 0.45 TRIS 12452
 REVIEW D:\Projects\Games\chan-inspo\art\props\stool\review.png
 Blender 5.1.2 (hash ec6e62d40fa9 built 2026-05-19 01:37:34)
 

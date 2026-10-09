@@ -1,15 +1,15 @@
 addon_utils.disable: bl_ext.lab_blender_org.mcp not enabled
-22:13:24 | INFO: Data are loaded, start creating Blender stuff
-22:13:24 | INFO: Blender create Mesh node 0
-22:13:24 | INFO: glTF import finished in 0.01s
+23:13:30 | INFO: Data are loaded, start creating Blender stuff
+23:13:30 | INFO: Blender create Mesh node 0
+23:13:30 | INFO: glTF import finished in 0.01s
 INFO Draco mesh compression is available, use library at C:\Program Files\Blender Foundation\Blender 5.1\5.1\scripts\addons_core\io_scene_gltf2\extern_draco.dll
-22:13:25 | INFO: Starting glTF 2.0 export
-22:13:25 | INFO: Extracting primitive: Mesh_0
-22:13:25 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
-22:13:25 | INFO: Primitives created: 1
-22:13:25 | INFO: Finished glTF 2.0 export in 0.10398530960083008 s
+23:13:30 | INFO: Starting glTF 2.0 export
+23:13:30 | INFO: Extracting primitive: Mesh_0
+23:13:30 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+23:13:30 | INFO: Primitives created: 1
+23:13:30 | INFO: Finished glTF 2.0 export in 0.10646653175354004 s
 
-ok    hanging_lantern.glb: 2500 -> 2500 tris, size 3.16 x 3.00 x 0.60 m
+ok    hanging_lantern.glb: 2997 -> 2997 tris, size 0.44 x 0.44 x 0.60 m
 
 Done.
 Blender 5.1.2 (hash ec6e62d40fa9 built 2026-05-19 01:37:34)
