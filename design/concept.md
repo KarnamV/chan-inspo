@@ -63,7 +63,7 @@ Meta:
     - Prop vault (timed, rare props, no enemies; carry one forward).
 - **Meta (hub = tea house):**
   - **Spirit Shards** (earned per run) → talisman unlocks, extra starting talisman slots, base move upgrades.
-  - **Boss ledger** → feeds Monkey. First kill unlocks the boss form with 3 moves; repeat kills unlock more (up to 5).
+  - **Boss ledger** → feeds Monkey. First kill unlocks the boss form (full moveset); repeat kills raise its attack limit.
   - **Prop codex** → props discovered/used join the run pool, with lore entries.
   - **Helper bonds** → helpers met live in the hub. Deeper bond (time/shards) → stronger boons offered in runs.
 - **Damage types:** physical + magic.
@@ -89,7 +89,13 @@ Meta:
     - **Yin:** more magic damage, less HP.
     - **Yang:** more physical damage, more HP.
     - Both fight. You control one and AI runs the other; tap to swap control. If one dies, you continue as the survivor.
-  - **Monkey: boss shapeshift.** Turn into any boss you have **ever** killed (persists across runs, meta-unlocked). Keeps at least 3 of that boss's moves. On demand, unlike Sheep. Monkey's pool grows as you beat more bosses → "one more run" pull.
+  - **Monkey: boss shapeshift.** Turn into any boss you have **ever** killed (meta, persists across runs). On demand, unlike Sheep.
+    - **Your attack set fully changes to the boss's** (its whole moveset, not a subset).
+    - **Other talismans still work** while transformed.
+    - **Attack limit:** you can only make so many attacks, then you're forced back into Jackie. Lore: stay longer and you lose yourself to the demon.
+    - A "losing yourself" indicator shows as you near the limit (form darkens, outline flickers), so the revert is never a surprise.
+    - Repeat kills of a boss raise its attack limit (meta pull). Limit numbers set in PRD.
+    - *(User change 2026-10-09: replaces "keeps ≥3 moves".)*
   - **Rat: animate.** Throw the talisman at a prop, and the prop comes alive and fights beside you. Defaults:
     - Costs spirit.
     - Max 2 animated at once.
@@ -113,7 +119,7 @@ Meta:
   - **Archer / thrower:** ranged. Throws props back at you (catchable). Forces movement.
   - **Wraith (spectral):** resists physical. Needs chi moves, Dragon fire or Pig magic.
   - **Armored ghoul (warded):** resists magic. Its armor breaks with Shatter.
-- **Bosses (milestone 1). Each is a fight and a Monkey kit (3 moves at first kill, up to 5 with repeat kills):**
+- **Bosses (milestone 1). Each is a fight and a full playable Monkey form (whole moveset); signature moves listed:**
   - **Butcher King** (Night Market): turns food carts into weapons. Kit: cleaver throw (returns), ground-pound shockwave, meat-hook pull.
   - **Tea Master** (Frozen Teahouse): graceful parry duelist who freezes spilled tea into ice. Kit: scalding pour cone (magic), ice-floor slide dash, teacup barrage.
   - **Harbor Kraken-man** (Rotting Docks): tentacles grab props across the dock. Kit: tentacle grab (steal a prop), ink cloud (stealth zone), whirlpool pull (AoE gather).
@@ -134,7 +140,7 @@ Meta:
 5. **Prop density per room.** Too few → bare-hand slog; too many → noise. Tune in playtests.
 6. **IP:** keep hero as Chan-*inspired* original character. No real name or likeness in anything public. Talisman powers original.
 7. **Tiger ally AI.** The second Jackie needs companion AI that keeps up, doesn't steal kills or block the camera, and has readable swap feedback. A companion is a full system → prototype it after props.
-8. **Bosses double as player characters (Monkey).** Every boss = AI enemy + playable kit (≥3 moves, controls, balance). Models are cheap via the pipeline; movesets are not. Cap boss count for v1 (e.g. 1 boss per realm, 3 realms).
+8. **Bosses double as player characters (Monkey).** Every boss = AI enemy + its **entire** moveset player-controllable (inputs, balance, works with other talismans). Models are cheap via the pipeline; full playable kits are not. Milestone 1 caps it at 3 bosses.
 9. **Damage-type balance.** Physical vs magic resists + the move draft + Yin/Yang stats = many multipliers. Keep the numbers small and readable.
 10. **Old v1 code** (Godot 4.3, 2.5D sprites) mostly not reusable for 3D. Design ideas are reusable (shops, shrines, temptation rooms, meta). Archived in `archive/demon-realm-escape/`.
 
