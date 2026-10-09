@@ -22,7 +22,7 @@ Run:
 `pick door (reward shown) → room → reward (talisman / helper boon / move draft / gold) → shop / shrine sometimes → realm boss → next realm → die or escape`
 
 Meta:
-`death → Spirit Shards → hub unlocks (talisman pool, starting slots, base moves) → new run`
+`death → Spirit Shards + boss ledger + prop codex + helper bonds → hub unlocks → new run`
 
 ## Systems (first cut, PRD decides)
 
@@ -47,6 +47,25 @@ Meta:
 - **Combat core (v1 moves):** light + heavy attack (combos from mixing), grab & throw (props + stunned enemies), dodge (i-frames; perfect timing feeds Rabbit/Snake), parry (timed block → stagger; Rabbit widens the window).
   - **Knockdown state:** enemies can be knocked down (prop hits, heavies, throws). Required for Sheep possession and Ox lift.
   - **Bare hands scale with the move draft.** They start weak (props hit much harder early). Draft upgrades to the physical and chi versions make fists viable late-run.
+- **Run structure:** 7 realms, 8–10 rooms each + boss. Doors show their reward type. Demon-twisted real places, each with its own prop family; v1 moods kept as colour themes:
+  1. Ember Night Market: stalls, lanterns, food carts, woks. Boss: Butcher King.
+  2. Frozen Teahouse: tables, teapots, screens, ice blocks. Boss: Tea Master.
+  3. Rotting Docks: crates, oars, nets, fish barrels. Boss: Harbor Kraken-man.
+  4. Ash Opera House: prop racks, fans, spears, falling scenery. Boss: Opera Phantom.
+  5. Bone Temple: bells, staves, statues, incense urns (magic). Boss: Temple Guardian.
+  6. Void Bamboo Forest: bamboo poles, rope bridges, boulders. Boss: Shadow Twin.
+  7. Demon Palace: thrones, gongs, weapon racks, everything. Boss: Demon Lord.
+  - **Delivery:** design all 7. **Milestone 1 = realms 1–3 fully playable start to end** (3 bosses, 3 Monkey kits). Realms 4–7 are later milestones.
+  - **Special rooms:**
+    - Shop (gold → talismans, food, upgrades).
+    - Shrine (trade HP/gold for a blessing).
+    - Temptation (cursed power-up, from v1).
+    - Prop vault (timed, rare props, no enemies; carry one forward).
+- **Meta (hub = tea house):**
+  - **Spirit Shards** (earned per run) → talisman unlocks, extra starting talisman slots, base move upgrades.
+  - **Boss ledger** → feeds Monkey. First kill unlocks the boss form with 3 moves; repeat kills unlock more (up to 5).
+  - **Prop codex** → props discovered/used join the run pool, with lore entries.
+  - **Helper bonds** → helpers met live in the hub. Deeper bond (time/shards) → stronger boons offered in runs.
 - **Damage types:** physical + magic.
   - Props and fists = physical.
   - Magic = chi attacks + Pig and Dragon talismans.
@@ -87,7 +106,17 @@ Meta:
   - **Pig: feast (magic).** Food props (buns, roast duck, fruit carts) can be eaten for chi. Chi powers magic belly-slam and burp-blast. New prop category: food.
   - **Dragon: dragon fire (magic).** Ignite whatever you're holding. A burning prop deals magic damage and sets enemies alight. Magic works *with* props. Synergies: Rat (flaming animated props), Tiger Yin (magic glass cannon). Reusable v1 ideas: Dragon AoE, Snake chain lightning, extra dash charges, parry window.
 - **Sheep vs Monkey (keep distinct):** Sheep = regular demons, needs knockdown in the room, temporary host with its own HP. Monkey = bosses only, on demand, from kill history.
-- **Enemies:** demons, possessed warriors, beasts. v1 = humanoid-shaped so they share one animation library (makes them possessable cheaply).
+- **Enemies (realms 1–3):** mostly humanoid, so they share one animation library and Sheep can possess them cheaply.
+  - **Shield demon:** blocks prop hits. Flank it, or Shatter it.
+  - **Brute:** knocks you down. Ideal Sheep host (heavy moveset).
+  - **Thief imp:** grabs props off the floor and runs. Fights you for the room's arsenal.
+  - **Archer / thrower:** ranged. Throws props back at you (catchable). Forces movement.
+  - **Wraith (spectral):** resists physical. Needs chi moves, Dragon fire or Pig magic.
+  - **Armored ghoul (warded):** resists magic. Its armor breaks with Shatter.
+- **Bosses (milestone 1). Each is a fight and a Monkey kit (3 moves at first kill, up to 5 with repeat kills):**
+  - **Butcher King** (Night Market): turns food carts into weapons. Kit: cleaver throw (returns), ground-pound shockwave, meat-hook pull.
+  - **Tea Master** (Frozen Teahouse): graceful parry duelist who freezes spilled tea into ice. Kit: scalding pour cone (magic), ice-floor slide dash, teacup barrage.
+  - **Harbor Kraken-man** (Rotting Docks): tentacles grab props across the dock. Kit: tentacle grab (steal a prop), ink cloud (stealth zone), whirlpool pull (AoE gather).
 
 ## Pipeline fit
 
