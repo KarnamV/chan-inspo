@@ -8,7 +8,7 @@
   2. Possession is rare + earned. Only via **Sheep talisman**. Knock demon down, jump in, borrow its moveset for a while. Demon roster doubles as temporary playable cast.
 - **Pillars:**
   1. **Improvise.** Props everywhere, all break. No main weapon. Bare hands = weakest option.
-  2. **Borrowed power.** Props, talismans, Sheep bodies. All temporary in-run except talismans held.
+  2. **Borrowed power.** Props, talismans, Sheep hosts, Monkey boss forms, Tiger twin. All temporary in-run; only kill history (Monkey pool) and unlocks persist.
   3. **Readable slapstick.** Big telegraphs, clear hits, comic timing. Isometric camera must always show what is happening.
 - **Audience:** action-roguelite fans who like melee feel. Comparables: Hades (run structure, room rewards), Sifu (kung-fu feel), Jackie Chan stunt films (prop fights), Jackie Chan Adventures (talisman fantasy).
 - **Scope tier:** hobby (months). Solo + Claude.
@@ -27,8 +27,21 @@ Meta:
 ## Systems (first cut, PRD decides)
 
 - **Props:** each has weight class (light = one-hand swing, heavy = two-hand / throw only), durability, hit effect (knockback, stun, AoE). Starter set: chair, bench, ladder, lantern, crate, pole, barrel, weapon-rack spear.
-- **Talismans:** 12 zodiac talismans, equip 3. **Sheep = possession, fixed rule.** Other 11 powers set in PRD; old v1 ideas reusable (Tiger dodge-counter, Monkey extra dashes, Dragon AoE, Snake chain). Keep each power original, not copied 1:1 from the show.
-- **Possession (Sheep):** target must be knocked down. Costs spirit meter. Duration = meter drain or host HP. Jackie's body during possession: open question (see risks).
+- **Damage types:** physical + magic.
+  - Props and fists = physical.
+  - Magic = chi attacks + Pig and Dragon talismans.
+  - Enemies get physical/magic resist profiles so both builds matter.
+- **Moves + move draft (roguelite layer):** Jackie starts physical-only and learns magic moves during the run. Rewards offer magic versions of physical moves he already has (e.g. palm strike → chi palm, sweep kick → chi wave). Pick one per reward, so a build drifts physical → magic over the run. *(User idea 2026-10-09; exact rule set in PRD.)*
+- **Talismans:** 12 zodiac talismans, equip 3. Powers stay original, not copied 1:1 from the show. Set so far:
+  - **Sheep: possession.** Fixed rule: the only way to possess. Target must be knocked down (regular demons only). Costs spirit meter. Lasts until the meter drains or the host's HP is gone, then you snap back. What happens to Jackie's body meanwhile is still open (see risks).
+  - **Tiger: split.** Jackie splits into two:
+    - **Yin:** more magic damage, less HP.
+    - **Yang:** more physical damage, more HP.
+    - Both fight. You control one and AI runs the other; tap to swap control. If one dies, you continue as the survivor.
+  - **Monkey: boss shapeshift.** Turn into any boss you have **ever** killed (persists across runs, meta-unlocked). Keeps at least 3 of that boss's moves. On demand, unlike Sheep. Monkey's pool grows as you beat more bosses → "one more run" pull.
+  - **Pig, Dragon: magic damage** sources (details in PRD).
+  - Remaining 7 (Rat, Ox, Rabbit, Snake, Horse, Rooster, Dog) set in PRD. Reusable v1 ideas: Dragon AoE, Snake chain lightning, extra dash charges, parry window.
+- **Sheep vs Monkey (keep distinct):** Sheep = regular demons, needs knockdown in the room, temporary host with its own HP. Monkey = bosses only, on demand, from kill history.
 - **Enemies:** demons, possessed warriors, beasts. v1 = humanoid-shaped so they share one animation library (makes them possessable cheaply).
 
 ## Pipeline fit
@@ -46,7 +59,10 @@ Meta:
 4. **Animation coverage:** throw, heavy swing and possessed-demon specials need clips not in Quaternius.
 5. **Prop density per room.** Too few → bare-hand slog; too many → noise. Tune in playtests.
 6. **IP:** keep hero as Chan-*inspired* original character. No real name or likeness in anything public. Talisman powers original.
-7. **Old v1 code** (Godot 4.3, 2.5D sprites) mostly not reusable for 3D. Design ideas are reusable (shops, shrines, temptation rooms, meta). Archived in `archive/demon-realm-escape/`.
+7. **Tiger ally AI.** The second Jackie needs companion AI that keeps up, doesn't steal kills or block the camera, and has readable swap feedback. A companion is a full system → prototype it after props.
+8. **Bosses double as player characters (Monkey).** Every boss = AI enemy + playable kit (≥3 moves, controls, balance). Models are cheap via the pipeline; movesets are not. Cap boss count for v1 (e.g. 1 boss per realm, 3 realms).
+9. **Damage-type balance.** Physical vs magic resists + the move draft + Yin/Yang stats = many multipliers. Keep the numbers small and readable.
+10. **Old v1 code** (Godot 4.3, 2.5D sprites) mostly not reusable for 3D. Design ideas are reusable (shops, shrines, temptation rooms, meta). Archived in `archive/demon-realm-escape/`.
 
 ## Hand-off
 
