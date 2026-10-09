@@ -1,2 +1,12 @@
 # Godot version-upgrade backups created automatically by the editor
 *-(4.*)/
+
+# Style-lock intermediates (regenerable; decision is documented by the committed comparison media)
+art/style_lock/chain/raw/
+art/style_lock/chain/prepped/
+art/style_lock/chain/rigged/
+art/style_lock/chain/anim/
+art/style_lock/chain/log/
+art/style_lock/chain/preview_*/
+art/style_lock/meshes/
+art/style_lock/renders/
