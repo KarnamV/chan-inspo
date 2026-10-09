@@ -19,21 +19,53 @@ Moment to moment:
 `enter room → scan props → grab / swing / throw → prop breaks → grab next → (Sheep: knock down demon → possess → fight as demon → host dies / timer ends → snap back) → room clear`
 
 Run:
-`pick door (reward shown) → room → reward (talisman / upgrade / gold) → shop / shrine sometimes → realm boss → next realm → die or escape`
+`pick door (reward shown) → room → reward (talisman / helper boon / move draft / gold) → shop / shrine sometimes → realm boss → next realm → die or escape`
 
 Meta:
 `death → Spirit Shards → hub unlocks (talisman pool, starting slots, base moves) → new run`
 
 ## Systems (first cut, PRD decides)
 
-- **Props:** each has weight class (light = one-hand swing, heavy = two-hand / throw only), durability, hit effect (knockback, stun, AoE). Starter set: chair, bench, ladder, lantern, crate, pole, barrel, weapon-rack spear.
+- **Props:**
+  - Weight class: light = one-hand swing, heavy = two-hand / throw only.
+  - Durability, hit effect (knockback, stun, AoE).
+  - Starter set: chair, bench, ladder, lantern, crate, pole, barrel, weapon-rack spear, + food (buns, roast duck, fruit cart).
+  - **Breaking = degrading.** A prop breaks into smaller usable pieces before it's gone (bench → bench leg → splinter stake; crate → planks). Each stage is lighter and faster but weaker. Assets: 2–3 piece meshes per prop (pipeline-generated, or Blender fracture of the main mesh).
+  - **Element tags:** lantern = fire, bucket = water/douse, spirit urn = magic, food = Pig fuel. Feed Dragon/Pig and helper boons.
+  - **Throw & catch:** perfect dodge near a thrown prop (yours or an enemy's) catches it.
+  - **Fixed props:** hanging lanterns that drop, barrels that roll, weapon racks to grab from.
+  - **Shatter:** breaking a prop on an enemy strips its armor for 3 s, so physical builds can crack armored foes.
+- **Spirit meter (chi):** one shared resource. Pays for Sheep, Tiger, Monkey, Rat and chi moves.
+  - **Base fill:** landing hits fills it slowly, so talismans work from room 1.
+  - **How else it fills is a choice made through helpers** (below), not fixed.
+- **Helpers (boon system, Hades-gods style):** allies who back Jackie in the demon realm.
+  - **First meeting:** at a fixed story level (scripted encounter that introduces the helper).
+  - **Afterwards:** their help appears as **room rewards** (door shows the helper's icon). Pick 1 of ~3 boons.
+  - **Boon kinds:** chi-fill rules (variety, damage taken, perfect dodges, eating food, kills…), talisman upgrades (how a talisman is used), damage boosts, extra lives, saves/shields.
+  - Candidate helpers (working names, one theme each): Stunt Coordinator (variety / props), Old Herbalist (passive, healing, lives), Street Brawler (damage taken, raw damage), Monk (perfect dodge/parry), Street Chef (food, Pig synergy).
+  - Helpers persist as story NPCs in the hub once met. Their roster = a meta unlock.
+- **Combat core (v1 moves):** light + heavy attack (combos from mixing), grab & throw (props + stunned enemies), dodge (i-frames; perfect timing feeds Rabbit/Snake), parry (timed block → stagger; Rabbit widens the window).
+  - **Knockdown state:** enemies can be knocked down (prop hits, heavies, throws). Required for Sheep possession and Ox lift.
+  - **Bare hands scale with the move draft.** They start weak (props hit much harder early). Draft upgrades to the physical and chi versions make fists viable late-run.
 - **Damage types:** physical + magic.
   - Props and fists = physical.
   - Magic = chi attacks + Pig and Dragon talismans.
   - Enemies get physical/magic resist profiles so both builds matter.
-- **Moves + move draft (roguelite layer):** Jackie starts physical-only and learns magic moves during the run. Rewards offer magic versions of physical moves he already has (e.g. palm strike → chi palm, sweep kick → chi wave). Pick one per reward, so a build drifts physical → magic over the run. *(User idea 2026-10-09; exact rule set in PRD.)*
+- **Dual-variant moves + move draft (roguelite layer):** every move has 2 versions:
+  - **Regular (physical).**
+  - **Chi (magic):** hold **L2** + the same button.
+  - Chi versions **start locked or weak**. The **move draft** (room reward) unlocks and upgrades them (chi palm lv1 → 2 → 3), so a build drifts physical → magic over a run.
+  - Chi versions **cost spirit**, competing with talismans for the meter (makes helper fill rules matter).
+  - Tiger synergy: Yin boosts chi versions, Yang boosts regular ones, so swapping twins swaps which half of your kit is strong.
+  - *(User design 2026-10-09; replaces "convert a slot".)*
+- **Controls (gamepad):** □ light, △ heavy, ○ grab/throw, × dodge, R1 parry, **L2 + face = chi versions** (chi light / chi heavy / chi pull / chi blink), **L1 + □△○ = talisman 1/2/3**, R2 free (lock-on or sprint). Keyboard: Shift = chi modifier, Ctrl = talisman modifier.
 - **Talismans:** 12 zodiac talismans, equip 3. Powers stay original, not copied 1:1 from the show. All 12 set 2026-10-09:
-  - **Sheep: possession.** Fixed rule: the only way to possess. Target must be knocked down (regular demons only). Costs spirit meter. Lasts until the meter drains or the host's HP is gone, then you snap back. What happens to Jackie's body meanwhile is still open (see risks).
+  - **Sheep: possession.** Fixed rule: the only way to possess. Target must be knocked down (regular demons only). Costs spirit meter. Lasts until the meter drains or the host's HP is gone, then you snap back. **Jackie's body lies vulnerable on the floor.** If it's hit, you snap back and take damage. Talisman synergies protect it:
+    - Tiger: the twin guards the body.
+    - Snake: the body is invisible while you possess.
+    - Horse: the host's attacks heal Jackie's body.
+    - Dog: a shield on the body.
+    - Rat: animated props defend it.
   - **Tiger: split.** Jackie splits into two:
     - **Yin:** more magic damage, less HP.
     - **Yang:** more physical damage, more HP.
@@ -68,7 +100,7 @@ Meta:
 
 1. **Prop combat feel.** Physics props can feel floaty or janky. Biggest risk → prototype first.
 2. **Possession readability.** From isometric view, player must always know which body they are in. Needs strong outline/colour + UI.
-3. **Jackie's body while possessing:** vulnerable on the floor (risk/reward) vs vanishes (simple)? Decide in prototype.
+3. ~~Jackie's body while possessing~~ → decided: lies vulnerable, protected via talisman synergies (see Sheep).
 4. **Animation coverage:** throw, heavy swing and possessed-demon specials need clips not in Quaternius.
 5. **Prop density per room.** Too few → bare-hand slog; too many → noise. Tune in playtests.
 6. **IP:** keep hero as Chan-*inspired* original character. No real name or likeness in anything public. Talisman powers original.
