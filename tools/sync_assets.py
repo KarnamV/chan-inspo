@@ -31,7 +31,7 @@ def main():
         if args.phase and r["phase"] != args.phase:
             continue
         cat = r["category"]
-        d = ART / (cat + "s") / r["id"]
+        d = ART / (cat + ("es" if cat.endswith("s") else "s")) / r["id"]   # same rule as asset_runner (boss -> bosses)
         src = next((d / f for f in SRC[cat] if (d / f).exists()), None)
         if src is None:
             missing.append(r["id"])

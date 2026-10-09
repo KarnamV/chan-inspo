@@ -1,0 +1,17 @@
+addon_utils.disable: bl_ext.lab_blender_org.mcp not enabled
+22:13:31 | INFO: Data are loaded, start creating Blender stuff
+22:13:31 | INFO: Blender create Mesh node 0
+22:13:31 | INFO: glTF import finished in 0.02s
+INFO Draco mesh compression is available, use library at C:\Program Files\Blender Foundation\Blender 5.1\5.1\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+22:13:31 | INFO: Starting glTF 2.0 export
+22:13:31 | INFO: Extracting primitive: Mesh_0
+22:13:31 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+22:13:31 | INFO: Primitives created: 1
+22:13:31 | INFO: Finished glTF 2.0 export in 0.11008095741271973 s
+
+ok    noodle_stand.glb: 7956 -> 7956 tris, size 1.13 x 0.85 x 1.60 m
+
+Done.
+Blender 5.1.2 (hash ec6e62d40fa9 built 2026-05-19 01:37:34)
+
+Blender quit

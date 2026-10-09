@@ -1,10 +1,12 @@
 [gd_resource type="Resource" script_class="PropData" format=3]
 
-[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="1_adseg"]
+[ext_resource type="PackedScene" path="res://assets/props/bun_basket.glb" id="1_e85k5"]
+[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="2_qtdbc"]
 
 [resource]
-script = ExtResource("1_adseg")
+script = ExtResource("2_qtdbc")
 id = &"bun_basket"
+model = ExtResource("1_e85k5")
 durability = 1
 damage = 6.0
 reach = 1.0

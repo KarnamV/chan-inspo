@@ -2,3 +2,7 @@
 *.translation
 export/
 movie/
+
+# textures Godot extracts from .glb on import (regenerated)
+*_Image_*.png
+*_Image_*.png.import

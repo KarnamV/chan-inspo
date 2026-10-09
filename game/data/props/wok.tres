@@ -1,12 +1,14 @@
 [gd_resource type="Resource" script_class="PropData" format=3]
 
-[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="1_14trm"]
-[ext_resource type="Resource" path="res://data/props/metal_scrap.tres" id="2_uqgoa"]
+[ext_resource type="PackedScene" path="res://assets/props/wok.glb" id="1_uqgoa"]
+[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="2_g0qc0"]
+[ext_resource type="Resource" path="res://data/props/metal_scrap.tres" id="3_eojsx"]
 
 [resource]
-script = ExtResource("1_14trm")
+script = ExtResource("2_g0qc0")
 id = &"wok"
+model = ExtResource("1_uqgoa")
 durability = 6
 damage = 13.0
 reach = 1.0
-pieces = Array[ExtResource("1_14trm")]([ExtResource("2_uqgoa")])
+pieces = Array[ExtResource("2_g0qc0")]([ExtResource("3_eojsx")])

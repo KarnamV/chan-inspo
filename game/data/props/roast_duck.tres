@@ -1,10 +1,12 @@
 [gd_resource type="Resource" script_class="PropData" format=3]
 
-[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="1_vnerc"]
+[ext_resource type="PackedScene" path="res://assets/props/roast_duck.glb" id="1_7cm2t"]
+[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="2_740pk"]
 
 [resource]
-script = ExtResource("1_vnerc")
+script = ExtResource("2_740pk")
 id = &"roast_duck"
+model = ExtResource("1_7cm2t")
 durability = 1
 damage = 7.0
 reach = 1.0

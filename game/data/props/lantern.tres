@@ -1,10 +1,12 @@
 [gd_resource type="Resource" script_class="PropData" format=3]
 
-[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="1_hpp6c"]
+[ext_resource type="PackedScene" path="res://assets/props/lantern.glb" id="1_iehp0"]
+[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="2_w5cbo"]
 
 [resource]
-script = ExtResource("1_hpp6c")
+script = ExtResource("2_w5cbo")
 id = &"lantern"
+model = ExtResource("1_iehp0")
 durability = 2
 damage = 10.0
 reach = 1.1

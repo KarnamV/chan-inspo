@@ -1,0 +1,16 @@
+addon_utils.disable: bl_ext.lab_blender_org.mcp not enabled
+21:40:12 | INFO: Data are loaded, start creating Blender stuff
+21:40:12 | INFO: Blender create Mesh node Mesh_0
+21:40:12 | INFO: glTF import finished in 0.01s
+00:02.422  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmp7t6a3wqi\front.png'
+00:02.547  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmp7t6a3wqi\three.png'
+00:02.656  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmp7t6a3wqi\side.png'
+00:02.766  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmp7t6a3wqi\back.png'
+00:02.875  render           | Saved: 'C:\Users\karna\AppData\Local\Temp\tmp7t6a3wqi\iso.png'
+DIMS 0.28 0.13 0.25 TRIS 1091
+REVIEW D:\Projects\Games\chan-inspo\art\pieces\pottery_shard\review.png
+Blender 5.1.2 (hash ec6e62d40fa9 built 2026-05-19 01:37:34)
+
+Blender quit
+C:\Users\karna\.claude\skills\personal-skills\skills\asset-gen\ai-gamedev-pipeline\scripts\review_render.py:45: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
+  sc.world.use_nodes = True

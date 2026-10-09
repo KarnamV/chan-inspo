@@ -1,12 +1,14 @@
 [gd_resource type="Resource" script_class="PropData" format=3]
 
-[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="1_fmoog"]
-[ext_resource type="Resource" path="res://data/props/stake.tres" id="2_xowhd"]
+[ext_resource type="PackedScene" path="res://assets/props/spear.glb" id="1_xowhd"]
+[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="2_bt4ou"]
+[ext_resource type="Resource" path="res://data/props/stake.tres" id="3_j5xh6"]
 
 [resource]
-script = ExtResource("1_fmoog")
+script = ExtResource("2_bt4ou")
 id = &"spear"
+model = ExtResource("1_xowhd")
 durability = 5
 damage = 13.0
 reach = 2.4
-pieces = Array[ExtResource("1_fmoog")]([ExtResource("2_xowhd")])
+pieces = Array[ExtResource("2_bt4ou")]([ExtResource("3_j5xh6")])

@@ -1,10 +1,11 @@
 [gd_resource type="Resource" script_class="FighterData" format=3]
 
-[ext_resource type="Script" path="res://scripts/combat/attack_data.gd" id="1_twyx3"]
-[ext_resource type="Script" path="res://scripts/fighters/fighter_data.gd" id="2_14use"]
+[ext_resource type="Script" path="res://scripts/combat/attack_data.gd" id="1_14use"]
+[ext_resource type="PackedScene" path="res://assets/characters/armored_ghoul.glb" id="2_wxadf"]
+[ext_resource type="Script" path="res://scripts/fighters/fighter_data.gd" id="3_n7n3f"]
 
-[sub_resource type="Resource" id="Resource_wxadf"]
-script = ExtResource("1_twyx3")
+[sub_resource type="Resource" id="Resource_r2lmo"]
+script = ExtResource("1_14use")
 id = &"ghoul_maul"
 clip = &"swing"
 duration = 1.0
@@ -20,15 +21,16 @@ hit_size = Vector3(1.6, 1.5, 1.7)
 hit_offset = Vector3(0, 1, 1)
 
 [resource]
-script = ExtResource("2_14use")
+script = ExtResource("3_n7n3f")
 id = &"armored_ghoul"
+model = ExtResource("2_wxadf")
 radius = 0.45
 max_hp = 110.0
 resist_physical = 0.5
 resist_magic = 0.8
 move_speed = 2.6
 stagger_scale = 0.6
-light_combo = Array[ExtResource("1_twyx3")]([SubResource("Resource_wxadf")])
-heavy = SubResource("Resource_wxadf")
+light_combo = Array[ExtResource("1_14use")]([SubResource("Resource_r2lmo")])
+heavy = SubResource("Resource_r2lmo")
 attack_cooldown = 2.0
-ai_attacks = Array[ExtResource("1_twyx3")]([SubResource("Resource_wxadf")])
+ai_attacks = Array[ExtResource("1_14use")]([SubResource("Resource_r2lmo")])

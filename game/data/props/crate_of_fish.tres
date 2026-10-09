@@ -1,14 +1,16 @@
 [gd_resource type="Resource" script_class="PropData" format=3]
 
-[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="1_5r6tc"]
-[ext_resource type="Resource" path="res://data/props/plank.tres" id="2_ipdo2"]
+[ext_resource type="PackedScene" path="res://assets/props/crate_of_fish.glb" id="1_ipdo2"]
+[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="2_p7oht"]
+[ext_resource type="Resource" path="res://data/props/plank.tres" id="3_mo1gw"]
 
 [resource]
-script = ExtResource("1_5r6tc")
+script = ExtResource("2_p7oht")
 id = &"crate_of_fish"
+model = ExtResource("1_ipdo2")
 weight = 1
 durability = 3
 damage = 15.0
 knockback = 6.0
-pieces = Array[ExtResource("1_5r6tc")]([ExtResource("2_ipdo2"), ExtResource("2_ipdo2")])
+pieces = Array[ExtResource("2_p7oht")]([ExtResource("3_mo1gw"), ExtResource("3_mo1gw")])
 element = &"food"

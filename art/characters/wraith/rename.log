@@ -1,0 +1,16 @@
+addon_utils.disable: bl_ext.lab_blender_org.mcp not enabled
+21:35:25 | INFO: Data are loaded, start creating Blender stuff
+21:35:25 | INFO: Blender create Mesh node Mesh_0
+21:35:25 | INFO: glTF import finished in 0.14s
+INFO Draco mesh compression is available, use library at C:\Program Files\Blender Foundation\Blender 5.1\5.1\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+21:35:25 | INFO: Starting glTF 2.0 export
+21:35:25 | INFO: Extracting primitive: Mesh_0
+21:35:25 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+21:35:25 | INFO: Primitives created: 1
+21:35:25 | INFO: Finished glTF 2.0 export in 0.3645029067993164 s
+
+RENAMED 28 bones -> D:\Projects\Games\chan-inspo\art\characters\wraith\humanoid.glb
+UNMAPPED []
+Blender 5.1.2 (hash ec6e62d40fa9 built 2026-05-19 01:37:34)
+
+Blender quit

@@ -1,10 +1,11 @@
 [gd_resource type="Resource" script_class="FighterData" format=3]
 
-[ext_resource type="Script" path="res://scripts/combat/attack_data.gd" id="1_v2i1i"]
-[ext_resource type="Script" path="res://scripts/fighters/fighter_data.gd" id="2_nj5q8"]
+[ext_resource type="Script" path="res://scripts/combat/attack_data.gd" id="1_nj5q8"]
+[ext_resource type="PackedScene" path="res://assets/characters/wraith.glb" id="2_kinc7"]
+[ext_resource type="Script" path="res://scripts/fighters/fighter_data.gd" id="3_lugvx"]
 
-[sub_resource type="Resource" id="Resource_kinc7"]
-script = ExtResource("1_v2i1i")
+[sub_resource type="Resource" id="Resource_6xfix"]
+script = ExtResource("1_nj5q8")
 id = &"wraith_claw"
 clip = &"chi_cast"
 duration = 0.7
@@ -19,15 +20,16 @@ hit_size = Vector3(1.2, 1.4, 2)
 hit_offset = Vector3(0, 1.1, 1.2)
 
 [resource]
-script = ExtResource("2_nj5q8")
+script = ExtResource("3_lugvx")
 id = &"wraith"
+model = ExtResource("2_kinc7")
 height = 1.9
 radius = 0.4
 max_hp = 70.0
 resist_physical = 0.75
 move_speed = 3.8
-light_combo = Array[ExtResource("1_v2i1i")]([SubResource("Resource_kinc7")])
-heavy = SubResource("Resource_kinc7")
+light_combo = Array[ExtResource("1_nj5q8")]([SubResource("Resource_6xfix")])
+heavy = SubResource("Resource_6xfix")
 hover = 0.25
 attack_range = 2.2
-ai_attacks = Array[ExtResource("1_v2i1i")]([SubResource("Resource_kinc7")])
+ai_attacks = Array[ExtResource("1_nj5q8")]([SubResource("Resource_6xfix")])

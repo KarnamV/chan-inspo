@@ -28,7 +28,7 @@ a("barrel", "prop", "M1", "wooden barrel with iron hoops", "0.9", "5000")
 a("pole", "prop", "M1", "long bamboo pole standing upright", "1.8", "3000")
 for i, p, h in (("plank", "single broken wooden plank standing upright, splintered end", "0.9"),
                 ("wood_leg", "single broken wooden table leg standing upright", "0.5"),
-                ("stake", "sharp splintered wooden stake standing upright", "0.5"),
+                ("stake", "thick chunky sharpened wooden stake, solid single piece, standing upright", "0.5"),
                 ("barrel_stave", "single curved barrel stave with a bit of iron hoop, standing upright", "0.9")):
     a(i, "piece", "M1", p, h, "2000")
 a("pillar", "decor", "M1", "red lacquered chinese temple pillar with golden dragon carving", "3.0", "8000")
@@ -44,16 +44,16 @@ for i, p, h in (("shield_demon", "armored demon soldier carrying a large round w
                 ("armored_ghoul", "undead ghoul covered in paper talisman wards and bronze armor plates, green-grey skin", "1.8")):
     a(i, "character", "M2", p, h, "30000", HB)
 for i, p, h, t in (("lantern", "round red paper lantern with a candle glowing inside", "0.5", "3000"),
-                   ("bucket", "wooden water bucket full of water", "0.4", "3000"),
-                   ("spirit_urn", "ornate blue and white porcelain urn glowing with green spirit energy", "0.6", "4000"),
+                   ("bucket", "sturdy wooden bucket with two iron bands, solid, opaque", "0.4", "3000"),
+                   ("spirit_urn", "chunky ceramic urn painted deep blue with gold pattern and a glowing green lid, solid, opaque", "0.6", "4000"),
                    ("weapon_rack", "wooden weapon rack holding spears and staffs", "1.6", "6000"),
                    ("spear", "chinese spear with red tassel standing upright", "2.0", "3000"),
-                   ("stool", "small round wooden stool", "0.45", "3000"),
+                   ("stool", "small sturdy round wooden stool with three thick legs, solid", "0.45", "3000"),
                    ("bun_basket", "bamboo steamer basket full of white steamed buns", "0.3", "4000"),
                    ("roast_duck", "glossy roast duck hanging on a hook", "0.35", "4000"),
                    ("fruit_cart", "small wooden fruit cart with oranges and melons", "1.2", "6000")):
     a(i, "prop", "M2", p, h, t)
-a("pottery_shard", "piece", "M2", "large broken piece of blue and white porcelain", "0.25", "1500")
+a("pottery_shard", "piece", "M2", "thick chunky broken piece of a dark blue ceramic pot, solid", "0.25", "1500")
 a("metal_scrap", "piece", "M2", "bent piece of iron hoop metal scrap", "0.3", "1500")
 for i, p in (("icon_dmg_physical", "clenched fist emblem, physical damage symbol"),
              ("icon_dmg_magic", "glowing jade chi swirl emblem, magic damage symbol"),
@@ -72,13 +72,13 @@ a("helper_stunt_coordinator", "character", "M4", "middle-aged stunt coordinator,
 a("helper_street_chef", "character", "M4", "cheerful plump street chef, white chef jacket, red bandana, apron, empty hands", "1.7", "30000", "helper")
 for i, p, h, t in (("market_stall_cart", "wooden night market stall cart with red awning and hanging lanterns", "1.8", "6000"),
                    ("wok", "black iron wok with wooden handle", "0.25", "2000"),
-                   ("hanging_lantern", "large hanging red silk lantern with gold tassel", "0.6", "3000"),
+                   ("hanging_lantern", "large round red silk lantern with gold top and bottom caps, solid, opaque", "0.6", "3000"),
                    ("crate_of_fish", "wooden crate full of fish on ice", "0.6", "4000")):
     a(i, "prop", "M4", p, h, t)
 for i, p, h in (("stall_awning", "red and white striped market stall awning on wooden poles", "2.6"),
                 ("noodle_stand", "steaming noodle stand counter with bowls and pots", "1.6"),
-                ("paper_lantern_string", "string of red paper lanterns on a wooden post", "2.4"),
-                ("rice_sacks", "pile of burlap rice sacks", "0.7"),
+                ("paper_lantern_string", "thick wooden post with a crossbar and three round red lanterns hanging from it, solid", "2.4"),
+                ("rice_sacks", "three plump burlap rice sacks stacked together, solid round shapes", "0.7"),
                 ("market_gate", "ornate red chinese paifang market gate", "4.0"),
                 ("incense_stand", "bronze incense burner stand with smoke", "1.2")):
     a(i, "decor", "M4", p, h, "8000")

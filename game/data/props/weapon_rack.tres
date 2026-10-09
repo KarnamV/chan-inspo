@@ -1,14 +1,16 @@
 [gd_resource type="Resource" script_class="PropData" format=3]
 
-[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="1_q0tva"]
-[ext_resource type="Resource" path="res://data/props/plank.tres" id="2_80rlb"]
-[ext_resource type="Resource" path="res://data/props/stake.tres" id="3_5ds4q"]
+[ext_resource type="PackedScene" path="res://assets/props/weapon_rack.glb" id="1_80rlb"]
+[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="2_5ds4q"]
+[ext_resource type="Resource" path="res://data/props/plank.tres" id="3_i54x8"]
+[ext_resource type="Resource" path="res://data/props/stake.tres" id="4_62x0o"]
 
 [resource]
-script = ExtResource("1_q0tva")
+script = ExtResource("2_5ds4q")
 id = &"weapon_rack"
+model = ExtResource("1_80rlb")
 weight = 1
 damage = 16.0
 knockback = 6.0
 reach = 1.4
-pieces = Array[ExtResource("1_q0tva")]([ExtResource("2_80rlb"), ExtResource("3_5ds4q")])
+pieces = Array[ExtResource("2_5ds4q")]([ExtResource("3_i54x8"), ExtResource("4_62x0o")])

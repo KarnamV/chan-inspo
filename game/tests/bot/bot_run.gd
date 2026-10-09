@@ -44,9 +44,12 @@ class Bot:
 			var from_e := f.global_position - e.global_position
 			from_e.y = 0.0
 			if e.data.front_block and e.state != Fighter.State.STAGGER and e.facing.dot(from_e.normalized()) > 0.3 and from_e.length() < 4.0:
-				if f.held_prop and from_e.length() < 2.2:
-					f.facing = -from_e.normalized()
-					f.request_heavy()   # guard break, then follow up
+				if f.held_prop:
+					if from_e.length() < 2.2:
+						f.facing = -from_e.normalized()
+						f.request_heavy()   # guard break, then follow up
+					else:
+						f.intent_move = -from_e.normalized()   # step in for the heavy
 				else:
 					f.intent_move = e.facing.cross(Vector3.UP).normalized()   # get around it
 					if tick % 40 == 0:
@@ -159,7 +162,9 @@ func _physics_process(delta: float) -> void:
 		for n in get_tree().get_nodes_in_group(&"fighters"):
 			var o := n as Fighter
 			if o and o.team == Fighter.Team.ENEMY and not o.is_dead():
-				alive.append("%s@(%.0f,%.0f) st%d" % [o.data.id, o.global_position.x, o.global_position.z, o.state])
+				alive.append("%s@(%.0f,%.0f) st%d hp%.0f face%s" % [o.data.id, o.global_position.x, o.global_position.z, o.state, o.health.hp, o.facing.snapped(Vector3.ONE * 0.1)])
+		var hh := room.hero
+		print("hero@(%.0f,%.0f) st%d prop=%s" % [hh.global_position.x, hh.global_position.z, hh.state, hh.held_prop != null])
 		print("t=%.0f still here: enemies=%s doors=%d npcs_unused=%d" % [t, alive, room.doors.size(),
 			get_tree().get_nodes_in_group(&"npcs").filter(func(x: Node) -> bool: return not x._used_once).size()])
 	if t >= LIMIT_S:

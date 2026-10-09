@@ -1,10 +1,12 @@
 [gd_resource type="Resource" script_class="PropData" format=3]
 
-[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="1_fmud8"]
+[ext_resource type="PackedScene" path="res://assets/pieces/metal_scrap.glb" id="1_80v1k"]
+[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="2_aeymg"]
 
 [resource]
-script = ExtResource("1_fmud8")
+script = ExtResource("2_aeymg")
 id = &"metal_scrap"
+model = ExtResource("1_80v1k")
 durability = 2
 damage = 9.0
 reach = 1.0

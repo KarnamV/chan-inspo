@@ -1,12 +1,14 @@
 [gd_resource type="Resource" script_class="PropData" format=3]
 
-[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="1_uakbf"]
-[ext_resource type="Resource" path="res://data/props/wood_leg.tres" id="2_ehrlr"]
+[ext_resource type="PackedScene" path="res://assets/props/stool.glb" id="1_ehrlr"]
+[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="2_bakbp"]
+[ext_resource type="Resource" path="res://data/props/wood_leg.tres" id="3_iay3u"]
 
 [resource]
-script = ExtResource("1_uakbf")
+script = ExtResource("2_bakbp")
 id = &"stool"
+model = ExtResource("1_ehrlr")
 durability = 3
 damage = 11.0
 reach = 1.1
-pieces = Array[ExtResource("1_uakbf")]([ExtResource("2_ehrlr")])
+pieces = Array[ExtResource("2_bakbp")]([ExtResource("3_iay3u")])

@@ -1,0 +1,56 @@
+addon_utils.disable: bl_ext.lab_blender_org.mcp not enabled
+22:17:10 | INFO: Data are loaded, start creating Blender stuff
+22:17:10 | INFO: Blender create Mesh node Mesh_0
+22:17:10 | INFO: glTF import finished in 0.15s
+22:17:11 | INFO: Data are loaded, start creating Blender stuff
+22:17:11 | INFO: Blender create Mesh node Mannequin
+22:17:12 | INFO: glTF import finished in 1.27s
+MAP 28 bones; target bones without a source: []
+HIP ratio 1.402
+GROUND idle-loop: lowest vertex -0.076..-0.075 -> lift hips +0.076 m
+BAKED Idle_Loop -> idle-loop: 61 frames
+GROUND walk-loop: lowest vertex -0.118..-0.058 -> lift hips +0.118 m
+BAKED Walk_Loop -> walk-loop: 33 frames
+GROUND run-loop: lowest vertex -0.130..+0.160 -> lift hips +0.130 m
+BAKED Jog_Fwd_Loop -> run-loop: 23 frames
+GROUND sprint-loop: lowest vertex -0.113..+0.176 -> lift hips +0.113 m
+BAKED Sprint_Loop -> sprint-loop: 17 frames
+GROUND punch_jab: lowest vertex -0.098..-0.097 -> lift hips +0.098 m
+BAKED Punch_Jab -> punch_jab: 22 frames
+GROUND punch_cross: lowest vertex -0.120..-0.090 -> lift hips +0.120 m
+BAKED Punch_Cross -> punch_cross: 25 frames
+GROUND swing: lowest vertex -0.256..-0.080 -> lift hips +0.256 m
+BAKED Sword_Attack -> swing: 38 frames
+GROUND dodge: lowest vertex -0.385..+0.838 -> lift hips +0.385 m
+BAKED Roll -> dodge: 36 frames
+GROUND hit: lowest vertex -0.090..-0.075 -> lift hips +0.090 m
+BAKED Hit_Chest -> hit: 9 frames
+GROUND hit_head: lowest vertex -0.075..-0.075 -> lift hips +0.075 m
+BAKED Hit_Head -> hit_head: 11 frames
+GROUND death: lowest vertex -0.473..-0.066 -> lift hips +0.473 m
+BAKED Death01 -> death: 59 frames
+GROUND pickup: lowest vertex -0.075..-0.061 -> lift hips +0.075 m
+BAKED PickUp_Table -> pickup: 21 frames
+GROUND crouch-loop: lowest vertex -0.116..-0.112 -> lift hips +0.116 m
+BAKED Crouch_Idle_Loop -> crouch-loop: 71 frames
+GROUND chi_cast: lowest vertex -0.071..-0.071 -> lift hips +0.071 m
+BAKED Spell_Simple_Shoot -> chi_cast: 13 frames
+GROUND chi_enter: lowest vertex -0.075..-0.071 -> lift hips +0.075 m
+BAKED Spell_Simple_Enter -> chi_enter: 14 frames
+GROUND jump_start: lowest vertex -0.312..+0.331 -> lift hips +0.312 m
+BAKED Jump_Start -> jump_start: 33 frames
+GROUND jump_land: lowest vertex -0.131..-0.063 -> lift hips +0.131 m
+BAKED Jump_Land -> jump_land: 31 frames
+GROUND guard: lowest vertex -0.103..-0.098 -> lift hips +0.103 m
+BAKED Sword_Idle -> guard: 41 frames
+INFO Draco mesh compression is available, use library at C:\Program Files\Blender Foundation\Blender 5.1\5.1\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+22:17:34 | INFO: Starting glTF 2.0 export
+22:17:34 | INFO: Extracting primitive: Mesh_0
+22:17:34 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+22:17:34 | INFO: Primitives created: 1
+22:17:35 | INFO: Finished glTF 2.0 export in 1.381537675857544 s
+
+EXPORTED D:\Projects\Games\chan-inspo\art\bosses\butcher_king\animated.glb
+Blender 5.1.2 (hash ec6e62d40fa9 built 2026-05-19 01:37:34)
+
+Blender quit

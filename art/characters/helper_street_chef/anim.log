@@ -1,0 +1,28 @@
+addon_utils.disable: bl_ext.lab_blender_org.mcp not enabled
+22:17:53 | INFO: Data are loaded, start creating Blender stuff
+22:17:53 | INFO: Blender create Mesh node Mesh_0
+22:17:53 | INFO: glTF import finished in 0.12s
+22:17:54 | INFO: Data are loaded, start creating Blender stuff
+22:17:54 | INFO: Blender create Mesh node Mannequin
+22:17:55 | INFO: glTF import finished in 1.25s
+MAP 28 bones; target bones without a source: []
+HIP ratio 0.916
+GROUND idle-loop: lowest vertex -0.044..-0.044 -> lift hips +0.044 m
+BAKED Idle_Loop -> idle-loop: 61 frames
+GROUND talk-loop: lowest vertex -0.044..-0.044 -> lift hips +0.044 m
+BAKED Idle_Talking_Loop -> talk-loop: 71 frames
+GROUND walk-loop: lowest vertex -0.052..-0.033 -> lift hips +0.052 m
+BAKED Walk_Loop -> walk-loop: 33 frames
+GROUND interact: lowest vertex -0.044..-0.043 -> lift hips +0.044 m
+BAKED Interact -> interact: 49 frames
+INFO Draco mesh compression is available, use library at C:\Program Files\Blender Foundation\Blender 5.1\5.1\scripts\addons_core\io_scene_gltf2\extern_draco.dll
+22:18:02 | INFO: Starting glTF 2.0 export
+22:18:02 | INFO: Extracting primitive: Mesh_0
+22:18:03 | WARNING: More than one shader node tex image used for a texture. The resulting glTF sampler will behave like the first shader node tex image.
+22:18:03 | INFO: Primitives created: 1
+22:18:03 | INFO: Finished glTF 2.0 export in 0.692136287689209 s
+
+EXPORTED D:\Projects\Games\chan-inspo\art\characters\helper_street_chef\animated.glb
+Blender 5.1.2 (hash ec6e62d40fa9 built 2026-05-19 01:37:34)
+
+Blender quit
