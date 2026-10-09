@@ -98,6 +98,7 @@ func _m2_enemies() -> void:
 	shield.front_block = true
 	shield.stagger_scale = 0.8
 	shield.attack_range = 1.9
+	shield.turn_speed = 1.5   # slow to turn: circle or dodge behind it
 	_save(shield, "res://data/fighters/shield_demon.tres")
 
 	var scratch := atk(&"imp_scratch", &"punch_jab", 0.4, 0.15, 0.26, 4.0, 1.5, false, 2.0, Vector3(0.8, 1.0, 0.9), Vector3(0, 0.6, 0.6))
@@ -175,6 +176,11 @@ func _props() -> void:
 	_prop(&"roast_duck", PropData.Weight.LIGHT, 1, 7.0, 1.0, [], &"food")
 	_prop(&"fruit_cart", PropData.Weight.HEAVY, 4, 18.0, 1.6, [plank, plank], &"food")
 	_prop(&"weapon_rack", PropData.Weight.HEAVY, 4, 16.0, 1.4, [plank, stake])
+	# M4: Ember Night Market
+	_prop(&"market_stall_cart", PropData.Weight.HEAVY, 5, 20.0, 1.8, [plank, plank, wood_leg])
+	_prop(&"wok", PropData.Weight.LIGHT, 6, 13.0, 1.0, [scrap])
+	_prop(&"crate_of_fish", PropData.Weight.HEAVY, 3, 15.0, 1.3, [plank, plank], &"food")
+	_prop(&"hanging_lantern", PropData.Weight.LIGHT, 2, 11.0, 1.1, [], &"fire")
 
 
 func _prop(id: StringName, w: PropData.Weight, dur: int, dmg: float, reach: float, pieces: Array, element: StringName = &"") -> PropData:

@@ -6,6 +6,7 @@ extends Brain
 var cooldown := 0.0
 var think_t := 0.0
 var target: Fighter
+var carry_t := 0.0   ## thief: seconds spent running with loot
 
 
 func think(f: Fighter, delta: float) -> void:
@@ -31,10 +32,15 @@ func think(f: Fighter, delta: float) -> void:
 	if dist > f.data.attack_range:
 		f.intent_move = to / dist
 		return
-	f.facing = to / maxf(dist, 0.01)
-	if cooldown <= 0.0 and f.can_act() and not f.data.ai_attacks.is_empty():
+	_turn(f, to / maxf(dist, 0.01), delta)
+	if cooldown <= 0.0 and f.can_act() and not f.data.ai_attacks.is_empty() and f.facing.dot(to / maxf(dist, 0.01)) > 0.7:
 		f.request_attack(f.data.ai_attacks[randi() % f.data.ai_attacks.size()])
 		cooldown = f.data.attack_cooldown * randf_range(0.8, 1.2)
+
+
+## Turn toward `dir` at the fighter's turn speed (snapping made flanking impossible).
+func _turn(f: Fighter, dir: Vector3, delta: float) -> void:
+	f.facing = f.facing.slerp(dir, clampf(f.data.turn_speed * delta, 0.0, 1.0)).normalized()
 
 
 func _pick_target(f: Fighter) -> Fighter:
@@ -56,9 +62,10 @@ func _pick_target(f: Fighter) -> Fighter:
 ## Thief imp: grab a prop off the floor and run from the player; throws it when cornered.
 func _thief(f: Fighter, to: Vector3, dist: float) -> void:
 	if f.held_prop == null:
+		carry_t = 0.0
 		var p := _nearest_free_prop(f, 12.0)
 		if p == null:
-			f.intent_move = -to / maxf(dist, 0.01)   # nothing to steal: keep away
+			_melee(f, to, dist)   # nothing to steal: fight (fleeing forever made it unkillable)
 			return
 		var tp := p.global_position - f.global_position
 		tp.y = 0.0
@@ -67,12 +74,15 @@ func _thief(f: Fighter, to: Vector3, dist: float) -> void:
 		else:
 			f.intent_move = tp.normalized()
 		return
-	if dist < 2.5 and cooldown <= 0.0:
+	carry_t += 0.016
+	var cornered := absf(f.global_position.x) > 7.0 or absf(f.global_position.z) > 7.0
+	if (dist < 2.5 or carry_t > 5.0 or cornered) and cooldown <= 0.0:
 		f.facing = to / maxf(dist, 0.01)
-		f.request_grab()   # throw it at the player
+		f.request_grab()   # throw the loot at the player
 		cooldown = f.data.attack_cooldown
+		carry_t = 0.0
 	else:
-		f.intent_move = -to / maxf(dist, 0.01)
+		f.intent_move = -to / maxf(dist, 0.01) * 0.7   # loot slows it down
 
 
 ## Archer: keep `keep_distance`; throw a nearby prop, else a knife, on cooldown.
@@ -105,6 +115,16 @@ func _ranged(f: Fighter, to: Vector3, dist: float, _delta: float) -> void:
 		var aim := (target.global_position + Vector3(0, 1.0, 0)) - from
 		Projectile.fire(f.get_tree().get_first_node_in_group(&"level_root"), from, aim, 14.0, info, f.team)
 		f.anim.play(&"throw", 0.06, 0.4)
+
+
+func _melee(f: Fighter, to: Vector3, dist: float) -> void:
+	if dist > f.data.attack_range:
+		f.intent_move = to / maxf(dist, 0.01)
+		return
+	f.facing = to / maxf(dist, 0.01)
+	if cooldown <= 0.0 and f.can_act() and not f.data.ai_attacks.is_empty():
+		f.request_attack(f.data.ai_attacks[randi() % f.data.ai_attacks.size()])
+		cooldown = f.data.attack_cooldown * randf_range(0.8, 1.2)
 
 
 func _nearest_free_prop(f: Fighter, within: float) -> Prop:

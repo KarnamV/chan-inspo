@@ -4,7 +4,6 @@ extends Node3D
 ## When every demon is down the wave respawns (props too) so the loop can be played repeatedly.
 ## R = reset the room.
 
-const ROOM := 18.0
 var HERO: FighterData
 const PRESETS := {
 	"m1": {
@@ -29,6 +28,10 @@ const ENEMY_SPAWNS := [Vector3(-2, 0, -6), Vector3(3, 0, -6), Vector3(-6, 0, -4)
 	Vector3(0, 0, -7), Vector3(-5, 0, -7)]
 
 @export var preset := "m1"
+@export var room_size := 18.0
+@export var floor_tex := "res://assets/textures/floor_test.png"
+@export var wall_tex := "res://assets/textures/wall_test.png"
+@export var hero_spawn := Vector3(0, 0, 4)
 @export var talismans: Array[StringName] = [&"sheep", &"tiger", &"rat"]
 @export var spawn_enemies := true
 @export var with_hud := true
@@ -43,25 +46,42 @@ var _respawn_t := -1.0
 func _ready() -> void:
 	add_to_group(&"level_root")
 	HERO = load("res://data/fighters/hero.tres")
+	_configure()
 	_build_environment()
 	_build_room()
+	_decorate()
 	camera = IsoCamera.new()
 	add_child(camera)
 	camera.make_current()
 	Juice.camera = camera
-	hero = spawn_fighter(HERO, Fighter.Team.PLAYER, Vector3(0, 0, 4))
+	hero = spawn_fighter(HERO, Fighter.Team.PLAYER, hero_spawn)
 	controller = PlayerController.new()
 	add_child(controller)
 	controller.setup(hero, camera)
 	controller.equip(talismans)
 	camera.snap()
-	reset_props()
-	if spawn_enemies:
-		spawn_wave()
 	if with_hud:
 		var hud := Hud.new()
 		add_child(hud)
 		hud.bind(controller)
+	_populate()
+
+
+## Override points for themed rooms (RunRoom).
+func _configure() -> void:
+	pass
+
+
+func _decorate() -> void:
+	for c in [Vector3(-room_size / 2 + 0.6, 0, -room_size / 2 + 0.6), Vector3(room_size / 2 - 0.6, 0, -room_size / 2 + 0.6)]:
+		decor("res://assets/decors/pillar.glb", c)
+	decor("res://assets/decors/room_door.glb", Vector3(0, 0, -room_size / 2 + 0.4))
+
+
+func _populate() -> void:
+	reset_props()
+	if spawn_enemies:
+		spawn_wave()
 
 
 func spawn_fighter(d: FighterData, team: Fighter.Team, at: Vector3) -> Fighter:
@@ -232,23 +252,22 @@ func _static_box(size: Vector3, pos: Vector3, mat: Material) -> void:
 
 
 func _build_room() -> void:
-	var floor_mat := _textured("res://assets/textures/floor_test.png", Vector3(ROOM / 3.0, ROOM / 3.0, 1))
-	_static_box(Vector3(ROOM, 0.2, ROOM), Vector3(0, -0.1, 0), floor_mat)
-	var wall_mat := _textured("res://assets/textures/wall_test.png", Vector3(ROOM / 3.0, 1, 1))
+	var floor_mat := _textured(floor_tex, Vector3(room_size / 3.0, room_size / 3.0, 1))
+	_static_box(Vector3(room_size, 0.2, room_size), Vector3(0, -0.1, 0), floor_mat)
+	var wall_mat := _textured(wall_tex, Vector3(room_size / 3.0, 1, 1))
 	var h := 2.4
 	var low := 0.6   # camera-side walls stay low so they never hide the fight
-	_static_box(Vector3(ROOM, h, 0.4), Vector3(0, h / 2, -ROOM / 2), wall_mat)
-	_static_box(Vector3(0.4, h, ROOM), Vector3(-ROOM / 2, h / 2, 0), wall_mat)
-	_static_box(Vector3(ROOM, low, 0.4), Vector3(0, low / 2, ROOM / 2), wall_mat)
-	_static_box(Vector3(0.4, low, ROOM), Vector3(ROOM / 2, low / 2, 0), wall_mat)
-	for c in [Vector3(-ROOM / 2 + 0.6, 0, -ROOM / 2 + 0.6), Vector3(ROOM / 2 - 0.6, 0, -ROOM / 2 + 0.6)]:
-		_decor("res://assets/decors/pillar.glb", c)
-	_decor("res://assets/decors/room_door.glb", Vector3(0, 0, -ROOM / 2 + 0.4))
+	_static_box(Vector3(room_size, h, 0.4), Vector3(0, h / 2, -room_size / 2), wall_mat)
+	_static_box(Vector3(0.4, h, room_size), Vector3(-room_size / 2, h / 2, 0), wall_mat)
+	_static_box(Vector3(room_size, low, 0.4), Vector3(0, low / 2, room_size / 2), wall_mat)
+	_static_box(Vector3(0.4, low, room_size), Vector3(room_size / 2, low / 2, 0), wall_mat)
 
 
-func _decor(path: String, at: Vector3) -> void:
+func decor(path: String, at: Vector3, yaw := 0.0, scale_to := 0.0) -> Node3D:
 	if not ResourceLoader.exists(path):
-		return
+		return null
 	var d: Node3D = load(path).instantiate()
-	add_child(d)
 	d.position = at
+	d.rotation.y = yaw
+	add_child(d)
+	return d

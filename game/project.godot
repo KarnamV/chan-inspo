@@ -4,7 +4,7 @@ config_version=5
 [application]
 
 config/name="Demon Realm Escape"
-run/main_scene="res://scenes/levels/test_room.tscn"
+run/main_scene="res://scenes/run/hub.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 
 [autoload]

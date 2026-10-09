@@ -23,6 +23,7 @@ height = 1.9
 radius = 0.45
 max_hp = 90.0
 move_speed = 3.6
+turn_speed = 1.5
 stagger_scale = 0.8
 light_combo = Array[ExtResource("1_f75q0")]([SubResource("Resource_fg2v8")])
 heavy = SubResource("Resource_fg2v8")

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="PropData" format=3]
+
+[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="1_c41sy"]
+
+[resource]
+script = ExtResource("1_c41sy")
+id = &"hanging_lantern"
+durability = 2
+damage = 11.0
+reach = 1.1
+element = &"fire"

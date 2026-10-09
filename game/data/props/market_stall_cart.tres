@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="PropData" format=3]
+
+[ext_resource type="Script" path="res://scripts/props/prop_data.gd" id="1_x5wg6"]
+[ext_resource type="Resource" path="res://data/props/plank.tres" id="2_dsihn"]
+[ext_resource type="Resource" path="res://data/props/wood_leg.tres" id="3_y80ww"]
+
+[resource]
+script = ExtResource("1_x5wg6")
+id = &"market_stall_cart"
+weight = 1
+durability = 5
+damage = 20.0
+knockback = 6.0
+reach = 1.8
+pieces = Array[ExtResource("1_x5wg6")]([ExtResource("2_dsihn"), ExtResource("2_dsihn"), ExtResource("3_y80ww")])

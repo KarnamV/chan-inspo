@@ -339,12 +339,17 @@ func receive_hit(info: DamageInfo) -> float:
 		_flash_t = 0.12
 		blocked.emit(info)
 		return 0.0
-	if data.front_block and not info.shatter and info.source is Node3D and state != State.KNOCKDOWN:
+	if data.front_block and not info.shatter and info.type == DamageInfo.Type.PHYSICAL 			and info.source is Node3D and state not in [State.KNOCKDOWN, State.STAGGER]:
 		var to_src: Vector3 = (info.source as Node3D).global_position - global_position
 		to_src.y = 0.0
 		if to_src.length() > 0.01 and facing.dot(to_src.normalized()) > 0.35:
 			velocity += -to_src.normalized() * 2.0
 			blocked.emit(info)
+			if info.knockdown:   # heavy hit on the shield: guard break, shield down for a moment
+				hitbox.deactivate()
+				_set_state(State.STAGGER)
+				knock_time = 0.9
+				anim.play(&"hit", 0.05, 0.6)
 			return 0.0
 	if health.invulnerable and state == State.DODGE and state_t <= data.dodge_iframes:
 		perfect_dodge.emit()
@@ -395,6 +400,17 @@ func _on_died() -> void:
 	collision_layer = 0
 	died.emit()
 	Events.entity_died.emit(self)
+
+
+## Extra life: stand back up from death with `hp`.
+func revive(hp: float) -> void:
+	health.hp = hp
+	hurtbox.monitorable = true
+	collision_layer = 1 << (1 if team == Team.PLAYER else 2)
+	_set_state(State.GETUP)
+	anim.play(&"getup", 0.05, 0.8, true)
+	health.invulnerable = true
+	get_tree().create_timer(1.5, false).timeout.connect(func() -> void: health.invulnerable = false)
 
 
 func drop_prop() -> void:

@@ -15,10 +15,13 @@ Rules for this run:
   - Bugs found + fixed: spawn order (bodies stacking), Sheep cost made possession end instantly at exactly 40 spirit (now: 40 = requirement, then drains), long props spawned balancing upright (now lie down), stake mesh fragmented (re-rolled, prompt 'thick chunky').
 - [ ] M2 combat kit: parry, catch, shield block, elements (fire/water/magic), chi palm/wave/pull/blink, thief + archer AI, projectiles, kickable props, hanging lanterns, weapon rack written + unit-tested. Needs M2 assets + combat_arena bot.
 - [ ] M3 talismans
-- [ ] M4 realm 1 slice
+- [ ] M4 realm 1 slice: run loop works end to end (bot_run 10/10: 10 rooms, 2 helpers, shop, shrine, 10 rewards, Butcher King, ledger, shards, hub). Waiting: M2-M4 assets (models for demons/boss/helpers/market), visual pass.
+  - Bugs found + fixed by the run bot: panels paused the bot (deadlock), thief imp kited forever (unkillable), shield demon snapped to face you (flanking impossible) → turn rate + guard break + magic bypass, double-counted boon rewards.
 
 ## For user review (collected during the run)
 - Icon style picked by me: flat vector (most readable at 48 px). Low-poly faceted is an option for big reward cards.
 - Heavy smash + throw clips are procedural placeholders (stiff). Upgrade path: Kimodo.
 - Sheep economy changed: 40 spirit needed to start, no up-front charge; drains 7/s (≈6–14 s of possession).
+- **Balance is untested:** bots run with god-mode HP and 3× damage to prove the loop. Expect tuning needs (enemy HP, spirit costs, boss damage).
+- Thief imps still kite a lot (room 9 took ~70 s for the bot). Might need a slower imp or a 'grab' counter.
 - M1 'is it fun?' gate: please play `game/scenes/levels/test_room.tscn` (F6) — I can only verify it works.
