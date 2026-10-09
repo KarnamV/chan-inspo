@@ -1,0 +1,14 @@
+{
+  "suffix_3d": "stylized low-poly game art, flat shaded facets, bold colors",
+  "suffix_icon": "flat vector game icon, bold dark outline, simple shapes, bold colors, centered, plain white background",
+  "suffix_portrait": "stylized low-poly game art, flat shaded facets, bold colors, plain white background",
+  "suffix_texture": "stylized low-poly game art, flat shaded facets, muted colors",
+  "anim_source": "D:/Assets/Quaternius/UAL/extracted/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb",
+  "clip_presets": {
+    "humanoid_base": "Idle_Loop=idle-loop,Walk_Loop=walk-loop,Jog_Fwd_Loop=run-loop,Sprint_Loop=sprint-loop,Punch_Jab=punch_jab,Punch_Cross=punch_cross,Sword_Attack=swing,Roll=dodge,Hit_Chest=hit,Hit_Head=hit_head,Death01=death,PickUp_Table=pickup,Crouch_Idle_Loop=crouch-loop,Spell_Simple_Shoot=chi_cast,Spell_Simple_Enter=chi_enter,Jump_Start=jump_start,Jump_Land=jump_land,Sword_Idle=guard",
+    "helper": "Idle_Loop=idle-loop,Idle_Talking_Loop=talk-loop,Walk_Loop=walk-loop,Interact=interact"
+  },
+  "procedural_clips": {
+    "humanoid_base": "heavy,throw"
+  }
+}

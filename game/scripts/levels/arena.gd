@@ -1,0 +1,195 @@
+class_name Arena
+extends Node3D
+## M1 prototype room, built in code: textured floor + walls, decor, Jackie, props, brutes.
+## When every demon is down the wave respawns (props too) so the loop can be played repeatedly.
+## R = reset the room.
+
+const ROOM := 18.0
+var HERO: FighterData
+var BRUTE: FighterData
+const PROP_LAYOUT := [
+	[&"chair", Vector3(-3, 0, 2)], [&"chair", Vector3(4, 0, -1)], [&"bench", Vector3(-4, 0, -3)],
+	[&"crate", Vector3(2, 0, 4)], [&"crate", Vector3(5, 0, 3)], [&"barrel", Vector3(-5, 0, 4)],
+	[&"barrel", Vector3(0, 0, -5)], [&"pole", Vector3(3, 0, -4)],
+]
+const ENEMY_SPAWNS := [Vector3(-2, 0, -6), Vector3(3, 0, -6)]
+
+@export var spawn_enemies := true
+@export var with_hud := true
+
+var hero: Fighter
+var controller: PlayerController
+var camera: IsoCamera
+var wave := 0
+var _respawn_t := -1.0
+
+
+func _ready() -> void:
+	add_to_group(&"level_root")
+	HERO = load("res://data/fighters/hero.tres")
+	BRUTE = load("res://data/fighters/brute.tres")
+	_build_environment()
+	_build_room()
+	camera = IsoCamera.new()
+	add_child(camera)
+	camera.make_current()
+	Juice.camera = camera
+	hero = spawn_fighter(HERO, Fighter.Team.PLAYER, Vector3(0, 0, 4))
+	controller = PlayerController.new()
+	add_child(controller)
+	controller.setup(hero, camera)
+	camera.snap()
+	reset_props()
+	if spawn_enemies:
+		spawn_wave()
+	if with_hud:
+		var hud := Hud.new()
+		add_child(hud)
+		hud.bind(controller)
+
+
+func spawn_fighter(d: FighterData, team: Fighter.Team, at: Vector3) -> Fighter:
+	var f := Fighter.new()
+	f.data = d
+	f.team = team
+	f.position = at   # before add_child: spawning at the origin first makes bodies overlap and pop
+	add_child(f)
+	if team == Fighter.Team.ENEMY:
+		f.set_brain(AIBrain.new())
+		f.facing = (Vector3(0, 0, 4) - at).normalized()
+	return f
+
+
+func spawn_wave() -> void:
+	wave += 1
+	for p in ENEMY_SPAWNS:
+		spawn_fighter(BRUTE, Fighter.Team.ENEMY, p)
+
+
+func spawn_prop(id: StringName, at: Vector3) -> Prop:
+	var p := Prop.new()
+	p.data = load("res://data/props/%s.tres" % id)
+	p.position = at + Vector3.UP * 0.05
+	add_child(p)
+	p.rotation.y = randf() * TAU
+	return p
+
+
+func reset_props() -> void:
+	for n in get_tree().get_nodes_in_group(&"props"):
+		if (n as Prop).mode != Prop.Mode.HELD:
+			n.queue_free()
+	for e in PROP_LAYOUT:
+		spawn_prop(e[0], e[1])
+
+
+func living_enemies() -> int:
+	var c := 0
+	for n in get_tree().get_nodes_in_group(&"fighters"):
+		var f := n as Fighter
+		if f and not f.is_dead() and f.team == Fighter.Team.ENEMY:
+			c += 1
+	return c
+
+
+func _process(delta: float) -> void:
+	if Input.is_key_pressed(KEY_R) and _respawn_t < 0.0:
+		get_tree().reload_current_scene()
+		return
+	if not spawn_enemies:
+		return
+	if living_enemies() == 0 and controller.host == null:
+		if _respawn_t < 0.0:
+			_respawn_t = 3.0
+			Events.room_cleared.emit(self)
+		_respawn_t -= delta
+		if _respawn_t <= 0.0:
+			_respawn_t = -1.0
+			for n in get_tree().get_nodes_in_group(&"fighters"):
+				if (n as Fighter).is_dead() and n != hero:
+					n.queue_free()
+			reset_props()
+			spawn_wave()
+	if hero.is_dead() and _respawn_t < 0.0:
+		_respawn_t = 3.0
+	if hero.is_dead():
+		_respawn_t -= delta
+		if _respawn_t <= 0.0:
+			get_tree().reload_current_scene()
+
+
+# ---------------- build ----------------
+func _build_environment() -> void:
+	var env := Environment.new()
+	env.background_mode = Environment.BG_COLOR
+	env.background_color = Color(0.06, 0.04, 0.05)
+	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	env.ambient_light_color = Color(0.55, 0.45, 0.5)
+	env.ambient_light_energy = 0.9
+	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+	env.glow_enabled = true
+	var we := WorldEnvironment.new()
+	we.environment = env
+	add_child(we)
+	var sun := DirectionalLight3D.new()
+	sun.rotation_degrees = Vector3(-55, 35, 0)
+	sun.light_energy = 1.3
+	sun.light_color = Color(1.0, 0.9, 0.85)
+	sun.shadow_enabled = true
+	add_child(sun)
+	var glow := OmniLight3D.new()
+	glow.position = Vector3(0, 4, -8)
+	glow.light_color = Color(1.0, 0.25, 0.15)
+	glow.light_energy = 3.0
+	glow.omni_range = 12.0
+	add_child(glow)
+
+
+func _textured(path: String, uv: Vector3) -> StandardMaterial3D:
+	var m := StandardMaterial3D.new()
+	if ResourceLoader.exists(path):
+		m.albedo_texture = load(path)
+	m.uv1_scale = uv
+	m.roughness = 0.9
+	return m
+
+
+func _static_box(size: Vector3, pos: Vector3, mat: Material) -> void:
+	var body := StaticBody3D.new()
+	body.collision_layer = 1
+	var cs := CollisionShape3D.new()
+	var shape := BoxShape3D.new()
+	shape.size = size
+	cs.shape = shape
+	body.add_child(cs)
+	var mi := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = size
+	mi.mesh = bm
+	mi.material_override = mat
+	body.add_child(mi)
+	add_child(body)
+	body.position = pos
+
+
+func _build_room() -> void:
+	var floor_mat := _textured("res://assets/textures/floor_test.png", Vector3(ROOM / 3.0, ROOM / 3.0, 1))
+	_static_box(Vector3(ROOM, 0.2, ROOM), Vector3(0, -0.1, 0), floor_mat)
+	var wall_mat := _textured("res://assets/textures/wall_test.png", Vector3(ROOM / 3.0, 1, 1))
+	var h := 2.4
+	var low := 0.6   # camera-side walls stay low so they never hide the fight
+	_static_box(Vector3(ROOM, h, 0.4), Vector3(0, h / 2, -ROOM / 2), wall_mat)
+	_static_box(Vector3(0.4, h, ROOM), Vector3(-ROOM / 2, h / 2, 0), wall_mat)
+	_static_box(Vector3(ROOM, low, 0.4), Vector3(0, low / 2, ROOM / 2), wall_mat)
+	_static_box(Vector3(0.4, low, ROOM), Vector3(ROOM / 2, low / 2, 0), wall_mat)
+	for c in [Vector3(-ROOM / 2 + 0.6, 0, -ROOM / 2 + 0.6), Vector3(ROOM / 2 - 0.6, 0, -ROOM / 2 + 0.6)]:
+		_decor("res://assets/decors/pillar.glb", c)
+	_decor("res://assets/decors/room_door.glb", Vector3(0, 0, -ROOM / 2 + 0.4))
+
+
+func _decor(path: String, at: Vector3) -> void:
+	if not ResourceLoader.exists(path):
+		return
+	var d: Node3D = load(path).instantiate()
+	add_child(d)
+	d.position = at

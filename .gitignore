@@ -10,3 +10,7 @@ art/style_lock/chain/log/
 art/style_lock/chain/preview_*/
 art/style_lock/meshes/
 art/style_lock/renders/
+
+# asset runner logs / temp sheets
+assets/run_*.log
+assets/*_concepts.png
