@@ -1,0 +1,2 @@
+# Locked check files (repo-relative, one per line). Everything under checks/ is locked too.
+# write-checks appends test files here when it commits a feature's checks.
