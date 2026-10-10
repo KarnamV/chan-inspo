@@ -1,13 +1,13 @@
 class_name RunNpc
 extends Node3D
-## A talkable spot in a run room: helper, shopkeeper, shrine altar. Shows "[E] ..." when the player
+## A talkable spot in a run room: helper, shopkeeper, shrine altar. Shows "[E] Talk" (or the pad button) when the player
 ## is near; `interact()` fires `used` (the room decides what happens).
 
 signal used
 
 @export var model_path := ""
 @export var title := ""
-@export var prompt := "[E] Talk"
+@export var prompt := "Talk"   ## verb; the interact button is prefixed per device
 @export var range := 2.6
 
 var _prompt: Label3D
@@ -58,5 +58,6 @@ func _process(_d: float) -> void:
 		return
 	var f := lvl.controller.controlled
 	_prompt.visible = near(f) and (reusable or not _used_once)
+	_prompt.text = "[%s] %s" % [Inputs.label(&"interact"), prompt]
 	if _prompt.visible and Input.is_action_just_pressed(&"interact"):
 		interact()

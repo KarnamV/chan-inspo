@@ -7,6 +7,7 @@ signal finished
 var speaker := ""
 var text := ""
 var portrait := ""
+var _open_ms := 0
 
 
 static func open(parent: Node, p_speaker: String, p_text: String, p_portrait := "") -> DialoguePanel:
@@ -18,7 +19,19 @@ static func open(parent: Node, p_speaker: String, p_text: String, p_portrait := 
 	return d
 
 
+## Shows lines one after another: [[speaker, text, portrait path], ...]; `done` runs after the last.
+static func sequence(parent: Node, lines: Array, done := Callable()) -> void:
+	if lines.is_empty():
+		if done.is_valid():
+			done.call()
+		return
+	var l: Array = lines[0]
+	var d := open(parent, l[0], l[1], l[2] if l.size() > 2 else "")
+	d.finished.connect(func() -> void: sequence(parent, lines.slice(1), done))
+
+
 func _ready() -> void:
+	_open_ms = Time.get_ticks_msec()
 	layer = 19
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	get_tree().paused = true
@@ -37,14 +50,16 @@ func _ready() -> void:
 		tr.custom_minimum_size = Vector2(150, 150)
 		tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		var key := ShaderMaterial.new()
+		key.shader = load("res://assets/shaders/key_white.gdshader")
+		tr.material = key
 		h.add_child(tr)
 	var v := VBoxContainer.new()
 	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	h.add_child(v)
 	var n := Label.new()
 	n.text = speaker
-	n.add_theme_font_size_override("font_size", 24)
-	n.add_theme_color_override("font_color", Color(1.0, 0.75, 0.35))
+	n.theme_type_variation = &"Header"
 	v.add_child(n)
 	var t := Label.new()
 	t.text = text
@@ -53,13 +68,15 @@ func _ready() -> void:
 	t.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	v.add_child(t)
 	var hint := Label.new()
-	hint.text = "[J / click] continue"
+	hint.text = "[%s] continue" % ("A" if Inputs.using_pad else "Enter / click")
 	hint.modulate = Color(1, 1, 1, 0.6)
 	v.add_child(hint)
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed(&"attack_light") or event.is_action_pressed(&"interact") \
+	if Time.get_ticks_msec() - _open_ms < 150:   # the press that opened/closed the last line
+		return
+	if event.is_action_pressed(&"attack_light") or event.is_action_pressed(&"interact") or event.is_action_pressed(&"ui_accept") \
 			or (event is InputEventMouseButton and event.pressed):
 		close()
 

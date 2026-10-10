@@ -19,13 +19,17 @@ func _ready() -> void:
 	box.anchor_top = 0.03
 	add_child(box)
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lbl.add_theme_font_size_override("font_size", 26)
+	lbl.theme_type_variation = &"Title"
+	lbl.add_theme_font_size_override("font_size", 32)
 	lbl.add_theme_color_override("font_color", Color(1.0, 0.55, 0.4))
 	box.add_child(lbl)
 	bar.custom_minimum_size = Vector2(0, 22)
 	bar.show_percentage = false
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color(0.8, 0.15, 0.1)
+	sb.set_corner_radius_all(5)
+	sb.border_color = Color(1.0, 0.45, 0.3)
+	sb.border_width_top = 2
 	bar.add_theme_stylebox_override("fill", sb)
 	box.add_child(bar)
 

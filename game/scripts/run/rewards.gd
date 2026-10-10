@@ -9,10 +9,10 @@ const DRAFT_STAT := {
 	&"light_feet": ["Light Feet", "Dodge recovers 30% faster."],
 }
 const CHI_INFO := {
-	&"palm": ["Chi Palm", "Magic palm strike with reach. (Shift + J)"],
-	&"wave": ["Chi Wave", "Magic shockwave that knocks down. (Shift + K)"],
-	&"pull": ["Chi Pull", "Yank a prop into your hand, or a demon to you. (Shift + L)"],
-	&"blink": ["Chi Blink", "Short teleport dodge. (Shift + Space)"],
+	&"palm": ["Chi Palm", "Magic palm strike with reach.", &"attack_light"],
+	&"wave": ["Chi Wave", "Magic shockwave that knocks down.", &"attack_heavy"],
+	&"pull": ["Chi Pull", "Yank a prop into your hand, or a demon to you.", &"grab"],
+	&"blink": ["Chi Blink", "Short teleport dodge.", &"dodge"],
 }
 
 
@@ -92,6 +92,7 @@ static func _draft_offers(pc: PlayerController, rng: RandomNumberGenerator) -> A
 			continue
 		var title: String = CHI_INFO[id][0] + ("" if not unlocked else " Lv%d" % (lvl + 1))
 		var text: String = CHI_INFO[id][1] if not unlocked else "Upgrade: +35% power, more reach."
+		text += " (%s)" % Inputs.combo(&"chi_mod", CHI_INFO[id][2])
 		cards.append({"title": title, "text": text, "icon": icon("icon_dmg_magic"),
 			"apply": func() -> void:
 				if not pc.chi_unlocked[id]:

@@ -30,10 +30,6 @@ func _configure() -> void:
 		"shop", "shrine": room_size = 14.0
 		_: room_size = 18.0
 	hero_spawn = Vector3(0, 0, room_size / 2 - 3.0)
-	if ResourceLoader.exists("res://assets/textures/market_floor.png"):
-		floor_tex = "res://assets/textures/market_floor.png"
-	if ResourceLoader.exists("res://assets/textures/market_wall.png"):
-		wall_tex = "res://assets/textures/market_wall.png"
 
 
 func _decorate() -> void:
@@ -60,6 +56,8 @@ func _populate() -> void:
 		controller.equip([&"sheep"])
 	hero.died.connect(_on_hero_died)
 	Events.prop_picked.connect(func(_f: Node, p: Node) -> void: Meta.see_prop((p as Prop).data.id))
+	if Run.room_i == 0 and not Meta.has_seen(&"first_room"):
+		_first_room_lines.call_deferred()
 	match spec.type:
 		"combat":
 			_scatter_props(10, MARKET_PROPS)
@@ -74,12 +72,12 @@ func _populate() -> void:
 				_spawn_helper()
 		"shop":
 			_scatter_props(3, MARKET_PROPS)
-			var shop := _npc("res://assets/characters/helper_street_chef.glb", "Night Market Stall", "[E] Shop")
+			var shop := _npc("res://assets/characters/helper_street_chef.glb", "Night Market Stall", "Shop")
 			shop.reusable = true
 			shop.used.connect(_open_shop)
 			_on_clear()
 		"shrine":
-			var altar := _npc("res://assets/decors/incense_stand.glb", "Demon Shrine", "[E] Pray")
+			var altar := _npc("res://assets/decors/incense_stand.glb", "Demon Shrine", "Pray")
 			altar.used.connect(_open_shrine)
 			_on_clear()
 		"vault":
@@ -95,6 +93,18 @@ func _populate() -> void:
 			var bar := BossBar.new()
 			add_child(bar)
 			bar.bind(boss, "THE BUTCHER KING")
+
+
+## First ever room: Jackie lands in the market; Auntie Mei's voice gives the basics.
+func _first_room_lines() -> void:
+	var mei := "res://assets/portraits/portrait_auntie_mei.png"
+	var me := "res://assets/portraits/portrait_jackie.png"
+	var l := func(a: StringName) -> String: return Inputs.label(a)
+	DialoguePanel.sequence(self, [
+		["Jackie", "No script. No wires. No retakes.\n...Okay. Improvise.", me],
+		["Auntie Mei (somewhere in your head)", "Grab anything that isn't nailed down with [%s] and swing it with [%s]. Everything breaks, so keep grabbing. [%s] for a heavy hit, [%s] to dodge through trouble." % [l.call(&"grab"), l.call(&"attack_light"), l.call(&"attack_heavy"), l.call(&"dodge")], mei],
+		["Auntie Mei (somewhere in your head)", "Knock a demon flat, then hold [%s] and press [%s]. The Sheep lets you borrow its body for a while. Mind your own while you're out of it." % [l.call(&"talisman_mod"), l.call(&"attack_light")], mei],
+	], func() -> void: Meta.mark_seen(&"first_room"))
 
 
 func _scatter_props(n: int, pool: Array) -> void:
@@ -215,7 +225,7 @@ func _npc(model: String, title: String, prompt: String) -> RunNpc:
 func _spawn_helper() -> void:
 	var hid: StringName = spec.helper
 	var info: Dictionary = Boons.HELPERS[hid]
-	var n := _npc("res://assets/characters/helper_%s.glb" % hid, info.name, "[E] Talk")
+	var n := _npc("res://assets/characters/helper_%s.glb" % hid, info.name, "Talk")
 	n.used.connect(func() -> void:
 		var d := DialoguePanel.open(self, info.name, info.intro, "res://assets/portraits/%s.png" % info.portrait)
 		d.finished.connect(func() -> void:
@@ -256,6 +266,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		var p := ChoicePanel.open(self, "Paused", [{"title": "Resume", "text": "", "icon": ""},
 			{"title": "Abandon run", "text": "Back to the tea house. You keep shards for rooms cleared.", "icon": ""}])
 		p.add_to_group(&"modal")
+		p.cancel_index = 0
 		p.chosen.connect(func(i: int) -> void:
 			if i == 1:
 				_ending = true

@@ -31,6 +31,14 @@
 - Balance: demons damage ×0.65, HP ×0.75, attack cooldown ×1.2 (shield/wraith 1.9 s); archer knife 8 → 5; Butcher King damage ×0.75, HP ×0.85.
 - Probe: `bot_run -- --fair` (real HP, no-dodge bot). Before: died room 1 (22 s). After: reached room 9/10.
 
+## 2026-10-10 gamepad, art polish, story intro
+- Gamepad: Inputs tracks last device (`using_pad`), `label()/combo()/controls_line()` → all prompts follow device (HUD slots, NPC prompts, chi draft text, dialogue, intro). Xbox names. Rumble on hits taken/dealt. Pause menu closes with B/Esc/Start. Hub: focus follows scroll, talisman blurb shown on focus (tooltips never show on pad), focus kept after buying.
+- Story: new main scene `intro.tscn` (5 klein cards, Ken Burns drift, typed captions, hold-to-skip, once per save, replay button in hub). Auntie Mei (tea house ghost) hub intro + first-room tips. New portraits: Jackie, Auntie Mei. Meta `seen` flags.
+- Art: AI floor/wall textures replaced by world-space shaders (flagstone, lacquer wall: no seams, no painted lanterns). Street outside + shop-house silhouettes with lit windows (no black void). AgX tonemap, SSAO, fog, cool moon key + warm lanterns. Embers, hit sparks, dust puffs, blob shadows (jade ring under player). Camera 13 → 11.5.
+- UI: project theme (`assets/ui/theme.tres`, built by `tools/build_theme.gd`): Lilita One titles + Nunito body (OFL), lacquer panels, gold trim, jade focus ring. HUD rewritten: round portrait, HP with damage chip, chi bar, cooldown sweep slots, low-HP vignette, controls hint only early.
+- Gotcha: `clip_children` on a HUD control → `p_elem->_root` engine error on every scene change (4.7). Masked portrait with a shader instead.
+- Bots: m1 now stops when all checks met (demons die faster post-balance); m3 Ox/Dog checks account for getup invuln + hit i-frames. 3/3 stable.
+
 ## 2026-10-10 retro
 - Lesson: gameplay bots in the real scene found 8 bugs unit tests missed → keep per-milestone bots (memory + pipeline gotchas).
 - Lesson: show visuals colored and in motion; user had to ask for colors and animations (memory).

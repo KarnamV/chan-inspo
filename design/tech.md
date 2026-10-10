@@ -18,6 +18,14 @@ Project: `game/`. Main scene `scenes/levels/test_room.tscn` (M1 arena).
 - UI: `ChoicePanel` (modal pick-one, pauses tree), `DialoguePanel`, `Hud`, `BossBar`.
 - Main scene: `scenes/run/hub.tscn`. Test scenes: `scenes/levels/test_room.tscn` (M1), `combat_arena.tscn` (M2 waves). Test keys in arenas: 1-0,-,= swap talismans.
 
+## Look, UI, input
+- Floors/walls: `assets/shaders/flagstone.gdshader`, `lacquer_wall.gdshader` (world space). Street + buildings: `Arena._build_street()`. Effects: `scripts/core/vfx.gd` (static; CPU particles for one-shots).
+- Character meshes render on layer 2; blob-shadow decals cull to layer 1 so they don't paint bodies.
+- UI theme: `assets/ui/theme.tres` set in project settings; rebuild with `godot --headless --path . -s tools/build_theme.gd`. Type variations `Header`, `Title` (Lilita One).
+- Input prompts: never hard-code keys; use `Inputs.label(action)` / `Inputs.combo(mod, action)`.
+- Main scene `scenes/run/intro.tscn` → forwards to hub once `Meta.seen` has `intro`. Captures that open intro/hub write the real save: back up `%APPDATA%/Godot/app_userdata/Demon Realm Escape/meta.json` first.
+- Don't use `clip_children` (scene-change engine error in 4.7).
+
 ## Data
 `game/tools/build_data.gd` generates `data/fighters/*.tres`, `data/props/*.tres` once (ResourceSaver). After that, tune the .tres in the Inspector. Re-running overwrites.
 

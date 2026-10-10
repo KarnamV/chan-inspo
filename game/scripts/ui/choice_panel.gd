@@ -7,6 +7,7 @@ signal chosen(index: int)
 
 var title := ""
 var cards: Array = []     # [{title, text, icon (path or ""), enabled}]
+var cancel_index := -1    ## >= 0: B / Esc / Start picks this card (e.g. Resume)
 var _buttons: Array[Button] = []
 
 
@@ -35,7 +36,8 @@ func _ready() -> void:
 	var t := Label.new()
 	t.text = title
 	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	t.add_theme_font_size_override("font_size", 30)
+	t.theme_type_variation = &"Title"
+	t.add_theme_font_size_override("font_size", 38)
 	root.add_child(t)
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -49,6 +51,10 @@ func _ready() -> void:
 		b.focus_mode = Control.FOCUS_ALL
 		var v := VBoxContainer.new()
 		v.set_anchors_preset(Control.PRESET_FULL_RECT)
+		v.offset_left = 12
+		v.offset_top = 14
+		v.offset_right = -12
+		v.offset_bottom = -12
 		v.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		v.add_theme_constant_override("separation", 8)
 		b.add_child(v)
@@ -62,17 +68,18 @@ func _ready() -> void:
 			tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			v.add_child(tr)
 		var ct := Label.new()
-		ct.text = "%d. %s" % [i + 1, c.get("title", "")]
+		ct.text = c.get("title", "") if Inputs.using_pad else "%d. %s" % [i + 1, c.get("title", "")]
+		ct.theme_type_variation = &"Header"
 		ct.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		ct.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		ct.add_theme_font_size_override("font_size", 18)
+		ct.add_theme_font_size_override("font_size", 21)
 		ct.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		v.add_child(ct)
 		var body := Label.new()
 		body.text = c.get("text", "")
 		body.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		body.add_theme_font_size_override("font_size", 14)
+		body.add_theme_font_size_override("font_size", 15)
 		body.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		body.custom_minimum_size = Vector2(190, 0)
 		v.add_child(body)
@@ -86,6 +93,10 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if cancel_index >= 0 and (event.is_action_pressed(&"ui_cancel") or event.is_action_pressed(&"pause")):
+		choose(cancel_index)
+		get_viewport().set_input_as_handled()
+		return
 	var k := event as InputEventKey
 	if k and k.pressed and not k.echo:
 		var i := k.physical_keycode - KEY_1

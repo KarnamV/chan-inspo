@@ -41,8 +41,69 @@ const AXES := {
 }
 
 
+## Button names shown in prompts. Pad names follow the Xbox layout (Windows default).
+const KEY_NAMES := {
+	"move": "WASD", "attack_light": "J", "attack_heavy": "K", "grab": "L", "dodge": "Space", "parry": "I",
+	"chi_mod": "Shift", "talisman_mod": "Ctrl", "interact": "E", "pause": "Esc",
+}
+const PAD_NAMES := {
+	"move": "Left stick", "attack_light": "X", "attack_heavy": "Y", "grab": "B", "dodge": "A", "parry": "RB",
+	"chi_mod": "LT", "talisman_mod": "LB", "interact": "D-pad Up", "pause": "Start",
+}
+
+signal device_changed(pad: bool)
+
+## True after the last input came from a gamepad (prompts and rumble follow it).
+var using_pad := false
+
+
 func _init() -> void:
 	register()
+
+
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	using_pad = not Input.get_connected_joypads().is_empty()
+	Input.joy_connection_changed.connect(func(_d: int, connected: bool) -> void:
+		_set_pad(connected or not Input.get_connected_joypads().is_empty()))
+
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventJoypadButton or (event is InputEventJoypadMotion and absf(event.axis_value) > 0.5):
+		_set_pad(true)
+	elif event is InputEventKey or event is InputEventMouseButton:
+		_set_pad(false)
+
+
+func _set_pad(pad: bool) -> void:
+	if pad != using_pad:
+		using_pad = pad
+		device_changed.emit(pad)
+
+
+## Prompt name of an action's button for the current device, e.g. "X" or "J".
+func label(action: StringName) -> String:
+	return (PAD_NAMES if using_pad else KEY_NAMES).get(String(action), String(action))
+
+
+## "LB+X" / "Ctrl+J"
+func combo(mod: StringName, action: StringName) -> String:
+	return "%s+%s" % [label(mod), label(action)]
+
+
+## One-line control reference for the current device.
+func controls_line() -> String:
+	return "%s move · %s light · %s heavy · %s grab/throw · %s dodge · %s parry · hold %s chi · hold %s talismans · %s pause" % [
+		label(&"move"), label(&"attack_light"), label(&"attack_heavy"), label(&"grab"), label(&"dodge"),
+		label(&"parry"), label(&"chi_mod"), label(&"talisman_mod"), label(&"pause")]
+
+
+## Gamepad rumble (no-op on keyboard). weak/strong 0..1.
+func rumble(weak: float, strong: float, seconds: float) -> void:
+	if not using_pad:
+		return
+	for d in Input.get_connected_joypads():
+		Input.start_joy_vibration(d, weak, strong, seconds)
 
 
 static func register() -> void:

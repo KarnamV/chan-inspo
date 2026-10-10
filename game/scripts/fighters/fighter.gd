@@ -108,6 +108,9 @@ func _ready() -> void:
 		hand_attach = _make_hand_attach()
 		for mi in model.find_children("*", "MeshInstance3D", true, false):
 			_meshes.append(mi as MeshInstance3D)
+			(mi as MeshInstance3D).layers = 2   # keeps blob-shadow decals off the body
+		var r := data.radius * (2.6 if data.boss else 2.2)
+		Vfx.blob_shadow(self, r, Color(0.35, 0.95, 0.7, 0.7) if team == Team.PLAYER else Color(0, 0, 0, 0))
 	else:
 		anim = AnimDriver.new(null)
 	_flash_mat = StandardMaterial3D.new()
@@ -371,6 +374,7 @@ func _on_hit_landed(hb: Hurtbox, info: DamageInfo, amount: float) -> void:
 	attack_landed.emit(info, amount, hb.owner_fighter)
 	if team == Team.PLAYER:   # only your own hits freeze the frame; a crowd hitting you shouldn't stutter
 		Juice.hitstop(0.04 if not info.knockdown else 0.07)
+		Inputs.rumble(0.3, 0.4 if info.knockdown else 0.0, 0.08)
 
 
 # ---------------- hits taken ----------------
@@ -432,6 +436,7 @@ func receive_hit(info: DamageInfo) -> float:
 		anim.play(&"hit", 0.05, maxf(knock_time, 0.2))
 	if team == Team.PLAYER:
 		Juice.shake(0.25 if info.knockdown else 0.12)
+		Inputs.rumble(0.5, 0.6 if info.knockdown else 0.25, 0.25 if info.knockdown else 0.12)
 	return amount
 
 

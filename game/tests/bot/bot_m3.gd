@@ -48,6 +48,8 @@ func _knock_brute_near() -> Fighter:
 	if b == null:
 		return null
 	b.global_position = hero.global_position + hero.facing * 1.4
+	if b.state == Fighter.State.GETUP:
+		b._set_state(Fighter.State.IDLE)   # getting up is invulnerable now
 	var i := DamageInfo.make(1.0)
 	i.knockdown = true
 	b.receive_hit(i)
@@ -156,6 +158,8 @@ func _run() -> void:
 	pc.equip([&"dog"])
 	hero.health.hp = 3.0
 	var b := _brute()
+	await _ready_to_act()
+	hero.mercy_t = 0.0   # a stray demon hit just before would leave the hero briefly invulnerable
 	hero.receive_hit(DamageInfo.make(500.0, b))
 	_check("Dog: survive a lethal hit, killer converts", not hero.is_dead() and int(ev.get("dog_saved", 0)) == 1 and b.team == Fighter.Team.PLAYER)
 	var ok := results.all(func(r: Array) -> bool: return r[1])

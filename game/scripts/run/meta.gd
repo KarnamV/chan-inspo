@@ -15,6 +15,7 @@ var unlocked: Array = []         # talisman ids
 var codex: Array = []            # prop ids seen
 var runs := 0
 var best_room := 0
+var seen: Array = []             # story beats already shown: &"intro", &"hub_intro", &"first_room"
 var save_enabled := true
 
 
@@ -43,15 +44,26 @@ func load_meta() -> void:
 		if t not in unlocked:
 			unlocked.append(t)
 	codex = (d.get("codex", []) as Array).map(func(x: Variant) -> StringName: return StringName(x))
+	seen = (d.get("seen", []) as Array).map(func(x: Variant) -> StringName: return StringName(x))
 
 
 func save_meta() -> void:
 	if not save_enabled:
 		return
 	var d := {"shards": shards, "runs": runs, "best_room": best_room, "boss_ledger": boss_ledger,
-		"helpers_met": helpers_met, "bonds": bonds, "unlocked": unlocked, "codex": codex}
+		"helpers_met": helpers_met, "bonds": bonds, "unlocked": unlocked, "codex": codex, "seen": seen}
 	var f := FileAccess.open(PATH, FileAccess.WRITE)
 	f.store_string(JSON.stringify(d, "  "))
+
+
+func has_seen(beat: StringName) -> bool:
+	return beat in seen
+
+
+func mark_seen(beat: StringName) -> void:
+	if beat not in seen:
+		seen.append(beat)
+		save_meta()
 
 
 func record_boss(id: StringName) -> void:

@@ -1,6 +1,6 @@
 class_name Arena
 extends Node3D
-## M1 prototype room, built in code: textured floor + walls, decor, Jackie, props, brutes.
+## M1 prototype room, built in code: shader floor + walls, street outside, decor, Jackie, props, brutes.
 ## When every demon is down the wave respawns (props too) so the loop can be played repeatedly.
 ## R = reset the room.
 
@@ -29,8 +29,8 @@ const ENEMY_SPAWNS := [Vector3(-2, 0, -6), Vector3(3, 0, -6), Vector3(-6, 0, -4)
 
 @export var preset := "m1"
 @export var room_size := 18.0
-@export var floor_tex := "res://assets/textures/floor_test.png"
-@export var wall_tex := "res://assets/textures/wall_test.png"
+const FLOOR_SHADER := "res://assets/shaders/flagstone.gdshader"
+const WALL_SHADER := "res://assets/shaders/lacquer_wall.gdshader"
 @export var hero_spawn := Vector3(0, 0, 4)
 @export var talismans: Array[StringName] = [&"sheep", &"tiger", &"rat"]
 @export var spawn_enemies := true
@@ -46,6 +46,7 @@ var _respawn_t := -1.0
 func _ready() -> void:
 	add_to_group(&"level_root")
 	HERO = load("res://data/fighters/hero.tres")
+	Events.damage_dealt.connect(_on_damage_vfx)
 	_configure()
 	_build_environment()
 	_build_room()
@@ -65,6 +66,11 @@ func _ready() -> void:
 		add_child(hud)
 		hud.bind(controller)
 	_populate()
+
+
+func _on_damage_vfx(target: Node, info: DamageInfo, amount: float) -> void:
+	if amount > 0.0 and target is Node3D and is_instance_valid(target):
+		Vfx.hit(target, info)
 
 
 ## Override points for themed rooms (RunRoom).
@@ -90,6 +96,8 @@ func spawn_fighter(d: FighterData, team: Fighter.Team, at: Vector3) -> Fighter:
 	f.team = team
 	f.position = at   # before add_child: spawning at the origin first makes bodies overlap and pop
 	add_child(f)
+	f.dodged.connect(func() -> void: Vfx.dust(f.global_position))
+	f.knocked_down.connect(func() -> void: Vfx.dust(f.global_position, true))
 	if team == Fighter.Team.ENEMY:
 		f.set_brain(AIBrain.new())
 		f.facing = (Vector3(0, 0, 4) - at).normalized()
@@ -201,36 +209,43 @@ func _process(delta: float) -> void:
 func _build_environment() -> void:
 	var env := Environment.new()
 	env.background_mode = Environment.BG_COLOR
-	env.background_color = Color(0.06, 0.04, 0.05)
+	env.background_color = Color(0.035, 0.02, 0.03)
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color(0.55, 0.45, 0.5)
-	env.ambient_light_energy = 0.9
-	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+	env.ambient_light_color = Color(0.42, 0.32, 0.42)
+	env.ambient_light_energy = 0.75
+	env.tonemap_mode = Environment.TONE_MAPPER_AGX
+	env.tonemap_exposure = 1.1
 	env.glow_enabled = true
+	env.glow_intensity = 0.7
+	env.glow_bloom = 0.04
+	env.glow_hdr_threshold = 1.1
+	env.ssao_enabled = true
+	env.ssao_radius = 1.2
+	env.ssao_intensity = 2.2
+	env.fog_enabled = true   # fades the street outside into night
+	env.fog_light_color = Color(0.16, 0.06, 0.07)
+	env.fog_density = 0.012
+	env.fog_sky_affect = 0.0
+	env.adjustment_enabled = true
+	env.adjustment_saturation = 1.12
+	env.adjustment_contrast = 1.06
 	var we := WorldEnvironment.new()
 	we.environment = env
 	add_child(we)
-	var sun := DirectionalLight3D.new()
-	sun.rotation_degrees = Vector3(-55, 35, 0)
-	sun.light_energy = 1.3
-	sun.light_color = Color(1.0, 0.9, 0.85)
-	sun.shadow_enabled = true
-	add_child(sun)
+	var moon := DirectionalLight3D.new()   # cool key light: lanterns supply the warm colour
+	moon.rotation_degrees = Vector3(-58, 30, 0)
+	moon.light_energy = 0.9
+	moon.light_color = Color(0.72, 0.78, 1.0)
+	moon.shadow_enabled = true
+	moon.shadow_blur = 1.5
+	moon.directional_shadow_max_distance = 60.0
+	add_child(moon)
 	var glow := OmniLight3D.new()
-	glow.position = Vector3(0, 4, -8)
-	glow.light_color = Color(1.0, 0.25, 0.15)
+	glow.position = Vector3(0, 4, -room_size / 2 + 1.0)
+	glow.light_color = Color(1.0, 0.35, 0.18)
 	glow.light_energy = 3.0
-	glow.omni_range = 12.0
+	glow.omni_range = room_size * 0.8
 	add_child(glow)
-
-
-func _textured(path: String, uv: Vector3) -> StandardMaterial3D:
-	var m := StandardMaterial3D.new()
-	if ResourceLoader.exists(path):
-		m.albedo_texture = load(path)
-	m.uv1_scale = uv
-	m.roughness = 0.9
-	return m
 
 
 func _static_box(size: Vector3, pos: Vector3, mat: Material) -> void:
@@ -251,16 +266,98 @@ func _static_box(size: Vector3, pos: Vector3, mat: Material) -> void:
 	body.position = pos
 
 
+func _shader_mat(path: String, params := {}) -> ShaderMaterial:
+	var m := ShaderMaterial.new()
+	m.shader = load(path)
+	for k in params:
+		m.set_shader_parameter(k, params[k])
+	return m
+
+
 func _build_room() -> void:
-	var floor_mat := _textured(floor_tex, Vector3(room_size / 3.0, room_size / 3.0, 1))
+	var floor_mat := _shader_mat(FLOOR_SHADER)
 	_static_box(Vector3(room_size, 0.2, room_size), Vector3(0, -0.1, 0), floor_mat)
-	var wall_mat := _textured(wall_tex, Vector3(room_size / 3.0, 1, 1))
+	_build_street()
+	var wall_mat := _shader_mat(WALL_SHADER)
 	var h := 2.4
 	var low := 0.6   # camera-side walls stay low so they never hide the fight
 	_static_box(Vector3(room_size, h, 0.4), Vector3(0, h / 2, -room_size / 2), wall_mat)
 	_static_box(Vector3(0.4, h, room_size), Vector3(-room_size / 2, h / 2, 0), wall_mat)
 	_static_box(Vector3(room_size, low, 0.4), Vector3(0, low / 2, room_size / 2), wall_mat)
 	_static_box(Vector3(0.4, low, room_size), Vector3(room_size / 2, low / 2, 0), wall_mat)
+
+
+## Outside the walls: a dark street that fades into fog, and shop-house silhouettes with lit
+## windows behind the two far walls, so the room sits in a night market instead of a black void.
+func _build_street() -> void:
+	var street := MeshInstance3D.new()
+	var pm := PlaneMesh.new()
+	pm.size = Vector2(160, 160)
+	street.mesh = pm
+	street.material_override = _shader_mat(FLOOR_SHADER, {"dim": 0.45, "tile": 1.6})
+	street.position = Vector3(0, -0.03, 0)
+	add_child(street)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = int(room_size * 13.0)
+	var h := room_size / 2
+	var wood := StandardMaterial3D.new()
+	wood.albedo_color = Color(0.3, 0.14, 0.11)
+	wood.roughness = 0.9
+	var roof := StandardMaterial3D.new()
+	roof.albedo_color = Color(0.16, 0.14, 0.17)
+	roof.roughness = 0.7
+	var lit := StandardMaterial3D.new()
+	lit.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	lit.albedo_color = Color(0.85, 0.5, 0.25)
+	# rows behind the far (-Z) and left (-X) walls; the camera-side walls stay open
+	for side in 2:
+		var along := -h - 2.0
+		while along < h + 6.0:
+			var w := rng.randf_range(3.2, 5.5)
+			var tall := rng.randf_range(4.5, 9.0)
+			var depth := rng.randf_range(4.0, 6.0)
+			var off := h + 1.4 + depth / 2 + rng.randf_range(0.0, 1.2)
+			var c := Vector3(along + w / 2, 0, -off) if side == 0 else Vector3(-off, 0, along + w / 2)
+			var size := Vector3(w - 0.3, tall, depth) if side == 0 else Vector3(depth, tall, w - 0.3)
+			var body := MeshInstance3D.new()
+			var bm := BoxMesh.new()
+			bm.size = size
+			body.mesh = bm
+			body.material_override = wood
+			body.position = c + Vector3(0, tall / 2, 0)
+			add_child(body)
+			var top := MeshInstance3D.new()
+			var pr := PrismMesh.new()
+			pr.size = Vector3(size.x + 0.8, 1.4, size.z + 0.8)
+			top.mesh = pr
+			top.material_override = roof
+			top.position = c + Vector3(0, tall + 0.7, 0)
+			if side == 1:
+				top.rotation.y = PI / 2
+				pr.size = Vector3(size.z + 0.8, 1.4, size.x + 0.8)
+			add_child(top)
+			# lit windows on the face toward the room
+			var face := (Vector3(0, 0, size.z / 2 + 0.02) if side == 0 else Vector3(size.x / 2 + 0.02, 0, 0))
+			for row in int(tall / 2.4):
+				if rng.randf() < 0.35:
+					continue
+				var win := MeshInstance3D.new()
+				var q := QuadMesh.new()
+				q.size = Vector2(rng.randf_range(0.6, 1.0), 0.7)
+				win.mesh = q
+				win.material_override = lit
+				win.position = c + face + Vector3(0, 2.6 + row * 2.4, 0)
+				win.rotation.y = 0.0 if side == 0 else PI / 2
+				add_child(win)
+			if rng.randf() < 0.5:
+				var l := OmniLight3D.new()
+				l.light_color = Color(1.0, 0.45, 0.2)
+				l.light_energy = 1.4
+				l.omni_range = 6.0
+				l.position = c + face * 1.4 + Vector3(0, 3.0, 0)
+				add_child(l)
+			along += w
+	Vfx.embers(self, h)
 
 
 func decor(path: String, at: Vector3, yaw := 0.0, scale_to := 0.0) -> Node3D:

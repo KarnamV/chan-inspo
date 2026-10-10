@@ -127,7 +127,8 @@ func _physics_process(delta: float) -> void:
 	t += delta
 	if arena.hero.held_prop:
 		counts.picked = maxi(counts.picked, 1)
-	var finished: bool = counts.possess_end >= 1 and counts.deaths >= 1
+	# stop once every check is met (demons die faster since the 2026-10-10 balance pass)
+	var finished: bool = counts.possess_end >= 1 and counts.deaths >= 1 and counts.broken >= 1 		and counts.host_hits >= 1 and counts.knockdowns >= 1
 	if t >= LIMIT_S or finished:
 		done = true
 		_report()

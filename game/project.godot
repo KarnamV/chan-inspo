@@ -4,7 +4,7 @@ config_version=5
 [application]
 
 config/name="Demon Realm Escape"
-run/main_scene="res://scenes/run/hub.tscn"
+run/main_scene="res://scenes/run/intro.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 
 [autoload]
@@ -38,3 +38,7 @@ enabled=PackedStringArray("res://addons/gut/plugin.cfg")
 
 common/physics_ticks_per_second=60
 common/physics_interpolation=true
+
+[gui]
+
+theme/custom="res://assets/ui/theme.tres"

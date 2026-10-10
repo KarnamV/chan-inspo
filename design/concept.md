@@ -13,6 +13,14 @@
 - **Audience:** action-roguelite fans who like melee feel. Comparables: Hades (run structure, room rewards), Sifu (kung-fu feel), Jackie Chan stunt films (prop fights), Jackie Chan Adventures (talisman fantasy).
 - **Scope tier:** hobby (months). Solo + Claude.
 
+## Story (added 2026-10-10)
+
+- Jackie = stunt double, 9 yrs, never the star. Night shoot in HK street market, take 47.
+- Prop master's old trunk: 12 paper zodiac talismans. "Don't touch." Jackie pockets Sheep for luck.
+- "Action!" → lanterns flare red, extras' masks become real, street folds → Demon Realm (twisted night market, Butcher King). 6 more realms beyond; Demon Emperor collects fighters as trophies.
+- Hub = tea house between worlds. **Auntie Mei**, ghost, poured tea there 60 yrs. Guide voice: explains talismans, shards, "every chair is a weapon".
+- Delivery: 5 illustrated intro cards (first launch, replay from hub) → Mei's 3 hub lines (first visit) → first-room lines (Jackie + Mei controls tips, device-aware).
+
 ## Core loop (rough)
 
 Moment to moment:

@@ -3,7 +3,7 @@ extends Camera3D
 ## Orthographic isometric follow camera. Classic iso angles: 45° yaw, ~35.26° pitch.
 
 @export var target_path: NodePath
-@export var view_size := 13.0
+@export var view_size := 11.5
 @export var distance := 30.0
 @export var follow_speed := 6.0
 

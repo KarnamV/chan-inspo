@@ -29,4 +29,5 @@ Rules for this run:
 - M1 'is it fun?' gate: please play `game/scenes/levels/test_room.tscn` (F6) — I can only verify it works.
 
 ## Pick up next
-- M0–M4 done. Waiting on user review (see list above). Next milestone after review: M5 (realms 2–3) per roadmap.
+- M0–M4 done + playtest fixes, gamepad, art polish, story intro (2026-10-10). Waiting on user replay: feel with pad, new look, intro. Then M5 (realms 2–3) per roadmap.
+- Not done yet: real UI glyph icons for pad buttons (text names now), PlayStation names, rebinding menu.
