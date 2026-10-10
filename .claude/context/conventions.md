@@ -30,6 +30,9 @@ inferred and need your OK.
 - Brains decide, Fighters act: brains set `intent_move`, `facing` and call
   `request_*()`; they never move bodies directly. Possession = brain swap.
 - Fighter state changes go through the Fighter state machine (`Fighter.State`).
+- Gameplay reads button presses with `Inputs.just_pressed(action)`, not
+  `Input.is_action_just_pressed`, so the press that closes a menu doesn't also act in game.
+  Menus that unpause call `Inputs.release_gameplay()` first.
 - New tunable numbers become `@export` vars or `FighterData` / `PropData` fields
   (unconfirmed - some AI numbers are still inline constants today).
 
