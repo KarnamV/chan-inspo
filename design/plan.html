@@ -118,9 +118,10 @@ summary { cursor: pointer; font-weight: 600; }
   <div class="card now">
     <p><b>State:</b> Milestones M0–M4 are built and verified. Realm 1 plays end to end: tea house → 10 rooms → Butcher King → back to the tea house. After your first playtest (2026-10-10) the combat was reworked (talismans on cooldowns, input buffer, dodge cancels, softer demons), then gamepad support, an art and UI polish pass, and an illustrated story intro were added.</p>
     <p><b>Checks:</b> 37/37 unit tests; all four gameplay bots pass (3/3 runs). A real-HP bot that never dodges reaches room 9 of 10.</p>
+    <p><b>Play it:</b> double-click <code>build/windows/DemonRealmEscape.exe</code> (no Godot needed). Rebuild after changes with <code>build_exe.bat</code>.</p>
     <p><b>Waiting on you:</b> replay with a gamepad and judge feel, the new look and the intro. See <a href="#you">Waiting on you</a>.</p>
     <p><b>Next up:</b> balance tweaks from your notes, then M5 (Frozen Teahouse and Rotting Docks). M5 assets are generated first, through the manifest runner.</p>
-    <p><b>Git:</b> all work committed locally (latest <code>ba6100f</code>), nothing pushed to GitHub yet.</p>
+    <p><b>Git:</b> all work committed locally (latest <code>8f4e3f0</code>; the exe itself is not committed), nothing pushed to GitHub yet.</p>
   </div>
 </section>
 
@@ -220,6 +221,7 @@ summary { cursor: pointer; font-weight: 600; }
       <li class="done">Story: illustrated intro, Auntie Mei in the tea house, first-room tips</li>
       <li class="done">Art: shader floors and walls, street and shop-houses outside, lighting, embers, hit sparks, blob shadows</li>
       <li class="done">UI: project theme (Lilita One + Nunito), new HUD with cooldown sweep and damage chip</li>
+      <li class="done">Standalone Windows exe (<code>build/windows/DemonRealmEscape.exe</code>), rebuilt by <code>build_exe.bat</code></li>
       <li class="you">Replay with a pad: feel, look, intro <span class="who">YOU</span></li>
     </ul>
   </div>
@@ -260,7 +262,7 @@ summary { cursor: pointer; font-weight: 600; }
 <section id="you">
   <h2>Waiting on you</h2>
   <div class="card">
-    <p>Open <code>game/</code> in Godot 4.7 and press F5. The intro plays first, then the tea house.</p>
+    <p>Double-click <code>build/windows/DemonRealmEscape.exe</code>. The intro plays first, then the tea house.</p>
     <ul class="tasks">
       <li class="you">Combat feel after the rework, with keyboard and gamepad <span class="who">YOU</span></li>
       <li class="you">Balance: rooms 1–3 should be winnable; the boss is untested at real HP <span class="who">YOU</span></li>
@@ -286,6 +288,7 @@ summary { cursor: pointer; font-weight: 600; }
       <li>Locked talisman icons in the hub are dim and small</li>
       <li>Shader compile hitch when the first wave spawns (pre-warm materials)</li>
       <li>Possessed host has no ring marker (Jackie has a jade ring)</li>
+      <li>Exe has the default Godot icon; add a game icon (needs rcedit)</li>
     </ul>
   </div>
 </section>
@@ -355,6 +358,7 @@ summary { cursor: pointer; font-weight: 600; }
       <li><b>This page is the plan.</b> Update it whenever progress changes: tick tasks, add new ones, rewrite <a href="#now">Now</a>. Decisions and lessons go to <code>design/CHANGELOG.md</code>.</li>
       <li><b>Per milestone:</b> generate that milestone's assets, review renders and re-roll bad ones, build, then run the checks and a playable gate.</li>
       <li><b>Checks</b> (in <code>game/</code>): import, unit tests, the four gameplay bots (3 runs after balance changes), and the fair probe <code>bot_run -- --fair</code> before any hand-off. Commands are in <code>design/tech.md</code>.</li>
+      <li><b>Keep the exe current:</b> after any gameplay or art change, run <code>build_exe.bat</code> so the exe matches the code.</li>
       <li><b>Show, don't tell:</b> visual changes are checked from captured frames or video, never assumed.</li>
       <li><b>ComfyUI</b> runs only while generating and is stopped once the last generation is done.</li>
       <li><b>Git:</b> commit locally when asked; never push without asking.</li>

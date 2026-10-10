@@ -39,6 +39,9 @@
 - Gotcha: `clip_children` on a HUD control → `p_elem->_root` engine error on every scene change (4.7). Masked portrait with a shader instead.
 - Bots: m1 now stops when all checks met (demons die faster post-balance); m3 Ox/Dog checks account for getup invuln + hit i-frames. 3/3 stable.
 
+## 2026-10-10 standalone exe
+- User doesn't want to open Godot each time → Windows export (single exe, pck embedded) + `build_exe.bat`. Official 4.7 export templates installed (Windows only). Rule: rebuild exe after every gameplay/art change.
+
 ## 2026-10-10 plan convergence
 - User: all plans in one place, referenced from CLAUDE.md. → `design/plan.html` (index, Now, auto progress, roadmap M0–M9 with tasks, waiting-on-user, backlog, assets, risks, process). roadmap.md, STATUS.md, assets.md merged + deleted. Project `CLAUDE.md` added pointing at it.
 

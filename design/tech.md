@@ -26,6 +26,11 @@ Project: `game/`. Main scene `scenes/levels/test_room.tscn` (M1 arena).
 - Main scene `scenes/run/intro.tscn` → forwards to hub once `Meta.seen` has `intro`. Captures that open intro/hub write the real save: back up `%APPDATA%/Godot/app_userdata/Demon Realm Escape/meta.json` first.
 - Don't use `clip_children` (scene-change engine error in 4.7).
 
+## Windows build
+- `build_exe.bat` (repo root) → `build/windows/DemonRealmEscape.exe`, single file with the pck embedded (`game/export_presets.cfg`, excludes tests/tools/GUT). `build/` is git-ignored.
+- Export templates: `%APPDATA%/Godot/export_templates/4.7.stable/` (only the Windows ones kept from the official 1.3 GB .tpz).
+- Running the exe uses the same save as the editor (`%APPDATA%/Godot/app_userdata/Demon Realm Escape/`).
+
 ## Data
 `game/tools/build_data.gd` generates `data/fighters/*.tres`, `data/props/*.tres` once (ResourceSaver). After that, tune the .tres in the Inspector. Re-running overwrites.
 

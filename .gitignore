@@ -14,3 +14,4 @@ art/style_lock/renders/
 # asset runner logs / temp sheets
 assets/run_*.log
 assets/*_concepts.png
+build/

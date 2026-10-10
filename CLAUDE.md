@@ -5,4 +5,5 @@
 - Tick tasks (`<li class="done">`), add new tasks to the right milestone, rewrite "Now", and bump `data-updated` on `<body>` whenever progress changes. Progress bars recompute from the task lists.
 - Don't create other plan, status, roadmap or board files. Decisions and lessons go to `design/CHANGELOG.md` (history).
 - Reference docs (not plans): `design/concept.md` (game design + story), `design/art-bible.md`, `design/tech.md` (architecture, gotchas, how to run checks).
+- The user plays the standalone exe, not the editor: after any gameplay/art change run `build_exe.bat` → `build/windows/DemonRealmEscape.exe`.
 - Game project: `game/` (Godot 4.7). Assets: `assets/manifest.csv` + the ai-gamedev-pipeline skill.
