@@ -2,6 +2,7 @@ extends Node
 ## M4 full-run bot: hub-less run through all 10 rooms of realm 1 to the Butcher King and back.
 ##   godot --headless --path . --fixed-fps 60 res://tests/bot/bot_run.tscn
 ## Saving is disabled (doesn't touch the player's meta save). Exit 0 = all checks pass.
+## `-- --fair` keeps real HP/damage (balance probe: reports how far a no-dodge bot gets; exit 0 always).
 
 const LIMIT_S := 900.0
 
@@ -18,6 +19,7 @@ var back_in_hub := false
 var bot: Bot
 var _done := false
 var _moved := false
+var fair := false
 
 
 class Bot:
@@ -32,7 +34,7 @@ class Bot:
 			return
 		var pc := r.controller
 		# Sheep when possible (exercise possession in real rooms)
-		if pc.host == null and pc.has_talisman(&"sheep") and pc.sheep_target() and pc.spirit >= pc.sheep_cost and tick % 30 == 0:
+		if pc.host == null and pc.has_talisman(&"sheep") and pc.sheep_target() and pc.talisman(&"sheep").is_ready() and tick % 30 == 0:
 			pc.try_possess()
 			return
 		var e := _nearest(f, &"enemy")
@@ -120,6 +122,8 @@ func _reparent_to_root() -> void:
 	for arg in OS.get_cmdline_user_args():   # e.g. -- --start=9 jumps to the boss room (captures)
 		if arg.begins_with("--start="):
 			Run.room_i = int(arg.split("=")[1])
+		if arg == "--fair":
+			fair = true
 	get_tree().change_scene_to_file(Run.ROOM_SCENE)
 
 
@@ -136,13 +140,14 @@ func _physics_process(delta: float) -> void:
 	if r and r != room and r.controller:
 		room = r
 		room_types.append(r.spec.type)
-		print("t=%.0f room %d: %s" % [t, Run.room_i + 1, r.spec.type])
+		print("t=%.0f room %d: %s  hp %.0f/%.0f" % [t, Run.room_i + 1, r.spec.type, r.hero.health.hp, r.hero.health.max_hp])
 		r.controller.brain = bot
 		r.hero.set_brain(bot)
-		r.hero.health.max_hp = 5000.0
-		r.hero.health.hp = 5000.0
-		r.hero.dmg_mult_physical = 3.0
-		r.hero.dmg_mult_magic = 3.0
+		if not fair:
+			r.hero.health.max_hp = 5000.0
+			r.hero.health.hp = 5000.0
+			r.hero.dmg_mult_physical = 3.0
+			r.hero.dmg_mult_magic = 3.0
 	for n in get_tree().root.find_children("*", "DialoguePanel", true, false):
 		dialogues += 1
 		(n as DialoguePanel).close()
@@ -199,4 +204,6 @@ func _report() -> void:
 		print(("PASS  " if c[1] else "FAIL  ") + c[0])
 		ok = ok and c[1]
 	print("BOT RESULT: " + ("ALL PASS" if ok else "FAILURES"))
-	get_tree().quit(0 if ok else 1)
+	if fair:
+		print("FAIR: rooms reached %d, victory %s" % [room_types.size(), victory])
+	get_tree().quit(0 if ok or fair else 1)

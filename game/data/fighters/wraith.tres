@@ -12,7 +12,7 @@ duration = 0.7
 active_start = 0.3
 active_end = 0.45
 combo_window = 0.45
-damage = 10.0
+damage = 6.5
 magic = true
 knockback = 4.0
 lunge = 1.0
@@ -20,12 +20,13 @@ hit_size = Vector3(1.2, 1.4, 2)
 hit_offset = Vector3(0, 1.1, 1.2)
 
 [resource]
+attack_cooldown = 1.9
 script = ExtResource("3_lugvx")
 id = &"wraith"
 model = ExtResource("2_kinc7")
 height = 1.9
 radius = 0.4
-max_hp = 70.0
+max_hp = 52.5
 resist_physical = 0.75
 move_speed = 3.8
 light_combo = Array[ExtResource("1_nj5q8")]([SubResource("Resource_6xfix")])

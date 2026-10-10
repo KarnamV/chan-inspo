@@ -6,7 +6,8 @@ extends RefCounted
 var id: StringName = &""
 var title := ""
 var blurb := ""
-var cost := 0.0          ## spirit per activation (actives)
+var cooldown := 0.0      ## seconds before an active can be used again (spirit is only for chi moves)
+var cd_left := 0.0       ## ticked down by PlayerController
 var pc: PlayerController
 
 
@@ -20,9 +21,17 @@ func unequip() -> void:
 	pc = null
 
 
-## Returns true if it did something (spirit is spent by the caller).
+## Returns true if it did something.
 func activate() -> bool:
 	return false
+
+
+func is_ready() -> bool:
+	return cd_left <= 0.0
+
+
+func start_cooldown() -> void:
+	cd_left = cooldown
 
 
 func is_active_talisman() -> bool:

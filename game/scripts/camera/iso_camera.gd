@@ -11,6 +11,7 @@ var target: Node3D
 
 
 func _ready() -> void:
+	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF   # moved in _process
 	projection = PROJECTION_ORTHOGONAL
 	size = view_size
 	rotation = Vector3(deg_to_rad(-35.264), deg_to_rad(45.0), 0.0)
@@ -22,10 +23,13 @@ func _ready() -> void:
 func snap() -> void:
 	if target:
 		global_position = _desired()
+		reset_physics_interpolation()
 
 
+## Bodies move on physics ticks; with physics interpolation on, follow their rendered (interpolated)
+## position so the camera doesn't judder on high-refresh screens.
 func _desired() -> Vector3:
-	return target.global_position + global_transform.basis.z * distance
+	return target.get_global_transform_interpolated().origin + global_transform.basis.z * distance
 
 
 func _process(delta: float) -> void:

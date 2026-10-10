@@ -5,6 +5,12 @@ extends Brain
 
 var controller: Node   ## PlayerController
 var camera: IsoCamera
+## A press made while the body is busy (mid-attack, stagger, getup) fires as soon as it can act,
+## instead of being dropped.
+const BUFFERED := [&"parry", &"attack_light", &"attack_heavy", &"grab", &"dodge"]
+const BUFFER_TIME := 0.25
+var _buffer: StringName = &""
+var _buffer_t := 0.0
 
 
 func _init(p_controller: Node, p_camera: IsoCamera) -> void:
@@ -12,7 +18,7 @@ func _init(p_controller: Node, p_camera: IsoCamera) -> void:
 	camera = p_camera
 
 
-func think(f: Fighter, _delta: float) -> void:
+func think(f: Fighter, delta: float) -> void:
 	var v := Input.get_vector(&"move_left", &"move_right", &"move_up", &"move_down")
 	f.intent_move = camera.input_to_world(v) if camera else Vector3(v.x, 0, v.y)
 	if Input.is_action_pressed(&"talisman_mod"):
@@ -33,13 +39,22 @@ func think(f: Fighter, _delta: float) -> void:
 			if Input.is_action_just_pressed(act):
 				controller.use_chi(i)
 		return
-	if Input.is_action_just_pressed(&"parry"):
-		f.request_parry()
-	if Input.is_action_just_pressed(&"attack_light"):
-		f.request_light()
-	if Input.is_action_just_pressed(&"attack_heavy"):
-		f.request_heavy()
-	if Input.is_action_just_pressed(&"grab"):
-		f.request_grab()
-	if Input.is_action_just_pressed(&"dodge"):
-		f.request_dodge()
+	for act in BUFFERED:
+		if Input.is_action_just_pressed(act):
+			_buffer = act
+			_buffer_t = BUFFER_TIME
+	if _buffer == &"":
+		return
+	_buffer_t -= delta
+	if _buffer_t <= 0.0:
+		_buffer = &""
+		return
+	match _buffer:
+		&"parry": f.request_parry()
+		&"attack_light": f.request_light()
+		&"attack_heavy": f.request_heavy()
+		&"grab": f.request_grab()
+		&"dodge": f.request_dodge()
+	# accepted = the body changed state this frame (or queued the next combo hit)
+	if f.state_t == 0.0 or (_buffer == &"attack_light" and f.queued_light):
+		_buffer = &""

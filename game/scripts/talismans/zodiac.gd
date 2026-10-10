@@ -30,8 +30,8 @@ class Sheep:
 	extends Talisman
 	func _init() -> void:
 		title = "Sheep"
-		blurb = "Possess a knocked-down demon. Your body lies vulnerable."
-		cost = 40.0
+		blurb = "Possess a knocked-down demon for a while. Your body lies vulnerable."
+		cooldown = 12.0
 
 	func is_active_talisman() -> bool:
 		return true
@@ -40,7 +40,7 @@ class Sheep:
 		if pc.host:
 			pc.end_possession(&"released")
 			return true
-		return pc.try_possess()
+		return is_ready() and pc.try_possess()
 
 
 # ---------------------------------------------------------------- Tiger: Yin / Yang split
@@ -55,7 +55,7 @@ class Tiger:
 	func _init() -> void:
 		title = "Tiger"
 		blurb = "Split into Yin (magic+, HP-) and Yang (physical+, HP+). Tap again to swap."
-		cost = 45.0
+		cooldown = 20.0
 
 	func is_active_talisman() -> bool:
 		return true
@@ -64,9 +64,8 @@ class Tiger:
 		if twin and is_instance_valid(twin):
 			_swap()
 			return true
-		if pc.spirit < cost or pc.controlled != pc.hero or pc.host:
+		if not is_ready() or pc.controlled != pc.hero or pc.host:
 			return false
-		pc.add_spirit(-cost)
 		var hero := pc.hero
 		hero_max = hero.health.max_hp
 		# hero becomes Yang
@@ -132,6 +131,7 @@ class Tiger:
 			pc._set_controlled(hero)
 		if is_instance_valid(t):
 			t.queue_free()
+		start_cooldown()
 		Events.tiger_merged.emit(hero)
 
 	func tick(delta: float) -> void:
@@ -155,7 +155,7 @@ class Monkey:
 	func _init() -> void:
 		title = "Monkey"
 		blurb = "Become a boss you've beaten. Limited attacks before you lose yourself."
-		cost = 60.0
+		cooldown = 30.0
 
 	func is_active_talisman() -> bool:
 		return true
@@ -165,13 +165,12 @@ class Monkey:
 			revert(false)
 			return true
 		var forms: Dictionary = pc.boss_ledger
-		if forms.is_empty() or pc.spirit < cost or pc.controlled != pc.hero or pc.host:
+		if forms.is_empty() or not is_ready() or pc.controlled != pc.hero or pc.host:
 			return false
 		var id: StringName = forms.keys()[pc.monkey_pick % forms.size()]
 		var d: FighterData = load("res://data/fighters/%s.tres" % id)
 		if d == null:
 			return false
-		pc.add_spirit(-cost)
 		var hero := pc.hero
 		form = Fighter.new()
 		form.data = d
@@ -215,6 +214,7 @@ class Monkey:
 			hero.health.take(DamageInfo.make(15.0))
 		if is_instance_valid(f):
 			f.queue_free()
+		start_cooldown()
 		Events.monkey_changed.emit(null, 0)
 
 	func _on_unequip() -> void:
@@ -231,14 +231,14 @@ class Rat:
 	func _init() -> void:
 		title = "Rat"
 		blurb = "Throw the talisman at a prop: it comes alive and fights for you."
-		cost = 20.0
+		cooldown = 8.0
 
 	func is_active_talisman() -> bool:
 		return true
 
 	func activate() -> bool:
 		animated = animated.filter(func(p: Prop) -> bool: return is_instance_valid(p) and p.animator != null)
-		if animated.size() >= MAX or pc.spirit < cost:
+		if animated.size() >= MAX or not is_ready():
 			return false
 		var f := pc.controlled
 		var best: Prop = null
@@ -254,7 +254,7 @@ class Rat:
 				best = p
 		if best == null:
 			return false
-		pc.add_spirit(-cost)
+		start_cooldown()
 		best.animate(f, LIFE)
 		animated.append(best)
 		return true
@@ -510,7 +510,7 @@ class Pig:
 	func _init() -> void:
 		title = "Pig"
 		blurb = "Eat a held food prop for chi + health. Otherwise: burp blast (magic)."
-		cost = 15.0
+		cooldown = 6.0
 
 	func is_active_talisman() -> bool:
 		return true
@@ -528,9 +528,9 @@ class Pig:
 			f.anim.play(&"chi_enter", 0.08, 0.5)
 			Events.food_eaten.emit(f)
 			return true
-		if pc.spirit < cost:
+		if not is_ready():
 			return false
-		pc.add_spirit(-cost)
+		start_cooldown()
 		var a := AttackData.new()
 		a.id = &"pig_burp"
 		a.clip = &"chi_cast"
@@ -555,15 +555,15 @@ class Dragon:
 	func _init() -> void:
 		title = "Dragon"
 		blurb = "Set the prop you hold on fire: it deals magic damage and burns."
-		cost = 15.0
+		cooldown = 8.0
 
 	func is_active_talisman() -> bool:
 		return true
 
 	func activate() -> bool:
 		var f := pc.controlled
-		if f.held_prop == null or not is_instance_valid(f.held_prop) or pc.spirit < cost:
+		if f.held_prop == null or not is_instance_valid(f.held_prop) or not is_ready():
 			return false
-		pc.add_spirit(-cost)
+		start_cooldown()
 		f.held_prop.ignite(SECONDS)
 		return true

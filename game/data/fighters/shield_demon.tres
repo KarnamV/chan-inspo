@@ -12,18 +12,19 @@ duration = 0.7
 active_start = 0.35
 active_end = 0.5
 combo_window = 0.5
-damage = 9.0
+damage = 5.9
 knockback = 5.0
 hit_size = Vector3(1.4, 1.5, 1.3)
 hit_offset = Vector3(0, 1, 0.9)
 
 [resource]
+attack_cooldown = 1.9
 script = ExtResource("3_0nsef")
 id = &"shield_demon"
 model = ExtResource("2_fg2v8")
 height = 1.9
 radius = 0.45
-max_hp = 90.0
+max_hp = 67.5
 move_speed = 3.6
 turn_speed = 1.5
 stagger_scale = 0.8

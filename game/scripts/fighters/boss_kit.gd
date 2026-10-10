@@ -105,6 +105,7 @@ class Shockwave:
 		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 		mat.albedo_color = Color(1.0, 0.6, 0.3, 0.8)
 		s.material_override = mat
+		s.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF   # animated in _process
 		s.position = f.global_position + Vector3(0, 0.1, 0)
 		f.get_tree().get_first_node_in_group(&"level_root").add_child(s)
 

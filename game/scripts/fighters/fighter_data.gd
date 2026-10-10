@@ -14,6 +14,7 @@ extends Resource
 @export var turn_speed := 14.0
 @export var knockdown_time := 1.8     ## seconds on the floor (Sheep window)
 @export var stagger_scale := 1.0      ## multiplies incoming stun (brutes shrug off small hits)
+@export var hit_iframes := 0.0        ## invulnerable this long after taking damage (hero: crowd relief)
 @export var light_combo: Array[AttackData] = []
 @export var heavy: AttackData
 @export var dodge_time := 0.35

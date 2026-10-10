@@ -1,14 +1,13 @@
 class_name PlayerController
 extends Node
-## Owns what belongs to the player, not to a body: the spirit meter, talismans (M1: Sheep only),
+## Owns what belongs to the player, not to a body: the spirit (chi) meter, talismans,
 ## and which Fighter is currently controlled (Jackie or a possessed host).
 
 signal controlled_changed(f: Fighter)
 
 @export var spirit_max := 100.0
 @export var spirit_per_hit := 5.0
-@export var sheep_cost := 40.0          ## spirit needed to start possessing
-@export var sheep_drain := 7.0          ## spirit per second while possessing
+@export var sheep_duration := 10.0     ## seconds a possession lasts
 @export var sheep_range := 3.0
 @export var body_hit_penalty := 10.0    ## extra damage when Jackie's body is hit mid-possession
 
@@ -16,7 +15,8 @@ var hero: Fighter
 var controlled: Fighter
 var host: Fighter          ## possessed demon, or null
 var camera: IsoCamera
-var spirit := 0.0
+var spirit := 0.0          ## chi: spent only by chi moves; talismans run on cooldowns
+var possess_left := 0.0
 var brain: Brain          ## PlayerBrain normally; bots swap in a scripted brain
 var _host_old_brain: Brain
 var equipped: Array[Talisman] = []
@@ -203,14 +203,13 @@ func sheep_target() -> Fighter:
 
 
 func try_possess() -> bool:
-	if host or spirit < sheep_cost or controlled != hero:
+	if host or controlled != hero:
 		return false
 	var t := sheep_target()
 	if t == null:
 		return false
-	# sheep_cost is the spirit needed to start; possession then drains the meter (no up-front charge,
-	# otherwise possessing at exactly the cost ended instantly)
 	host = t
+	possess_left = sheep_duration
 	_host_old_brain = t.brain
 	t.set_team(Fighter.Team.PLAYER)
 	t.collision_layer = 1 << 1
@@ -243,6 +242,9 @@ func end_possession(reason: StringName) -> void:
 	hero.leave_body_state()
 	hero.set_brain(brain)
 	_set_controlled(hero)
+	var sheep := talisman(&"sheep")
+	if sheep:
+		sheep.start_cooldown()
 	Events.possession_ended.emit(h, reason)
 	if reason == &"body_hit":
 		var info := DamageInfo.make(body_hit_penalty, null)
@@ -276,10 +278,11 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	for t in equipped:
+		t.cd_left = maxf(t.cd_left - delta, 0.0)
 		t.tick(delta)
 	for b in boons:
 		b.tick(delta)
 	if host:
-		add_spirit(-sheep_drain * delta)
-		if spirit <= 0.0:
-			end_possession(&"spirit_out")
+		possess_left -= delta
+		if possess_left <= 0.0:
+			end_possession(&"time_out")

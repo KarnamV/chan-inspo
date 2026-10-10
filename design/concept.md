@@ -35,7 +35,7 @@ Meta:
   - **Throw & catch:** perfect dodge near a thrown prop (yours or an enemy's) catches it.
   - **Fixed props:** hanging lanterns that drop, barrels that roll, weapon racks to grab from.
   - **Shatter:** breaking a prop on an enemy strips its armor for 3 s, so physical builds can crack armored foes.
-- **Spirit meter (chi):** one shared resource. Pays for Sheep, Tiger, Monkey, Rat and chi moves.
+- **Spirit meter (chi):** pays for chi moves only. Talismans run on cooldowns, no spirit cost. *(User change 2026-10-10: talismans were starving the meter + game felt clunky.)*
   - **Base fill:** landing hits fills it slowly, so talismans work from room 1.
   - **How else it fills is a choice made through helpers** (below), not fixed.
 - **Helpers (boon system, Hades-gods style):** allies who back Jackie in the demon realm.
@@ -74,12 +74,12 @@ Meta:
   - **Regular (physical).**
   - **Chi (magic):** hold **L2** + the same button.
   - Chi versions **start locked or weak**. The **move draft** (room reward) unlocks and upgrades them (chi palm lv1 → 2 → 3), so a build drifts physical → magic over a run.
-  - Chi versions **cost spirit**, competing with talismans for the meter (makes helper fill rules matter).
+  - Chi versions **cost spirit** (only thing that spends it; helper fill rules feed chi moves).
   - Tiger synergy: Yin boosts chi versions, Yang boosts regular ones, so swapping twins swaps which half of your kit is strong.
   - *(User design 2026-10-09; replaces "convert a slot".)*
 - **Controls (gamepad):** □ light, △ heavy, ○ grab/throw, × dodge, R1 parry, **L2 + face = chi versions** (chi light / chi heavy / chi pull / chi blink), **L1 + □△○ = talisman 1/2/3**, R2 free (lock-on or sprint). Keyboard: Shift = chi modifier, Ctrl = talisman modifier.
 - **Talismans:** 12 zodiac talismans, equip 3. Powers stay original, not copied 1:1 from the show. All 12 set 2026-10-09:
-  - **Sheep: possession.** Fixed rule: the only way to possess. Target must be knocked down (regular demons only). Costs spirit meter. Lasts until the meter drains or the host's HP is gone, then you snap back. **Jackie's body lies vulnerable on the floor.** If it's hit, you snap back and take damage. Talisman synergies protect it:
+  - **Sheep: possession.** Fixed rule: the only way to possess. Target must be knocked down (regular demons only). Cooldown, no spirit. Lasts a fixed time (10 s) or until the host's HP is gone, then you snap back. **Jackie's body lies vulnerable on the floor.** If it's hit, you snap back and take damage. Talisman synergies protect it:
     - Tiger: the twin guards the body.
     - Snake: the body is invisible while you possess.
     - Horse: the host's attacks heal Jackie's body.
@@ -97,7 +97,7 @@ Meta:
     - Repeat kills of a boss raise its attack limit (meta pull). Limit numbers set in PRD.
     - *(User change 2026-10-09: replaces "keeps ≥3 moves".)*
   - **Rat: animate.** Throw the talisman at a prop, and the prop comes alive and fights beside you. Defaults:
-    - Costs spirit.
+    - Cooldown 8 s.
     - Max 2 animated at once.
     - Lasts until it breaks or 15 s, then goes inert and can be grabbed again.
     - Behaviour by weight class: light = darts and pecks fast, heavy = slow, hard slams.
@@ -106,7 +106,7 @@ Meta:
   - **Rabbit: quick feet.** Widens the perfect dodge/parry timing window (e.g. ~2×). A perfect dodge slows time for 1.5 s and refills your dash. Makes the skill move easy to hit.
   - **Snake: shadow coil.** After any dodge you're unseen for 2 s. Hits from stealth are crits and never break the prop. Synergy: Rabbit + Snake = assassin build.
   - **Horse: lifesteal (the healing talisman).** Heal 8% of damage dealt. Breaking a prop on an enemy heals a burst (5% max HP), so wearing props out = healing. Capped per room (boss safety). Numbers are first-pass defaults.
-  - **Rooster: juggle.** Launchers keep enemies airborne longer. Aerial hits refund spirit, which feeds the Sheep, Tiger, Monkey and Rat costs.
+  - **Rooster: juggle.** Launchers keep enemies airborne longer. Aerial hits refund spirit, which feeds chi moves.
   - **Dog: loyal.** Survive one lethal hit per room. The demon that "killed" you turns into a temporary ally.
   - **Ally AI is shared:** Tiger twin, Rat props and the Dog convert all use one ally-AI system. Build it once.
   - **Pig: feast (magic).** Food props (buns, roast duck, fruit carts) can be eaten for chi. Chi powers magic belly-slam and burp-blast. New prop category: food.

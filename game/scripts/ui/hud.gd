@@ -1,6 +1,6 @@
 class_name Hud
 extends CanvasLayer
-## HUD: HP, spirit, 3 talisman slots (icon, key, cost, ready), body/prop status, Monkey + Tiger
+## HUD: HP, spirit, 3 talisman slots (icon, key, cooldown, ready), body/prop status, Monkey + Tiger
 ## timers, controls hint.
 
 const SLOT_KEYS := ["Ctrl+J", "Ctrl+K", "Ctrl+L"]
@@ -85,7 +85,7 @@ func _process(_d: float) -> void:
 		held += " (burning)"
 	var who := "Jackie"
 	if controller.host:
-		who = "POSSESSING %s" % String(f.data.id).to_upper()
+		who = "POSSESSING %s · %.0fs" % [String(f.data.id).to_upper(), controller.possess_left]
 	var monkey := controller.talisman(&"monkey") as Zodiac.Monkey
 	if monkey and monkey.form:
 		who = "MONKEY: %s · %d attacks before you lose yourself" % [String(f.data.id).to_upper(), monkey.attacks_left]
@@ -99,7 +99,7 @@ func _process(_d: float) -> void:
 		var t: Talisman = _slot_nodes[i][3]
 		var lbl: Label = _slot_nodes[i][2]
 		var icon: TextureRect = _slot_nodes[i][1]
-		var cost := "" if not t.is_active_talisman() else " · %d" % int(t.cost)
-		lbl.text = "%s%s\n%s" % [t.title, cost, SLOT_KEYS[i] if t.is_active_talisman() else "passive"]
-		var ready := not t.is_active_talisman() or controller.spirit >= t.cost
+		var cd := " · %.0fs" % ceilf(t.cd_left) if t.cd_left > 0.0 else ""
+		lbl.text = "%s%s\n%s" % [t.title, cd, SLOT_KEYS[i] if t.is_active_talisman() else "passive"]
+		var ready := not t.is_active_talisman() or t.is_ready()
 		icon.modulate = Color(1, 1, 1, 1) if ready else Color(0.45, 0.45, 0.45, 0.8)

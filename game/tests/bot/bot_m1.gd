@@ -40,7 +40,7 @@ class BotBrain:
 					f.request_grab()
 			"beat_down":
 				var kd := pc.sheep_target()
-				if kd and pc.spirit >= pc.sheep_cost:
+				if kd and pc.talisman(&"sheep").is_ready():
 					pc.try_possess()
 					return
 				var e := _nearest_enemy(f, true)

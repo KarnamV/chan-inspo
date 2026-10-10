@@ -51,14 +51,11 @@ func _knock(f: Fighter) -> void:
 	f.receive_hit(info)
 
 
-func test_needs_knockdown_and_spirit() -> void:
-	pc.add_spirit(100)
+func test_needs_knockdown_not_spirit() -> void:
 	assert_false(pc.try_possess(), "standing target can't be possessed")
 	_knock(brute)
 	pc.spirit = 0.0
-	assert_false(pc.try_possess(), "not enough spirit")
-	pc.add_spirit(100)
-	assert_true(pc.try_possess())
+	assert_true(pc.try_possess(), "talismans don't cost spirit")
 
 
 func test_possession_swaps_control_and_lays_body_down() -> void:
@@ -84,7 +81,7 @@ func test_body_hit_snaps_back_with_penalty() -> void:
 	assert_eq(hero.health.hp, before - 5.0 - pc.body_hit_penalty)
 
 
-func test_spirit_drain_ends_possession() -> void:
+func test_possession_times_out() -> void:
 	pc.add_spirit(100)
 	_knock(brute)
 	pc.try_possess()

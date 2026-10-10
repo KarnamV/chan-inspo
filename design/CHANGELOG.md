@@ -21,6 +21,16 @@
 - M4: run state + meta save, realm 1 = 10 rooms (combat, 2 helper story rooms, shop, shrine/vault, elite, Butcher King), reward doors, 12 boons, move draft, tea-house hub. Full-run bot 10/10.
 - Design changes made during the run (user to confirm): Sheep 40 spirit = requirement, no up-front charge (drains 7/s); thief fights when nothing to steal, throws loot after ~5 s; shield demon turn speed 1.5 rad/s + guard break.
 
+## 2026-10-10 playtest fix: clunky combat
+- User playtest: "clunky", overwhelmed in room 1, "can't attack". Asked: talismans no chi cost; chi only for chi moves; more fluid moves / more fps.
+- Talismans: spirit cost → cooldowns (Sheep 12 s after possession ends, Tiger 20 s after merge, Monkey 30 s after revert, Rat 8, Pig burp 6, Dragon 8). Sheep possession = 10 s timer (no drain). HUD shows cooldown seconds.
+- Fluidity: 0.25 s input buffer (presses during attacks/stagger no longer dropped); player dodge cancels attack recovery + stagger after 0.15 s; light → heavy cancel; soft auto-aim (snap to enemy within 3.2 m / ~60°); getup invulnerable; hero 0.4 s hit i-frames, stagger ×0.6.
+- Hero: 3-hit combo (jab 9 → cross 11 → finisher 15), faster jab/cross, heavy 16, move 6.0.
+- AI: max 2 demons attack one target at once; others circle.
+- Feel/fps: render was already ~1600 fps; judder came from 60 Hz physics with no interpolation → physics interpolation on, camera follows interpolated transform. Hitstop only on the player's own hits (crowd hits used to freeze the game constantly). Hit-flash no longer walks the mesh tree every frame.
+- Balance: demons damage ×0.65, HP ×0.75, attack cooldown ×1.2 (shield/wraith 1.9 s); archer knife 8 → 5; Butcher King damage ×0.75, HP ×0.85.
+- Probe: `bot_run -- --fair` (real HP, no-dodge bot). Before: died room 1 (22 s). After: reached room 9/10.
+
 ## 2026-10-10 retro
 - Lesson: gameplay bots in the real scene found 8 bugs unit tests missed → keep per-milestone bots (memory + pipeline gotchas).
 - Lesson: show visuals colored and in motion; user had to ask for colors and animations (memory).

@@ -7,6 +7,10 @@ var cooldown := 0.0
 var think_t := 0.0
 var target: Fighter
 var carry_t := 0.0   ## thief: seconds spent running with loot
+var strafe := 1.0 if randf() < 0.5 else -1.0
+var wait_t := 0.0    ## circling while others attack
+## At most this many demons swing at one target at once; the rest circle and wait their turn.
+const MAX_ATTACKERS := 2
 
 
 func think(f: Fighter, delta: float) -> void:
@@ -29,11 +33,18 @@ func think(f: Fighter, delta: float) -> void:
 		FighterData.AiKind.RANGED:
 			_ranged(f, to, dist, delta)
 			return
-	if dist > f.data.attack_range:
+	if dist > f.data.attack_range and wait_t <= 0.0:
 		f.intent_move = to / dist
+		return
+	if wait_t > 0.0:
+		wait_t -= delta
+		_wait_turn(f, to, dist)
 		return
 	_turn(f, to / maxf(dist, 0.01), delta)
 	if cooldown <= 0.0 and f.can_act() and not f.data.ai_attacks.is_empty() and f.facing.dot(to / maxf(dist, 0.01)) > 0.7:
+		if not _may_attack(f):
+			wait_t = randf_range(0.4, 0.8)
+			return
 		f.request_attack(f.data.ai_attacks[randi() % f.data.ai_attacks.size()])
 		cooldown = f.data.attack_cooldown * randf_range(0.8, 1.2)
 
@@ -109,7 +120,7 @@ func _ranged(f: Fighter, to: Vector3, dist: float, _delta: float) -> void:
 	if f.held_prop:
 		f.request_grab()
 	else:
-		var info := DamageInfo.make(8.0, f)
+		var info := DamageInfo.make(5.0, f)
 		info.stun = 0.3
 		var from := f.global_position + Vector3(0, 1.3, 0) + f.facing * 0.6
 		var aim := (target.global_position + Vector3(0, 1.0, 0)) - from
@@ -122,9 +133,29 @@ func _melee(f: Fighter, to: Vector3, dist: float) -> void:
 		f.intent_move = to / maxf(dist, 0.01)
 		return
 	f.facing = to / maxf(dist, 0.01)
-	if cooldown <= 0.0 and f.can_act() and not f.data.ai_attacks.is_empty():
+	if cooldown <= 0.0 and f.can_act() and not f.data.ai_attacks.is_empty() and _may_attack(f):
 		f.request_attack(f.data.ai_attacks[randi() % f.data.ai_attacks.size()])
 		cooldown = f.data.attack_cooldown * randf_range(0.8, 1.2)
+
+
+func _may_attack(f: Fighter) -> bool:
+	if f.team != Fighter.Team.ENEMY or f.data.boss:
+		return true
+	var busy := 0
+	for n in f.get_tree().get_nodes_in_group(&"fighters"):
+		var o := n as Fighter
+		if o and o != f and o.team == f.team and o.state == Fighter.State.ATTACK:
+			var b := o.brain as AIBrain
+			if b and b.target == target:
+				busy += 1
+	return busy < MAX_ATTACKERS
+
+
+## Not our turn: back off a little and circle the target.
+func _wait_turn(f: Fighter, to: Vector3, dist: float) -> void:
+	var dir := to / maxf(dist, 0.01)
+	var side := Vector3(-dir.z, 0.0, dir.x) * strafe
+	f.intent_move = (side * 0.5 - dir * 0.3) if dist < f.data.attack_range * 0.9 else side * 0.4
 
 
 func _nearest_free_prop(f: Fighter, within: float) -> Prop:

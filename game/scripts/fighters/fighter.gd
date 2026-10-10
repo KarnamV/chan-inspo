@@ -19,6 +19,9 @@ enum Team { PLAYER, ENEMY }
 
 const GRAVITY := 20.0
 const PICKUP_RANGE := 1.7
+const AIM_RANGE := 3.2          ## player attacks snap toward an enemy this close...
+const AIM_CONE := 0.5           ## ...within ~60 degrees of where you're pushing
+const STAGGER_ESCAPE := 0.15    ## player can dodge out of a stagger after this long
 
 @export var data: FighterData
 @export var team: Team = Team.ENEMY
@@ -56,9 +59,12 @@ var attack_with_prop: Prop
 var attack_hit_any := false
 var dodge_cd := 0.0
 var knock_time := 0.0
+var mercy_t := 0.0              ## post-hit invulnerability (data.hit_iframes)
 var _flash_t := 0.0
 var _flash_mat: StandardMaterial3D
 var _tint_mat: StandardMaterial3D
+var _meshes: Array[MeshInstance3D] = []
+var _overlay: Material
 
 
 func _ready() -> void:
@@ -100,6 +106,8 @@ func _ready() -> void:
 		add_child(model)
 		anim = AnimDriver.new(model)
 		hand_attach = _make_hand_attach()
+		for mi in model.find_children("*", "MeshInstance3D", true, false):
+			_meshes.append(mi as MeshInstance3D)
 	else:
 		anim = AnimDriver.new(null)
 	_flash_mat = StandardMaterial3D.new()
@@ -148,6 +156,8 @@ func request_light() -> void:
 
 
 func request_heavy() -> void:
+	if state == State.ATTACK and _in_recovery() and not attack_with_prop and attack in data.light_combo and not held_prop:
+		_set_state(State.IDLE)   # light -> heavy finisher cancel
 	if not can_act():
 		return
 	if held_prop:
@@ -184,7 +194,7 @@ func request_grab() -> void:
 
 
 func request_dodge() -> void:
-	if not can_act() or dodge_cd > 0.0:
+	if dodge_cd > 0.0 or not (can_act() or can_dodge_cancel()):
 		return
 	if intent_move.length() > 0.1:
 		facing = intent_move.normalized()
@@ -192,6 +202,22 @@ func request_dodge() -> void:
 	health.invulnerable = true
 	dodged.emit()
 	anim.play(&"dodge", 0.05, data.dodge_time)
+
+
+## Player bodies can dodge out of attack recovery and out of a stagger, so a crowd can't lock them.
+func can_dodge_cancel() -> bool:
+	if team != Team.PLAYER:
+		return false
+	match state:
+		State.ATTACK:
+			return _in_recovery()
+		State.STAGGER:
+			return state_t >= STAGGER_ESCAPE
+	return false
+
+
+func _in_recovery() -> bool:
+	return attack != null and state_t >= attack.active_end
 
 
 func request_parry() -> void:
@@ -280,9 +306,34 @@ func _start_attack(a: AttackData, prop: Prop) -> void:
 	attack_with_prop = prop
 	attack_hit_any = false
 	queued_light = false
+	if team == Team.PLAYER:
+		_aim()
 	_set_state(State.ATTACK)
 	anim.play(a.clip, 0.06, a.duration)
 	attack_started.emit(a)
+
+
+## Soft aim: face the pushed direction, snapping to the nearest enemy roughly that way.
+func _aim() -> void:
+	var dir := intent_move.normalized() if intent_move.length() > 0.1 else facing
+	var best: Fighter = null
+	var best_d := AIM_RANGE
+	for n in get_tree().get_nodes_in_group(&"fighters"):
+		var o := n as Fighter
+		if o == null or o == self or o.team == team or o.is_dead() or o.hidden:
+			continue
+		var to := o.global_position - global_position
+		to.y = 0.0
+		var d := to.length()
+		if d < best_d and (d < 0.9 or dir.dot(to / d) > AIM_CONE):
+			best_d = d
+			best = o
+	if best:
+		var to := best.global_position - global_position
+		to.y = 0.0
+		if to.length() > 0.01:
+			dir = to.normalized()
+	facing = dir
 
 
 func _attack_info(a: AttackData) -> DamageInfo:
@@ -318,12 +369,13 @@ func _on_hit_landed(hb: Hurtbox, info: DamageInfo, amount: float) -> void:
 			held_prop = null
 	crit_next = false
 	attack_landed.emit(info, amount, hb.owner_fighter)
-	Juice.hitstop(0.05 if not info.knockdown else 0.09)
+	if team == Team.PLAYER:   # only your own hits freeze the frame; a crowd hitting you shouldn't stutter
+		Juice.hitstop(0.04 if not info.knockdown else 0.07)
 
 
 # ---------------- hits taken ----------------
 func receive_hit(info: DamageInfo) -> float:
-	if state == State.DEAD:
+	if state == State.DEAD or state == State.GETUP or mercy_t > 0.0:
 		return 0.0
 	if state == State.PARRY and state_t <= data.parry_window * parry_mult:
 		var atk := info.source as Fighter
@@ -361,6 +413,8 @@ func receive_hit(info: DamageInfo) -> float:
 		status.apply_element(info.element, info.source)
 	Events.damage_dealt.emit(self, info, amount)
 	_flash_t = 0.09
+	if amount > 0.0:
+		mercy_t = data.hit_iframes
 	if state == State.BODY:
 		body_hit.emit(info)
 		return amount
@@ -447,6 +501,7 @@ func _set_state(s: State) -> void:
 func _physics_process(delta: float) -> void:
 	state_t += delta
 	dodge_cd = maxf(dodge_cd - delta, 0.0)
+	mercy_t = maxf(mercy_t - delta, 0.0)
 	combo_reset_t = maxf(combo_reset_t - delta, 0.0)
 	intent_move = Vector3.ZERO
 	if brain and state != State.DEAD:
@@ -553,8 +608,12 @@ func _update_flash(delta: float) -> void:
 	if _flash_t > 0.0:
 		_flash_t -= delta
 		overlay = _flash_mat
-	for mi in model.find_children("*", "MeshInstance3D", true, false):
-		(mi as MeshInstance3D).material_overlay = overlay
+	if overlay == _overlay:
+		return
+	_overlay = overlay
+	for mi in _meshes:
+		if is_instance_valid(mi):
+			mi.material_overlay = overlay
 
 
 ## Persistent colour tint over the model (e.g. violet while possessed). null clears it.

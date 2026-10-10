@@ -35,4 +35,6 @@ Project: `game/`. Main scene `scenes/levels/test_room.tscn` (M1 arena).
 - Unit: `godot --headless --path . -s addons/gut/gut_cmdln.gd -gexit`
 - Boot: `godot --headless --path . --quit-after 300`
 - Bots (exit 0 = pass): `bot_m1` (core loop), `bot_m2` (6 demon types), `bot_m3` (12 talismans), `bot_run` (full realm-1 run). Run with `--fixed-fps 60`. Bots that drive UI must set `process_mode = ALWAYS` (panels pause the tree).
+- Balance probe: `bot_run.tscn -- --fair` = real HP/damage, no-dodge bot; prints `FAIR: rooms reached N`.
+- Physics interpolation is on: move nodes in `_physics_process`; anything moved in `_process` (camera, shockwave) sets `physics_interpolation_mode = OFF`. Follow bodies via `get_global_transform_interpolated()`.
 - Visual: Movie Maker capture (`--write-movie movie/f.png --fixed-fps 24`).

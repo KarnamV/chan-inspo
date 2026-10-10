@@ -21,10 +21,10 @@ Rules for this run:
 ## For user review (collected during the run)
 - Icon style picked by me: flat vector (most readable at 48 px). Low-poly faceted is an option for big reward cards.
 - Heavy smash + throw clips are procedural placeholders (stiff). Upgrade path: Kimodo.
-- Sheep economy changed: 40 spirit needed to start, no up-front charge; drains 7/s (≈6–14 s of possession).
+- Talismans now on cooldowns (no spirit); Sheep possession 10 s. Combat fluidity + balance pass done 2026-10-10 (see CHANGELOG) → replay room 1–3 and report feel.
 - **3 props still look bad** after 3 re-roll attempts: bucket, stool, pottery shard (TRELLIS struggles with open/thin shapes even at full quality; concepts are clean). Bucket + stool removed from the realm-1 random pool; shard only appears as brief debris. Fix ideas: closed-lid bucket / thick-seat stool prompts, or Hunyuan3D 2.1 shape + hand texture.
 - 4 other broken props fixed by re-roll with 'solid, opaque, chunky' prompts (spirit urn, hanging lantern, lantern post, rice sacks).
-- **Balance is untested:** bots run with god-mode HP and 3× damage to prove the loop. Expect tuning needs (enemy HP, spirit costs, boss damage).
+- **Balance:** first pass 2026-10-10. No-dodge fair bot reaches room 9/10 (`bot_run -- --fair`). Boss untested at real HP.
 - Thief imps still kite a lot (room 9 took ~70 s for the bot). Might need a slower imp or a 'grab' counter.
 - M1 'is it fun?' gate: please play `game/scenes/levels/test_room.tscn` (F6) — I can only verify it works.
 
