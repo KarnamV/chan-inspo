@@ -3,8 +3,8 @@
 ## What this project is
 Isometric 3D action roguelite in Godot 4.7 (GDScript, static typing). Jackie-Chan-style
 fighting where props are weapons, 12 zodiac talismans (Sheep = possession), demon
-enemies, runs through realms from a tea-house hub. Hobby scope. M0-M4 done
-(realm 1 slice); M5 = realms 2-3 per `design/roadmap.md`.
+enemies, runs through realms from a tea-house hub. Hobby scope. Status, milestones
+and next steps: `design/plan.html` ("Now" section).
 
 ## Stack
 | Layer | Technology | Notes |
@@ -22,7 +22,8 @@ All commands run from `game/` with `godot` on PATH.
 | Task | Command |
 |---|---|
 | Import (first, in any fresh checkout or worktree) | `godot --headless --path . --import` |
-| Run the game | `godot --path .` (main scene `scenes/run/hub.tscn`), or F5 in the editor |
+| Run the game | `godot --path .` (main scene `scenes/run/intro.tscn`: story intro, then hub), or F5 in the editor |
+| Player build | `build_exe.bat` (repo root) -> `build/windows/DemonRealmEscape.exe`; the user plays this |
 | Boot check | `godot --headless --path . --quit-after 300` |
 | Unit tests | `godot --headless --path . -s addons/gut/gut_cmdln.gd -gexit` |
 | One bot | `godot --headless --path . --fixed-fps 60 res://tests/bot/bot_m2.tscn` |
@@ -42,5 +43,5 @@ All commands run from `game/` with `godot` on PATH.
 - conventions.md - GDScript conventions
 - testing.md - GUT + bots, gates, Godot test traps
 - decisions.md - deliberate choices (do not "fix")
-- Design docs (source of truth for game design, not code): `design/concept.md`,
-  `design/roadmap.md`, `design/STATUS.md`, `design/CHANGELOG.md`, `design/tech.md`
+- Design docs (source of truth for game design, not code): `design/plan.html` (plans,
+  status, progress), `design/concept.md`, `design/CHANGELOG.md`, `design/tech.md`

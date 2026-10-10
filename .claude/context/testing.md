@@ -31,6 +31,7 @@ Bot pass = process exit code 0. Each bot prints `PASS`/`FAIL` lines and a
 | `bot_m2` | Combat arena waves, all 6 demon types, parry/chi/props | up to 300 s limit |
 | `bot_m3` | All 12 talismans (19 checks) | medium |
 | `bot_run` | Full realm-1 run: 10 rooms, helpers, shop, shrine, boss, hub | longest |
+| `bot_run -- --fair` | Rough balance probe: real HP, no dodging, starts empty-handed. Not a gate | longest |
 
 ## Full suite
 1. Import (above)

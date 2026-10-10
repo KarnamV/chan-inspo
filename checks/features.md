@@ -20,7 +20,7 @@ Depends on: none
 
 ## F-02 Thief imps can be pinned down (DRAFT - decide after playtest)
 Area: brains
-Why: STATUS.md: imps still kite a lot (bot room 9 took ~70 s).
+Why: playtest notes (now in `design/plan.html`): imps still kite a lot (bot room 9 took ~70 s).
 Acceptance criteria: to be set after the user plays a run. Candidate:
 - After throwing loot, an imp cannot steal again for N s and fights instead.
 - `bot_m2` clears a 3-imp wave faster than today (target set from playtest).

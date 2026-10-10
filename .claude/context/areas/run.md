@@ -1,14 +1,16 @@
 # Run loop, hub, rewards, meta, UI
 
 ## What it does
-A run starts in the tea-house hub, goes through realm 1 (10 rooms: combat, 2 helper
+The game opens on a story intro (once per save, `Meta.seen`), then the tea-house hub.
+A run starts in the hub, goes through realm 1 (10 rooms: combat, 2 helper
 story rooms, shop, shrine/vault, elite, Butcher King) via reward doors, then returns
 to the hub. Meta progress (shards, boss ledger) saves to `user://meta.json`.
 
 ## Pages / routes / entry points -> files
 | Entry point | Files |
 |---|---|
-| Hub (main scene) | `game/scenes/run/hub.tscn`, `game/scripts/run/hub.gd`, `npc.gd` |
+| Story intro (main scene) | `game/scenes/run/intro.tscn`, `game/scripts/ui/story_intro.gd` |
+| Hub | `game/scenes/run/hub.tscn`, `game/scripts/run/hub.gd`, `npc.gd` |
 | Room scene | `game/scenes/run/room.tscn`, `game/scripts/run/run_room.gd` (extends Arena) |
 | Run state (autoload `Run`) - room list, doors, waves | `game/scripts/run/run_state.gd` |
 | Doors | `game/scripts/run/door.gd` |
@@ -20,6 +22,9 @@ to the hub. Meta progress (shards, boss ledger) saves to `user://meta.json`.
 ## Conventions
 - One-time boon effects in `apply_once`; behaviour hooks re-equipped per room.
 - `ChoicePanel` is modal and pauses the tree.
+- The first room always rewards a talisman (`pending_reward` in `start_run`).
+- Enemies spawn spread out via `RunRoom._spawn_spot` (>= 7 m from the hero, >= 3 m apart).
+- The hub has no talisman picker; shards buy unlocks only.
 
 ## What to avoid
 - Panels pause the tree: bots driving UI need `process_mode = ALWAYS`.
@@ -32,4 +37,4 @@ to the hub. Meta progress (shards, boss ledger) saves to `user://meta.json`.
 | Gameplay | `res://tests/bot/bot_run.tscn` (10 checks, full run) |
 
 ## Last verified
-2c1cee6 on 2026-10-10
+52d9040 on 2026-10-10

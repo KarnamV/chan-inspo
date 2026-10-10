@@ -14,7 +14,7 @@ To start a new batch, work with the user to:
    - `.claude/context/index.md`, `conventions.md`, `testing.md`, `decisions.md`
    - `.claude/context/areas/<area>.md` for the areas this batch touches only
    - `checks/features.md`
-   - The design doc section for the feature (`design/concept.md`, `design/roadmap.md`)
+   - The design doc section for the feature (`design/concept.md`, `design/plan.html`)
      when the feature is new gameplay.
 4. **Establish the baseline** (from `game/`): import, all unit tests, boot check, and
    all 4 bots. Everything must pass before anything starts.

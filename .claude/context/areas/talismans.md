@@ -1,14 +1,18 @@
 # Talismans, player controller, possession
 
 ## What it does
-The player equips 3 of 12 zodiac talismans. `PlayerController` owns non-body state:
-spirit meter, equipped talismans, boons, which Fighter is controlled, camera target.
-Sheep = possession (brain + team swap; Jackie's body lies vulnerable). Tiger splits
+The player starts with no talismans and collects them from rewards; nothing is ever
+replaced. Actives run on cooldowns and fill 4 slots (talisman modifier + light, heavy,
+grab or dodge); spirit (chi) only pays for chi moves. `PlayerController` owns non-body
+state: spirit meter, collected talismans, boons, which Fighter is controlled, camera target.
+Sheep = possession for 10 s (brain + team swap; Jackie's body lies vulnerable). Tiger splits
 Yin/Yang, Monkey becomes a killed boss (BossKit), Rat/Dog use ally AI.
 
 ## Pages / routes / entry points -> files
 | Entry point | Files |
 |---|---|
+| Collect / active slots | `game/scripts/player/player_controller.gd` (`collect`, `actives`, `ACTIVE_SLOTS`) |
+| Talisman offers (skip actives when slots full; Monkey only with a boss ledger) | `game/scripts/run/rewards.gd` (`_talisman_offers`) |
 | Player state, spirit, chi | `game/scripts/player/player_controller.gd` |
 | Talisman base (equip/unequip/activate/tick/on_controlled_changed/on_room_cleared) | `game/scripts/talismans/talisman.gd` |
 | All 12 talismans (`Zodiac.make(id)`) | `game/scripts/talismans/zodiac.gd` |
@@ -22,7 +26,8 @@ Yin/Yang, Monkey becomes a killed boss (BossKit), Rat/Dog use ally AI.
 - Spirit changes emit `Events.spirit_changed`.
 
 ## What to avoid
-- Sheep economy is tuned deliberately (see decisions.md); do not change costs in code.
+- Talisman cooldowns and Sheep duration are tuned deliberately (see decisions.md); do
+  not add spirit costs back.
 - Possession must keep Jackie's body hittable (body hit snaps back with a penalty).
 
 ## How to verify
@@ -32,4 +37,4 @@ Yin/Yang, Monkey becomes a killed boss (BossKit), Rat/Dog use ally AI.
 | Gameplay | `res://tests/bot/bot_m3.tscn` (19 checks) |
 
 ## Last verified
-2c1cee6 on 2026-10-10
+52d9040 on 2026-10-10
