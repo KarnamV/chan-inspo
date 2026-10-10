@@ -1,6 +1,8 @@
 class_name AIBrain
 extends Brain
 ## Basic melee demon: find the nearest hostile fighter, close in, attack on a cooldown.
+## Demons start unaware: they wander near their spot until they see you (view cone), hear you up
+## close, or get hit. Noticing alerts nearby demons; a "!" pops and they take a beat before engaging.
 ## Possessed hosts and Jackie's lying body are both valid targets (they're player-team).
 
 var cooldown := 0.0
@@ -11,6 +13,16 @@ var strafe := 1.0 if randf() < 0.5 else -1.0
 var wait_t := 0.0    ## circling while others attack
 ## At most this many demons swing at one target at once; the rest circle and wait their turn.
 const MAX_ATTACKERS := 2
+const SIGHT := 7.5
+const SIGHT_DOT := 0.25     ## ~150 degree view cone
+const HEAR := 2.8
+const ALERT_RADIUS := 6.0
+
+var aware := false
+var react_t := 0.0          ## pause after noticing, before moving in
+var home := Vector3.INF
+var wander_t := 0.0
+var wander_dir := Vector3.ZERO
 
 
 func think(f: Fighter, delta: float) -> void:
@@ -24,6 +36,17 @@ func think(f: Fighter, delta: float) -> void:
 	var to := target.global_position - f.global_position
 	to.y = 0.0
 	var dist := to.length()
+	if not aware:
+		if _notices(f, to, dist):
+			notice(f, 0.45)
+			_alert_others(f)
+		else:
+			_wander(f, delta)
+			return
+	if react_t > 0.0:
+		react_t -= delta
+		_turn(f, to / maxf(dist, 0.01), delta)
+		return
 	if dist > f.data.aggro_range:
 		return
 	match f.data.ai_kind:
@@ -136,6 +159,65 @@ func _melee(f: Fighter, to: Vector3, dist: float) -> void:
 	if cooldown <= 0.0 and f.can_act() and not f.data.ai_attacks.is_empty() and _may_attack(f):
 		f.request_attack(f.data.ai_attacks[randi() % f.data.ai_attacks.size()])
 		cooldown = f.data.attack_cooldown * randf_range(0.8, 1.2)
+
+
+func _notices(f: Fighter, to: Vector3, dist: float) -> bool:
+	if f.health.hp < f.health.max_hp:
+		return true   # got hit
+	if dist < HEAR:
+		return true
+	return dist < SIGHT and f.facing.dot(to / maxf(dist, 0.01)) > SIGHT_DOT
+
+
+## Become aware of the player (after `delay` seconds of reaction).
+func notice(f: Fighter, delay: float) -> void:
+	if aware:
+		return
+	aware = true
+	react_t = delay
+	var mark := Label3D.new()
+	mark.text = "!"
+	mark.font_size = 120
+	mark.outline_size = 24
+	mark.modulate = Color(1.0, 0.8, 0.25)
+	mark.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	mark.no_depth_test = true
+	mark.position.y = f.data.height + 0.8
+	f.add_child(mark)
+	mark.scale = Vector3.ONE * 0.3
+	var tw := mark.create_tween()
+	tw.tween_property(mark, "scale", Vector3.ONE, 0.12).set_trans(Tween.TRANS_BACK)
+	tw.tween_interval(0.6)
+	tw.tween_property(mark, "modulate:a", 0.0, 0.2)
+	tw.tween_callback(mark.queue_free)
+
+
+func _alert_others(f: Fighter) -> void:
+	for n in f.get_tree().get_nodes_in_group(&"fighters"):
+		var o := n as Fighter
+		if o and o != f and o.team == f.team and not o.is_dead() and o.global_position.distance_to(f.global_position) < ALERT_RADIUS:
+			var b := o.brain as AIBrain
+			if b:
+				b.notice(o, randf_range(0.5, 0.9))
+
+
+## Unaware: amble around the spawn spot, pausing now and then.
+func _wander(f: Fighter, delta: float) -> void:
+	if home == Vector3.INF:
+		home = f.global_position
+	wander_t -= delta
+	if wander_t <= 0.0:
+		wander_t = randf_range(1.2, 3.0)
+		var back := home - f.global_position
+		back.y = 0.0
+		if back.length() > 3.0:
+			wander_dir = back.normalized()
+		elif randf() < 0.45:
+			wander_dir = Vector3.ZERO
+		else:
+			var a := randf() * TAU
+			wander_dir = Vector3(cos(a), 0.0, sin(a))
+	f.intent_move = wander_dir * 0.35
 
 
 func _may_attack(f: Fighter) -> bool:

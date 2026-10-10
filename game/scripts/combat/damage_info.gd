@@ -12,6 +12,7 @@ var stun := 0.25                   ## hit-stagger seconds when not knocked down
 var shatter := false               ## breaking a prop on the target strips its armor
 var element: StringName = &""      ## fire / water / magic / food (M2)
 var source: Node = null            ## the fighter (or prop) that dealt it
+var whiff := false                 ## set by the target: passed through it (dodge, getup, i-frames)
 
 
 static func make(p_amount: float, p_source: Node = null, p_type: Type = Type.PHYSICAL) -> DamageInfo:

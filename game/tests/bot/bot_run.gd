@@ -118,12 +118,12 @@ func _reparent_to_root() -> void:
 	get_parent().remove_child(self)
 	r.add_child(self)
 	_moved = true
-	Run.start_run([&"sheep", &"tiger", &"rat"], 7)
+	fair = "--fair" in OS.get_cmdline_user_args()
+	# fair probe starts empty-handed like a real run; the loop bot keeps 3 talismans to exercise them
+	Run.start_run([] if fair else [&"sheep", &"tiger", &"rat"], 7)
 	for arg in OS.get_cmdline_user_args():   # e.g. -- --start=9 jumps to the boss room (captures)
 		if arg.begins_with("--start="):
 			Run.room_i = int(arg.split("=")[1])
-		if arg == "--fair":
-			fair = true
 	get_tree().change_scene_to_file(Run.ROOM_SCENE)
 
 

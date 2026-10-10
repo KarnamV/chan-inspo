@@ -33,21 +33,22 @@ static func offers(kind: StringName, pc: PlayerController, rng: RandomNumberGene
 	return []
 
 
+## Talismans you don't have yet (unlocked in the tea house). Never replaces one: once every active
+## button slot is used, only passives are offered. Monkey only once a boss is in the ledger.
 static func _talisman_offers(pc: PlayerController, rng: RandomNumberGenerator) -> Array:
 	var have: Array = pc.equipped.map(func(t: Talisman) -> StringName: return t.id)
-	var pool: Array = Meta.unlocked.filter(func(id: StringName) -> bool: return id not in have)
+	var slots_full := pc.actives().size() >= PlayerController.ACTIVE_SLOTS
+	var pool: Array = Meta.unlocked.filter(func(id: StringName) -> bool:
+		if id in have or (id == &"monkey" and pc.boss_ledger.is_empty()):
+			return false
+		return not (slots_full and Zodiac.make(id).is_active_talisman()))
 	_shuffle(pool, rng)
 	var out: Array = []
 	for id in pool.slice(0, 3):
 		var t := Zodiac.make(id)
-		var text := t.blurb + ("" if have.size() < 3 else "\n(replaces your oldest talisman)")
-		out.append({"title": t.title + " talisman", "text": text, "icon": icon("icon_talisman_%s" % id),
-			"apply": func() -> void:
-				var ids: Array = pc.equipped.map(func(x: Talisman) -> StringName: return x.id)
-				if ids.size() >= 3:
-					ids.pop_front()
-				ids.append(id)
-				pc.equip(ids)})
+		var how := "Active." if t.is_active_talisman() else "Passive."
+		out.append({"title": t.title + " talisman", "text": "%s %s" % [how, t.blurb],
+			"icon": icon("icon_talisman_%s" % id), "apply": func() -> void: pc.collect(id)})
 	return out
 
 

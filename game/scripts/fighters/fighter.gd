@@ -64,6 +64,9 @@ var _flash_t := 0.0
 var _flash_mat: StandardMaterial3D
 var _tint_mat: StandardMaterial3D
 var _meshes: Array[MeshInstance3D] = []
+var hp_bar: MeshInstance3D      ## tiny bar over demons (bosses use the BossBar)
+var _chip := 1.0
+static var _hp_mat: ShaderMaterial
 var _overlay: Material
 
 
@@ -117,7 +120,33 @@ func _ready() -> void:
 	_flash_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_flash_mat.albedo_color = Color(1, 1, 1, 0.55)
 	_flash_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	if team == Team.ENEMY and not data.boss:
+		_make_hp_bar()
 	_set_state(State.IDLE)
+
+
+func _make_hp_bar() -> void:
+	if _hp_mat == null:
+		_hp_mat = ShaderMaterial.new()
+		_hp_mat.shader = load("res://assets/shaders/enemy_hp.gdshader")
+	hp_bar = MeshInstance3D.new()
+	var q := QuadMesh.new()
+	q.size = Vector2(clampf(data.radius * 2.6, 0.8, 1.4), 0.13)
+	hp_bar.mesh = q
+	hp_bar.material_override = _hp_mat
+	hp_bar.position.y = data.height + 0.35
+	hp_bar.layers = 2
+	hp_bar.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	hp_bar.visible = false
+	add_child(hp_bar)
+
+
+func _update_hp_bar(delta: float) -> void:
+	var r := health.hp / maxf(health.max_hp, 1.0)
+	_chip = maxf(move_toward(_chip, r, delta * 0.8), r)
+	hp_bar.visible = team == Team.ENEMY and not is_dead() and r < 0.999 and not hidden
+	hp_bar.set_instance_shader_parameter(&"ratio", r)
+	hp_bar.set_instance_shader_parameter(&"chip", _chip)
 
 
 func _make_hand_attach() -> Node3D:
@@ -281,23 +310,77 @@ func _combo_attack() -> AttackData:
 	return a
 
 
+## Prop attacks by style. Light / heavy:
+##   club  (chair, planks, wok...)  swing / overhead chop
+##   long  (pole, spear)            thrust, long and narrow / spin, hits all around
+##   bulky (bench, barrel, carts)   ram shove, big push / two-hand slam
+##   small (buns, shard, duck)      quick jab / chop
+## `strike` = fraction of the clip where the blow lands (matches the clip's keyframes).
 func _prop_attack(heavy: bool) -> AttackData:
 	var pd := held_prop.data
+	var style := pd.attack_style()
 	var a := AttackData.new()
-	a.id = &"prop_heavy" if heavy else &"prop_light"
-	a.clip = &"heavy" if heavy else &"swing"
+	a.id = StringName("prop_%s_%s" % [style, "heavy" if heavy else "light"])
 	var slow := 1.35 if pd.weight == PropData.Weight.HEAVY and not heavy_one_hand else 1.0
-	a.duration = (0.75 if heavy else 0.5) * slow
-	a.active_start = a.duration * 0.42
-	a.active_end = a.duration * 0.68
-	a.combo_window = a.duration
+	var r := pd.reach
+	var dur := 0.42
+	var strike := Vector2(0.42, 0.68)
 	a.damage = pd.damage * (pd.heavy_mult if heavy else 1.0)
 	a.knockback = pd.knockback * (1.6 if heavy else 1.0)
 	a.knockdown = heavy or pd.weight == PropData.Weight.HEAVY
 	a.stun = 0.4
 	a.lunge = 2.5 if heavy else 1.5
-	a.hit_size = Vector3(1.6 if heavy else 1.2, 1.4, pd.reach)
-	a.hit_offset = Vector3(0, 1.0, 0.35 + pd.reach * 0.5)
+	a.hit_size = Vector3(1.6 if heavy else 1.2, 1.4, r)
+	a.hit_offset = Vector3(0, 1.0, 0.35 + r * 0.5)
+	match [style, heavy]:
+		[&"club", false]:
+			a.clip = &"swing"
+		[&"club", true], [&"small", true]:
+			a.clip = &"chop"
+			dur = 0.56
+			strike = Vector2(0.45, 0.66)
+			a.hit_size = Vector3(1.0, 1.6, r + 0.3)   # narrow but deep: a downward blow
+			a.hit_offset = Vector3(0, 0.9, 0.3 + (r + 0.3) * 0.5)
+		[&"small", false]:
+			a.clip = &"punch_jab"
+			dur = 0.3
+			strike = Vector2(0.3, 0.6)
+			a.lunge = 2.0
+		[&"long", false]:
+			a.clip = &"thrust"
+			dur = 0.44
+			strike = Vector2(0.4, 0.66)
+			a.lunge = 3.2
+			a.hit_size = Vector3(0.7, 1.2, r + 0.4)   # long, narrow poke
+			a.hit_offset = Vector3(0, 1.1, 0.3 + (r + 0.4) * 0.5)
+			a.knockback = pd.knockback * 1.2
+		[&"long", true]:
+			a.clip = &"spin"
+			dur = 0.78
+			strike = Vector2(0.24, 0.74)
+			a.lunge = 0.5
+			a.damage = pd.damage * 1.2   # hits everyone around you, so less than a full heavy
+			a.hit_size = Vector3(r * 2.0 + 0.6, 1.4, r * 2.0 + 0.6)
+			a.hit_offset = Vector3(0, 1.0, 0)
+		[&"bulky", false]:
+			a.clip = &"ram"
+			dur = 0.5
+			strike = Vector2(0.45, 0.66)
+			a.lunge = 3.5
+			a.knockdown = false
+			a.knockback = pd.knockback * 2.0   # shove them away
+			a.stun = 0.6
+			a.hit_size = Vector3(1.8, 1.4, 1.3)
+			a.hit_offset = Vector3(0, 1.0, 1.0)
+		[&"bulky", true]:
+			a.clip = &"heavy"
+			dur = 0.64
+			strike = Vector2(0.55, 0.74)
+			a.hit_size = Vector3(2.0, 1.6, r + 0.4)   # wide slam
+	a.duration = dur * slow
+	a.active_start = a.duration * strike.x
+	a.active_end = a.duration * strike.y
+	a.combo_window = a.duration
 	a.prop_wear = 2 if heavy else 1
 	return a
 
@@ -363,8 +446,8 @@ func _attack_info(a: AttackData) -> DamageInfo:
 
 
 func _on_hit_landed(hb: Hurtbox, info: DamageInfo, amount: float) -> void:
-	if not (hb.owner_fighter is Fighter):
-		return   # knocking a loose prop around doesn't wear the one in hand
+	if not (hb.owner_fighter is Fighter) or info.whiff:
+		return   # loose props, or a target that wasn't hittable: no wear, no hitstop
 	if not attack_hit_any and attack_with_prop and is_instance_valid(attack_with_prop) and state == State.ATTACK:
 		attack_hit_any = true
 		var p := attack_with_prop
@@ -380,6 +463,7 @@ func _on_hit_landed(hb: Hurtbox, info: DamageInfo, amount: float) -> void:
 # ---------------- hits taken ----------------
 func receive_hit(info: DamageInfo) -> float:
 	if state == State.DEAD or state == State.GETUP or mercy_t > 0.0:
+		info.whiff = true
 		return 0.0
 	if state == State.PARRY and state_t <= data.parry_window * parry_mult:
 		var atk := info.source as Fighter
@@ -409,9 +493,11 @@ func receive_hit(info: DamageInfo) -> float:
 			return 0.0
 	if health.invulnerable and state == State.DODGE and state_t <= data.dodge_iframes:
 		perfect_dodge.emit()
+		info.whiff = true
 		return 0.0
 	var amount := health.take(info)
 	if health.invulnerable:
+		info.whiff = true
 		return 0.0
 	if info.element != &"" and amount > 0.0:
 		status.apply_element(info.element, info.source)
@@ -499,6 +585,8 @@ func _set_state(s: State) -> void:
 		dodge_cd = data.dodge_cooldown * float(data_mods.get("dodge_cd_mult", 1.0))
 	if state == State.ATTACK and s != State.ATTACK:
 		hitbox.deactivate()
+		if model:
+			model.rotation.y = 0.0   # undo the spin turn
 	state = s
 	state_t = 0.0
 
@@ -528,6 +616,10 @@ func _physics_process(delta: float) -> void:
 				hitbox.activate(_attack_info(attack), attack.hit_size, attack.hit_offset)
 			if state_t >= attack.active_end and hitbox.active:
 				hitbox.deactivate()
+			if attack.clip == &"spin" and model:
+				# the full turn is done on the model (the import drops hip rotation from the clip)
+				var k := clampf((state_t - attack.active_start) / maxf(attack.active_end - attack.active_start, 0.01), 0.0, 1.0)
+				model.rotation.y = -TAU * (k * k * (3.0 - 2.0 * k))
 			if state_t >= attack.duration:
 				var chain := queued_light and not attack_with_prop
 				_set_state(State.IDLE)
@@ -591,6 +683,8 @@ func _physics_process(delta: float) -> void:
 	if facing.length() > 0.01:
 		rotation.y = atan2(facing.x, facing.z)
 	_update_flash(delta)
+	if hp_bar:
+		_update_hp_bar(delta)
 
 
 ## Perfect dodge into a thrown prop (yours or an enemy's) snatches it out of the air.

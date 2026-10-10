@@ -39,6 +39,21 @@
 - Gotcha: `clip_children` on a HUD control → `p_elem->_root` engine error on every scene change (4.7). Masked portrait with a shader instead.
 - Bots: m1 now stops when all checks met (demons die faster post-balance); m3 Ox/Dog checks account for getup invuln + hit i-frames. 3/3 stable.
 
+## 2026-10-10 prop wear + prop attack styles
+- User: props lose a hit without hitting anything; different props need different attacks.
+- Wear leaks found by new tests (`test_prop_wear.gd`): swing at an invulnerable demon (getup/dodge/i-frames) wore the prop; thrown props wore on hitting floor/walls. Fix: `DamageInfo.whiff` set by the target; throws only wear on fighter hits.
+- Prop styles (`PropData.attack_style()`: club / long / bulky / small, derived from reach/weight/id, overridable): club swing/chop, long thrust/spin (360 hit), bulky ram (big shove)/slam, small jab/chop. Hit boxes and strike timing per style.
+- New procedural clips chop, thrust, spin, ram (pipeline `anim_procedural.py`, + quaternion hemisphere fix) added to hero + 6 humanoid demons. Godot import drops hip rotation → spin turn done on the model in code.
+
+## 2026-10-10 playtest 2 changes
+- User: don't replace talismans; start with none and collect; tiny enemy HP bars; faster hits; demons 4–5 hits, spread out, attack only when they see you.
+- Talismans: no cap, `PlayerController.collect()`, actives map to 4 slots (mod + light/heavy/grab/dodge) in pickup order; offers skip actives once slots are full, Monkey only after a boss kill. First room always rewards a talisman. Hub picker → shard unlocks only. Intro/Mei lines: talismans scattered into the realm. First-talisman tip.
+- Enemy HP bar: billboard shader quad with per-instance ratio + damage chip; hidden until hurt.
+- Hero attacks ×0.8 duration; prop swings 0.5/0.75 → 0.42/0.64 s.
+- Demon HP: brute 55, shield 45, thief 32, archer 32, wraith 28 (phys resist 0.75 → 0.5), ghoul 38 (phys resist 0.5 → 0.35).
+- AI: unaware until sight (7.5 m, ~150° cone) / hearing (2.8 m) / hit; alerts allies within 6 m; "!" mark + reaction delay; wander near spawn. Spawns spread ≥7 m from Jackie, ≥3 m apart, random facing.
+- Hurt vignette now scales with damage. Fair probe now starts empty-handed: beats the boss (1 extra life) → may be too easy.
+
 ## 2026-10-10 standalone exe
 - User doesn't want to open Godot each time → Windows export (single exe, pck embedded) + `build_exe.bat`. Official 4.7 export templates installed (Windows only). Rule: rebuild exe after every gameplay/art change.
 

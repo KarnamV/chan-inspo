@@ -140,13 +140,16 @@ func _chi_blink(f: Fighter, dist: float) -> void:
 		Juice.shake(0.08)
 
 
+## Talismans are collected during a run and never replaced. Passives just work; actives take the
+## button slots (talisman modifier + light / heavy / grab / dodge) in the order they were found.
+const ACTIVE_SLOTS := 4
+
+
 func equip(ids: Array) -> void:
 	for t in equipped:
 		t.unequip()
 	equipped.clear()
 	for id in ids:
-		if equipped.size() >= 3:
-			break
 		var t := Zodiac.make(id)
 		t.equip(self)
 		equipped.append(t)
@@ -176,12 +179,28 @@ func talisman(id: StringName) -> Talisman:
 	return null
 
 
+func actives() -> Array[Talisman]:
+	var out: Array[Talisman] = []
+	for t in equipped:
+		if t.is_active_talisman() and out.size() < ACTIVE_SLOTS:
+			out.append(t)
+	return out
+
+
+## Adds a found talisman (no-op if already held).
+func collect(id: StringName) -> void:
+	if has_talisman(id):
+		return
+	var ids: Array = equipped.map(func(x: Talisman) -> StringName: return x.id)
+	ids.append(id)
+	equip(ids)
+
+
 func use_talisman(slot: int) -> bool:
-	if slot >= equipped.size():
+	var act := actives()
+	if slot >= act.size():
 		return false
-	var t := equipped[slot]
-	if not t.is_active_talisman():
-		return false
+	var t := act[slot]
 	var ok := t.activate()
 	if ok:
 		Events.talisman_used.emit(t.id)

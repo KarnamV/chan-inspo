@@ -6,11 +6,9 @@ extends Control
 const BACKDROP := "res://assets/story/story_05_teahouse.png"
 const MEI := "res://assets/portraits/portrait_auntie_mei.png"
 
-var picked: Array = []
 var _shards_lbl := Label.new()
 var _pick_box := GridContainer.new()
 var _start := Button.new()
-var _status := Label.new()
 var _blurb := Label.new()   ## focused talisman description (tooltips never show on gamepad)
 
 
@@ -74,7 +72,8 @@ func _ready() -> void:
 		row.add_child(b)
 		v.add_child(row)
 
-	v.add_child(_header("Talismans — pick 3 for the run"))
+	v.add_child(_header("Talismans you can find out there"))
+	v.add_child(_note("You start each run empty-handed. Talismans turn up as room rewards; spend shards to let more of them appear."))
 	_pick_box.columns = 6
 	_pick_box.add_theme_constant_override("h_separation", 10)
 	_pick_box.add_theme_constant_override("v_separation", 10)
@@ -82,12 +81,8 @@ func _ready() -> void:
 	_blurb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_blurb.custom_minimum_size = Vector2(0, 48)
 	v.add_child(_blurb)
-	picked = Run.talismans.filter(func(t: StringName) -> bool: return t in Meta.unlocked).slice(0, 3)
-	if picked.is_empty():
-		picked = [&"sheep", &"tiger", &"rat"]
 	_build_picks()
 
-	v.add_child(_status)
 	_start.text = "Enter the Ember Night Market"
 	_start.custom_minimum_size = Vector2(360, 56)
 	_start.pressed.connect(start_run)
@@ -108,7 +103,7 @@ func _ready() -> void:
 func _hub_intro() -> void:
 	DialoguePanel.sequence(self, [
 		["Auntie Mei", "Drink. You'll need it. This tea house sits between the worlds, so the demons can't reach you here. Out there is another matter.", MEI],
-		["Auntie Mei", "Those paper talismans in your pocket are real. Pick three to carry. Each one wakes up a different trick, and they recover on their own after you use them.", MEI],
+		["Auntie Mei", "That trunk of paper talismans you opened? They're real, and they scattered all over the realm when you fell through. Find them out there. Each one wakes up a different trick and recovers on its own after you use it.", MEI],
 		["Auntie Mei", "When you fall out there, you'll wake up here. Bring back Spirit Shards and I'll teach the other talismans to listen to you. Now go. The Night Market is waiting.", MEI],
 	], func() -> void: Meta.mark_seen(&"hub_intro"))
 
@@ -134,9 +129,7 @@ func _build_picks() -> void:
 		var t := Zodiac.make(id)
 		var b := Button.new()
 		b.custom_minimum_size = Vector2(170, 76)
-		b.toggle_mode = true
 		var unlocked: bool = id in Meta.unlocked
-		b.button_pressed = id in picked
 		var path := "res://assets/icons/icon_talisman_%s.png" % id
 		if ResourceLoader.exists(path):
 			b.icon = load(path)
@@ -150,30 +143,22 @@ func _build_picks() -> void:
 		_pick_box.add_child(b)
 
 
-func _on_pick(id: StringName, b: Button) -> void:
-	if id not in Meta.unlocked:
-		Meta.buy_talisman(id)
-		_build_picks()
-		_refresh()
-		var i := Zodiac.ALL.find(id)
-		await get_tree().process_frame
-		if i >= 0 and i < _pick_box.get_child_count():
-			(_pick_box.get_child(i) as Control).grab_focus()   # keep gamepad focus after rebuild
+func _on_pick(id: StringName, _b: Button) -> void:
+	if id in Meta.unlocked:
 		return
-	if id in picked:
-		picked.erase(id)
-	elif picked.size() < 3:
-		picked.append(id)
-	b.button_pressed = id in picked
+	Meta.buy_talisman(id)
+	_build_picks()
 	_refresh()
+	var i := Zodiac.ALL.find(id)
+	await get_tree().process_frame
+	if i >= 0 and i < _pick_box.get_child_count():
+		(_pick_box.get_child(i) as Control).grab_focus()   # keep gamepad focus after rebuild
 
 
 func _refresh() -> void:
 	_shards_lbl.text = "Spirit Shards: %d   ·   runs %d   ·   best depth %d rooms" % [Meta.shards, Meta.runs, Meta.best_room]
-	_status.text = "Equipped: " + ", ".join(picked.map(func(x: StringName) -> String: return String(x).capitalize()))
-	_start.disabled = picked.is_empty()
 
 
 func start_run() -> void:
-	Run.start_run(picked)
+	Run.start_run([])
 	get_tree().change_scene_to_file(Run.ROOM_SCENE)

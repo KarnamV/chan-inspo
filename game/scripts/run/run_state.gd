@@ -57,7 +57,7 @@ func start_run(p_talismans: Array, seed_value := -1) -> void:
 	mods = {"bare_mult": 1.0, "prop_mult": 1.0, "light_mult": 1.0, "durability_bonus": 0,
 		"dodge_cd_mult": 1.0, "fire_mult": 1.0}
 	extra_lives = 0
-	pending_reward = &""
+	pending_reward = &"talisman"   # runs start empty-handed: the first room always gives a talisman
 	rooms_cleared = 0
 	if seed_value >= 0:
 		rng.seed = seed_value

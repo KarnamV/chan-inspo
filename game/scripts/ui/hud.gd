@@ -3,7 +3,7 @@ extends CanvasLayer
 ## HUD: portrait + HP/chi bars (with a trailing damage chip), status line, 3 talisman slots (icon,
 ## cooldown sweep, device-aware button), low-HP vignette, controls hint early in a run.
 
-const SLOT_ACTIONS := [&"attack_light", &"attack_heavy", &"grab"]
+const SLOT_ACTIONS := [&"attack_light", &"attack_heavy", &"grab", &"dodge"]
 const PORTRAIT := "res://assets/portraits/portrait_jackie.png"
 const HP_COLOR := Color(0.9, 0.22, 0.18)
 const CHI_COLOR := Color(0.3, 0.9, 0.65)
@@ -152,7 +152,7 @@ func _rebuild_slots() -> void:
 		var col := VBoxContainer.new()
 		col.add_theme_constant_override("separation", 2)
 		var panel := PanelContainer.new()
-		panel.custom_minimum_size = Vector2(78, 78)
+		panel.custom_minimum_size = Vector2(78, 78) if controller.equipped.size() <= 6 else Vector2(58, 58)   # a full run can hold all 12
 		var ps := StyleBoxFlat.new()
 		ps.bg_color = Color(0.1, 0.05, 0.05, 0.85)
 		ps.border_color = Color(0.86, 0.64, 0.3) if t.is_active_talisman() else Color(0.5, 0.42, 0.35)
@@ -205,7 +205,7 @@ func _process(delta: float) -> void:
 	spirit_bar.max_value = controller.spirit_max
 	spirit_bar.value = controller.spirit
 	if _last_hp >= 0.0 and f.health.hp < _last_hp - 0.5 and f == controller.hero:
-		_hurt = 0.55
+		_hurt = clampf((_last_hp - f.health.hp) / 25.0, 0.15, 0.5)   # flash scales with the hit
 	_last_hp = f.health.hp
 	var low := f.health.hp / maxf(f.health.max_hp, 1.0) < 0.25
 	_hurt = maxf(_hurt - delta, 0.0)
@@ -229,6 +229,7 @@ func _process(delta: float) -> void:
 	if Run.active:
 		info.text += "   ·   Room %d/%d   ·   %d gold   ·   %d extra lives" % [Run.room_i + 1, Run.REALM1.size(), Run.gold, Run.extra_lives]
 
+	var act := controller.actives()
 	for i in _slot_nodes.size():
 		var t: Talisman = _slot_nodes[i][3]
 		var lbl: Label = _slot_nodes[i][2]
@@ -238,7 +239,7 @@ func _process(delta: float) -> void:
 		var frac := clampf(t.cd_left / maxf(t.cooldown, 0.01), 0.0, 1.0)
 		shade.anchor_top = 1.0 - frac
 		cd_lbl.text = "%d" % ceili(t.cd_left) if t.cd_left > 0.0 else ""
-		lbl.text = "%s\n%s" % [t.title, Inputs.combo(&"talisman_mod", SLOT_ACTIONS[i]) if t.is_active_talisman() else "passive"]
+		lbl.text = "%s\n%s" % [t.title, Inputs.combo(&"talisman_mod", SLOT_ACTIONS[act.find(t)]) if t in act else "passive"]
 		icon.modulate = Color(1, 1, 1) if t.is_ready() else Color(0.6, 0.6, 0.6)
 
 	_hint_t = maxf(_hint_t - delta, 0.0)

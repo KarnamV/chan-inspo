@@ -270,9 +270,9 @@ func _on_body_entered(body: Node) -> void:
 		if thrower and thrower.has_signal("attack_landed"):
 			thrower.attack_landed.emit(info, amount, f)
 		Juice.hitstop(0.07)
-		wear(2)
-	else:
-		wear(1)
+		if not info.whiff:
+			wear(2)
+	# hitting the floor, a wall or another prop costs nothing (only real hits wear a prop)
 	if mode != Mode.BROKEN:
 		mode = Mode.FREE
 		thrower = null

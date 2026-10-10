@@ -85,8 +85,8 @@ Meta:
   - Chi versions **cost spirit** (only thing that spends it; helper fill rules feed chi moves).
   - Tiger synergy: Yin boosts chi versions, Yang boosts regular ones, so swapping twins swaps which half of your kit is strong.
   - *(User design 2026-10-09; replaces "convert a slot".)*
-- **Controls (gamepad):** □ light, △ heavy, ○ grab/throw, × dodge, R1 parry, **L2 + face = chi versions** (chi light / chi heavy / chi pull / chi blink), **L1 + □△○ = talisman 1/2/3**, R2 free (lock-on or sprint). Keyboard: Shift = chi modifier, Ctrl = talisman modifier.
-- **Talismans:** 12 zodiac talismans, equip 3. Powers stay original, not copied 1:1 from the show. All 12 set 2026-10-09:
+- **Controls (gamepad):** □ light, △ heavy, ○ grab/throw, × dodge, R1 parry, **L2 + face = chi versions** (chi light / chi heavy / chi pull / chi blink), **L1 + □△○× = active talisman 1/2/3/4**, R2 free (lock-on or sprint). Keyboard: Shift = chi modifier, Ctrl = talisman modifier.
+- **Talismans:** 12 zodiac talismans. *(User change 2026-10-10: runs start with none; talismans are found as room rewards and kept, never replaced. Passives just work; actives take button slots in pickup order, max 4. First room always rewards one. Hub shards unlock which can appear.)* Powers stay original, not copied 1:1 from the show. All 12 set 2026-10-09:
   - **Sheep: possession.** Fixed rule: the only way to possess. Target must be knocked down (regular demons only). Cooldown, no spirit. Lasts a fixed time (10 s) or until the host's HP is gone, then you snap back. **Jackie's body lies vulnerable on the floor.** If it's hit, you snap back and take damage. Talisman synergies protect it:
     - Tiger: the twin guards the body.
     - Snake: the body is invisible while you possess.

@@ -86,9 +86,23 @@ func _knock(f: Fighter) -> void:
 	f.receive_hit(i)
 
 
-func test_equip_three_max() -> void:
-	pc.equip([&"sheep", &"tiger", &"rat", &"ox"])
-	assert_eq(pc.equipped.size(), 3)
+func test_collect_keeps_everything() -> void:
+	pc.equip([])
+	for id in [&"sheep", &"ox", &"tiger", &"horse", &"rat"]:
+		pc.collect(id)
+	pc.collect(&"ox")   # duplicates ignored
+	assert_eq(pc.equipped.size(), 5, "nothing replaced, no cap")
+	var act: Array = pc.actives().map(func(t: Talisman) -> StringName: return t.id)
+	assert_eq(act, [&"sheep", &"tiger", &"rat"], "actives take button slots in pickup order; passives don't")
+
+
+func test_offers_never_replace() -> void:
+	pc.equip([&"sheep", &"tiger", &"rat", &"dragon"])   # all 4 active slots used
+	var rng := RandomNumberGenerator.new()
+	for i in 10:
+		for o in Rewards.offers(&"talisman", pc, rng):
+			var id := StringName(String(o.title).get_slice(" ", 0).to_lower())
+			assert_false(Zodiac.make(id).is_active_talisman(), "slots full: only passives offered")
 
 
 func test_sheep_slot_possesses() -> void:

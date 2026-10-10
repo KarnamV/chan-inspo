@@ -52,8 +52,6 @@ func _decorate() -> void:
 
 func _populate() -> void:
 	Run.apply(controller)
-	if controller.equipped.is_empty():
-		controller.equip([&"sheep"])
 	hero.died.connect(_on_hero_died)
 	Events.prop_picked.connect(func(_f: Node, p: Node) -> void: Meta.see_prop((p as Prop).data.id))
 	if Run.room_i == 0 and not Meta.has_seen(&"first_room"):
@@ -103,7 +101,7 @@ func _first_room_lines() -> void:
 	DialoguePanel.sequence(self, [
 		["Jackie", "No script. No wires. No retakes.\n...Okay. Improvise.", me],
 		["Auntie Mei (somewhere in your head)", "Grab anything that isn't nailed down with [%s] and swing it with [%s]. Everything breaks, so keep grabbing. [%s] for a heavy hit, [%s] to dodge through trouble." % [l.call(&"grab"), l.call(&"attack_light"), l.call(&"attack_heavy"), l.call(&"dodge")], mei],
-		["Auntie Mei (somewhere in your head)", "Knock a demon flat, then hold [%s] and press [%s]. The Sheep lets you borrow its body for a while. Mind your own while you're out of it." % [l.call(&"talisman_mod"), l.call(&"attack_light")], mei],
+		["Auntie Mei (somewhere in your head)", "The demons haven't noticed you yet. Pick your moment. Clear the room and one of your scattered talismans will turn up.", mei],
 	], func() -> void: Meta.mark_seen(&"first_room"))
 
 
@@ -131,10 +129,29 @@ func _next_wave() -> void:
 		return
 	var list: Array = waves[wave_i]
 	wave_i += 1
+	var placed: Array[Vector3] = []
 	for i in list.size():
 		var d: FighterData = load("res://data/fighters/%s.tres" % list[i])
 		if d:
-			spawn_fighter(d, Fighter.Team.ENEMY, ENEMY_SPAWNS[i % ENEMY_SPAWNS.size()] * (room_size / 18.0))
+			var at := _spawn_spot(placed)
+			placed.append(at)
+			var f := spawn_fighter(d, Fighter.Team.ENEMY, at)
+			var a := Run.rng.randf() * TAU
+			f.facing = Vector3(cos(a), 0.0, sin(a))   # looking anywhere: they haven't seen you yet
+
+
+## Spread demons around the room, away from Jackie and from each other.
+func _spawn_spot(placed: Array[Vector3]) -> Vector3:
+	var h := room_size / 2 - 2.0
+	var best := Vector3(0, 0, -h)
+	for i in 60:
+		var at := Vector3(Run.rng.randf_range(-h, h), 0, Run.rng.randf_range(-h, h))
+		if at.distance_to(hero.global_position) < 7.0:
+			continue
+		if placed.any(func(p: Vector3) -> bool: return p.distance_to(at) < 3.0):
+			continue
+		return at
+	return best
 
 
 func _process(_delta: float) -> void:
@@ -185,6 +202,20 @@ func _offer(kind: StringName, then: Callable) -> void:
 		offers[i].apply.call()
 		if kind != &"boon":   # boons report themselves (Rewards.grant_boon)
 			Events.run_reward.emit(kind, StringName(offers[i].title))
+		if kind == &"talisman" and not Meta.has_seen(&"first_talisman"):
+			_talisman_tip(then)
+		else:
+			then.call())
+
+
+## First talisman ever found: how the buttons work.
+func _talisman_tip(then: Callable) -> void:
+	var mod := Inputs.label(&"talisman_mod")
+	var keys := "%s / %s / %s / %s" % [Inputs.label(&"attack_light"), Inputs.label(&"attack_heavy"), Inputs.label(&"grab"), Inputs.label(&"dodge")]
+	DialoguePanel.sequence(self, [["Auntie Mei (somewhere in your head)",
+		"There's one. Passive talismans just work. Active ones wake up when you hold [%s] and press [%s]: the first one you find takes the first button, and so on. You keep every talisman you find until the run ends." % [mod, keys],
+		"res://assets/portraits/portrait_auntie_mei.png"]], func() -> void:
+		Meta.mark_seen(&"first_talisman")
 		then.call())
 
 

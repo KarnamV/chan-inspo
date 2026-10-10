@@ -16,3 +16,19 @@ enum Weight { LIGHT, HEAVY }
 @export var pieces: Array[PropData] = []
 @export var element: StringName = &""
 @export var grip_offset := Vector3.ZERO   ## local offset so the hand holds the right end
+@export var style: StringName = &""      ## club / long / bulky / small; empty = derived (attack_style)
+
+const SMALL := [&"bun_basket", &"pottery_shard", &"roast_duck"]
+
+
+## How it's swung (picks the attack clips and hit shapes in Fighter._prop_attack).
+func attack_style() -> StringName:
+	if style != &"":
+		return style
+	if reach >= 2.0:
+		return &"long"
+	if weight == Weight.HEAVY:
+		return &"bulky"
+	if id in SMALL:
+		return &"small"
+	return &"club"

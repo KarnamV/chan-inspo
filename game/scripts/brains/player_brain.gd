@@ -22,8 +22,8 @@ func think(f: Fighter, delta: float) -> void:
 	var v := Input.get_vector(&"move_left", &"move_right", &"move_up", &"move_down")
 	f.intent_move = camera.input_to_world(v) if camera else Vector3(v.x, 0, v.y)
 	if Input.is_action_pressed(&"talisman_mod"):
-		for i in 3:
-			var act: StringName = [&"attack_light", &"attack_heavy", &"grab"][i]
+		for i in 4:
+			var act: StringName = [&"attack_light", &"attack_heavy", &"grab", &"dodge"][i]
 			if Input.is_action_just_pressed(act):
 				controller.use_talisman(i)
 		return

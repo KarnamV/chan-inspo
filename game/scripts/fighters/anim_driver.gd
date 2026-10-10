@@ -6,6 +6,7 @@ extends RefCounted
 const FALLBACK := {
 	&"knockdown": &"death", &"getup": &"death", &"throw": &"punch_cross", &"heavy": &"swing",
 	&"sprint": &"run", &"stagger": &"hit", &"guard": &"idle", &"lying": &"death",
+	&"chop": &"heavy", &"thrust": &"punch_cross", &"spin": &"swing", &"ram": &"heavy",
 }
 
 var player: AnimationPlayer
