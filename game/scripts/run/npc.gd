@@ -59,5 +59,5 @@ func _process(_d: float) -> void:
 	var f := lvl.controller.controlled
 	_prompt.visible = near(f) and (reusable or not _used_once)
 	_prompt.text = "[%s] %s" % [Inputs.label(&"interact"), prompt]
-	if _prompt.visible and Input.is_action_just_pressed(&"interact"):
+	if _prompt.visible and Inputs.just_pressed(&"interact"):
 		interact()

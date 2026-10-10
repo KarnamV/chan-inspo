@@ -54,6 +54,12 @@
 - AI: unaware until sight (7.5 m, ~150° cone) / hearing (2.8 m) / hit; alerts allies within 6 m; "!" mark + reaction delay; wander near spawn. Spawns spread ≥7 m from Jackie, ≥3 m apart, random facing.
 - Hurt vignette now scales with damage. Fair probe now starts empty-handed: beats the boss (1 extra life) → may be too easy.
 
+## 2026-10-10 gamepad menus + shop panel
+- Bug: A did nothing in menus. Godot 4.7 `ui_accept` = Enter/Space only, no pad button. Fix: `Inputs.UI_BUTTONS` adds A → ui_accept, B → ui_cancel. Shop "freeze" = paused panel A couldn't confirm.
+- Bug: shop has 5 cards (4 items + Leave); panel fixed 920 px box, row 1114 px → spilled off right. Fix: CenterContainer, cards 180 px when > 4.
+- Confirm press must not act in game (A = dodge). `Input.action_release` not enough: since Godot 4.3 `is_action_just_pressed` stays true rest of frame. Fix: `Inputs.release_gameplay()` mutes 2 frames; gameplay polls `Inputs.just_pressed()`.
+- Tests: test_inputs, test_choice_panel (pad A buys from 5-card shop; row fits + centred). 49 pass, 4 bots pass.
+
 ## 2026-10-10 standalone exe
 - User doesn't want to open Godot each time → Windows export (single exe, pck embedded) + `build_exe.bat`. Official 4.7 export templates installed (Windows only). Rule: rebuild exe after every gameplay/art change.
 

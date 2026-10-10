@@ -82,6 +82,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func close() -> void:
+	Inputs.release_gameplay()
 	get_tree().paused = false
 	finished.emit()
 	queue_free()

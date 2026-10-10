@@ -32,6 +32,13 @@ const BUTTONS := {
 	"pause": [JOY_BUTTON_START],
 }
 
+## Godot 4.7's built-in ui_accept / ui_cancel have no gamepad buttons, so menus ignore A / B
+## unless we add them (added on top of the defaults, not replacing them).
+const UI_BUTTONS := {
+	"ui_accept": [JOY_BUTTON_A],
+	"ui_cancel": [JOY_BUTTON_B],
+}
+
 const AXES := {
 	"move_left": [JOY_AXIS_LEFT_X, -1.0],
 	"move_right": [JOY_AXIS_LEFT_X, 1.0],
@@ -98,6 +105,23 @@ func controls_line() -> String:
 		label(&"parry"), label(&"chi_mod"), label(&"talisman_mod"), label(&"pause")]
 
 
+var _mute_until := -1
+
+
+## Call when a menu closes and unpauses: the button that confirmed it (A = dodge, X = light)
+## must not also act in the game. Releasing alone isn't enough: since Godot 4.3
+## is_action_just_pressed stays true for the rest of the frame, so presses are muted for two frames.
+func release_gameplay() -> void:
+	for action: String in BUTTONS:
+		Input.action_release(action)
+	_mute_until = Engine.get_process_frames() + 1
+
+
+## Input.is_action_just_pressed, minus the press that just closed a menu. Gameplay code uses this.
+func just_pressed(action: StringName) -> bool:
+	return Engine.get_process_frames() > _mute_until and Input.is_action_just_pressed(action)
+
+
 ## Gamepad rumble (no-op on keyboard). weak/strong 0..1.
 func rumble(weak: float, strong: float, seconds: float) -> void:
 	if not using_pad:
@@ -128,3 +152,9 @@ static func register() -> void:
 			jm.axis = AXES[action][0]
 			jm.axis_value = AXES[action][1]
 			InputMap.action_add_event(action, jm)
+	for action: String in UI_BUTTONS:
+		for b: int in UI_BUTTONS[action]:
+			var jb := InputEventJoypadButton.new()
+			jb.button_index = b
+			if not InputMap.action_has_event(action, jb):
+				InputMap.action_add_event(action, jb)
