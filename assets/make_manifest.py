@@ -1,4 +1,4 @@
-"""Builds assets/manifest.csv for phases M0-M4 (see design/assets.md). Re-running keeps existing statuses."""
+"""Builds assets/manifest.csv for phases M0-M4 (plan: design/plan.html → Assets). Re-running keeps existing statuses."""
 import csv
 import os
 from collections import Counter

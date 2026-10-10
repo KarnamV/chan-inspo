@@ -1,0 +1,8 @@
+# chan-inspo (Demon Realm Escape v2)
+
+**All plans, status and progress live in one file: [`design/plan.html`](design/plan.html).** Read its "Now" section at the start of every session to know what's happening, and keep it current:
+
+- Tick tasks (`<li class="done">`), add new tasks to the right milestone, rewrite "Now", and bump `data-updated` on `<body>` whenever progress changes. Progress bars recompute from the task lists.
+- Don't create other plan, status, roadmap or board files. Decisions and lessons go to `design/CHANGELOG.md` (history).
+- Reference docs (not plans): `design/concept.md` (game design + story), `design/art-bible.md`, `design/tech.md` (architecture, gotchas, how to run checks).
+- Game project: `game/` (Godot 4.7). Assets: `assets/manifest.csv` + the ai-gamedev-pipeline skill.

@@ -2,6 +2,8 @@
 
 Planning artifacts for the game-dev skill pipeline (owned by `game-dev-index`).
 
+**Plans, status and progress for this game live in one file: `plan.html`** (user decision 2026-10-10). It replaces the separate roadmap, status, asset plan and board. If a PRD or slices are added later, their tasks go into `plan.html` too.
+
 ## Layout
 
 ```
