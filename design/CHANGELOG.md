@@ -39,6 +39,16 @@
 - Gotcha: `clip_children` on a HUD control → `p_elem->_root` engine error on every scene change (4.7). Masked portrait with a shader instead.
 - Bots: m1 now stops when all checks met (demons die faster post-balance); m3 Ox/Dog checks account for getup invuln + hit i-frames. 3/3 stable.
 
+## 2026-10-10 retro (session 2)
+- Lesson: god-mode bots hid that room 1 was unwinnable → run fair probe (`bot_run -- --fair`) before any hand-off (pipeline gotchas + memory).
+- Lesson: "low fps" was 60 Hz physics judder + global hitstop, render was ~1600 fps → measure first; physics interpolation on by default (gotchas).
+- Lesson: balance changes broke bots that stopped on proxy events / ignored new i-frames → end bots on checks met, re-run 3× (gotchas + memory).
+- Lesson: `clip_children` engine error on scene change; decal needs character meshes on own layer (gotchas).
+- Lesson: 2D story art = klein with custom width/height, key out white portraits (gotchas).
+- User rule: stop ComfyUI when gens are done (memory + pipeline SKILL.md).
+- Lesson: PYTHONUTF8=1 for edit scripts; backslash text → script file (memory).
+- Board check: still no PRD/slices/board; work tracked in roadmap/STATUS only. Decision pending with user.
+
 ## 2026-10-10 retro
 - Lesson: gameplay bots in the real scene found 8 bugs unit tests missed → keep per-milestone bots (memory + pipeline gotchas).
 - Lesson: show visuals colored and in motion; user had to ask for colors and animations (memory).
