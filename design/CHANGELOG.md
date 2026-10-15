@@ -84,3 +84,18 @@
 - Lesson: Godot traps (spawn order, autoloads in -s scripts, class cache, paused bots, typed arrays) → pipeline references/gotchas.md.
 - Lesson: on Windows, write scripts to files; run long jobs in the background (memory).
 - Drift: no PRD / slices / board for v2 (auto mode skipped them). Decide at next session: create via concept-to-prd + game-board before M5.
+
+## 2026-10-13 polish pass: attack feel, prop moves, hitches
+- User: "game needs polish", picked game feel, tech hitches, props + AI; named "clunky attacks, prop attack anim".
+- Found by recording `tests/showcase/prop_moves.tscn` frame by frame (not by reading code):
+  - Same clip back to back (chop → chop, thrust → thrust, ram → ram, cross → heavy cross) didn't restart: Jackie stood still while the hit landed. `AnimDriver.play` now seeks to 0.
+  - Recovery locked until the clip ended; prop swings couldn't queue. Now a queued light chains 35% into recovery (`CHAIN_AT`), moving walks out of recovery, prop lights queue from the windup and alternate swing / backhand chop, prop light → heavy cancels.
+  - Prop durations ~10% shorter, heavy-prop slow 1.35 → 1.2.
+  - Held props hung limp through the legs: `CarryPose` (SkeletonModifier3D) aims the arms while idle/moving.
+  - Bulky props were swung one-handed by the end and flipped upright over Jackie: now held across the chest between both hands. Long props point where they're thrust, out along the arm in a spin.
+  - Swing trails (`SwingTrail`) on prop attacks; small camera shake on your own hits; warmer, see-through hit flash (solid white read as a blob); softer dust.
+- Hitches: `Arena._prewarm` draws every demon model, hit-flash, HP-bar, trail and particle material once under the floor at room start.
+- Possessed host gets a violet floor ring. Exe icon (Jackie, `game/icon.ico`; Godot 4.7 embeds it without rcedit).
+- Thief imp: at most 2 steals, fights 4 s after each throw, throws loot after 3.5 s (was 5 s, unlimited).
+- Lesson: `--write-movie` and headless runs stretch hitstop (wall-clock), so judge timing with `Juice.enabled = false`.
+- Not done: re-keying the procedural chop/thrust/ram/heavy clips (Blender); re-generating bucket/stool/shard (GPU).

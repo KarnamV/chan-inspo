@@ -66,6 +66,40 @@ func _ready() -> void:
 		add_child(hud)
 		hud.bind(controller)
 	_populate()
+	_prewarm()
+
+
+## Draws every first-use material once, out of sight under the floor, so the first hit, the first
+## hurt demon and later waves' demon types don't stall the frame compiling shaders mid-fight.
+func _prewarm() -> void:
+	var warm := Node3D.new()
+	warm.position = hero_spawn + Vector3(0, -4.0, 0)
+	add_child(warm)
+	var flash := Fighter.flash_material()
+	for f in ResourceLoader.list_directory("res://data/fighters"):   # export-safe (sees remapped .tres)
+		if not f.ends_with(".tres"):
+			continue
+		var d := load("res://data/fighters/" + f) as FighterData
+		if d == null or d.model == null:
+			continue
+		var m: Node3D = d.model.instantiate()
+		warm.add_child(m)
+		for mi in m.find_children("*", "MeshInstance3D", true, false):
+			(mi as MeshInstance3D).material_overlay = flash
+	var bar := MeshInstance3D.new()
+	bar.mesh = QuadMesh.new()
+	bar.material_override = Fighter.hp_material()
+	warm.add_child(bar)
+	var trail := MeshInstance3D.new()
+	trail.mesh = QuadMesh.new()
+	trail.material_override = SwingTrail.material()
+	warm.add_child(trail)
+	for kind in [[DamageInfo.Type.PHYSICAL, &""], [DamageInfo.Type.MAGIC, &""], [DamageInfo.Type.PHYSICAL, &"fire"]]:
+		var info := DamageInfo.make(1.0, null, kind[0])
+		info.element = kind[1]
+		Vfx.hit(warm, info)
+	Vfx.dust(warm.global_position)
+	get_tree().create_timer(0.4).timeout.connect(warm.queue_free)
 
 
 func _on_damage_vfx(target: Node, info: DamageInfo, amount: float) -> void:

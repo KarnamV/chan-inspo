@@ -94,13 +94,15 @@ static func dust(at: Vector3, big := false) -> void:
 	if lvl == null:
 		return
 	var q := QuadMesh.new()
-	q.size = Vector2(0.45, 0.45)
-	var p := _burst(lvl, at + Vector3(0, 0.15, 0), 12 if big else 6, 0.6, q, Color(0.75, 0.68, 0.62, 0.45))
+	q.size = Vector2(0.4, 0.4)
+	# low alpha, kept near the floor: stacked puffs used to merge into one opaque white blob
+	var p := _burst(lvl, at + Vector3(0, 0.1, 0), 10 if big else 5, 0.5, q, Color(0.62, 0.55, 0.52, 0.16))
 	p.direction = Vector3.UP
-	p.spread = 85.0
-	p.initial_velocity_min = 0.8
-	p.initial_velocity_max = 2.6 if big else 1.6
-	p.gravity = Vector3(0, 0.6, 0)
+	p.spread = 80.0
+	p.flatness = 0.7
+	p.initial_velocity_min = 1.2
+	p.initial_velocity_max = 2.8 if big else 1.8
+	p.gravity = Vector3(0, -1.5, 0)
 	p.damping_min = 2.0
 	p.damping_max = 3.0
 	p.scale_amount_min = 0.7
@@ -173,6 +175,30 @@ static func blob_shadow(owner: Node3D, radius: float, ring := Color(0, 0, 0, 0))
 	d.texture_albedo = tex
 	d.size = Vector3(radius * 2.0, 0.6, radius * 2.0)
 	d.cull_mask = 1   # floor/world only: character meshes render on layer 2 (Fighter)
+	d.upper_fade = 0.2
+	d.lower_fade = 0.2
+	owner.add_child(d)
+	return d
+
+
+## Coloured floor ring with no shadow (marks a possessed host the way Jackie's jade ring marks her).
+static func ring(owner: Node3D, radius: float, color: Color) -> Decal:
+	var g := Gradient.new()
+	g.set_color(0, Color(color, 0.0))
+	g.add_point(0.72, Color(color, 0.0))
+	g.add_point(0.84, color)
+	g.set_color(g.get_point_count() - 1, Color(color, 0.0))
+	var tex := GradientTexture2D.new()
+	tex.gradient = g
+	tex.fill = GradientTexture2D.FILL_RADIAL
+	tex.fill_from = Vector2(0.5, 0.5)
+	tex.fill_to = Vector2(1.0, 0.5)
+	tex.width = 128
+	tex.height = 128
+	var d := Decal.new()
+	d.texture_albedo = tex
+	d.size = Vector3(radius * 2.0, 0.6, radius * 2.0)
+	d.cull_mask = 1
 	d.upper_fade = 0.2
 	d.lower_fade = 0.2
 	owner.add_child(d)

@@ -22,6 +22,7 @@ const PICKUP_RANGE := 1.7
 const AIM_RANGE := 3.2          ## player attacks snap toward an enemy this close...
 const AIM_CONE := 0.5           ## ...within ~60 degrees of where you're pushing
 const STAGGER_ESCAPE := 0.15    ## player can dodge out of a stagger after this long
+const CHAIN_AT := 0.35          ## a queued light fires this far into an attack's recovery (0 = right after the hit)
 
 @export var data: FighterData
 @export var team: Team = Team.ENEMY
@@ -46,12 +47,18 @@ var model: Node3D
 var anim: AnimDriver
 var held_prop: Prop
 var hand_attach: Node3D
+var carry: CarryPose
+var _skel: Skeleton3D
+var _bone_l := -1               ## LeftHand / RightHand / Chest, for the two-hand grip
+var _bone_r := -1
+var _bone_chest := -1
 
 var state: State = State.IDLE
 var state_t := 0.0
 var intent_move := Vector3.ZERO
 var facing := Vector3.FORWARD * -1.0   # +Z
 var combo_index := 0
+var prop_combo := 0             ## alternates prop light swings (swing / backhand chop...)
 var combo_reset_t := 0.0
 var queued_light := false
 var attack: AttackData
@@ -109,6 +116,11 @@ func _ready() -> void:
 		add_child(model)
 		anim = AnimDriver.new(model)
 		hand_attach = _make_hand_attach()
+		if hand_attach:
+			carry = CarryPose.new()
+			carry.fighter = self
+			carry.influence = 0.0
+			hand_attach.get_parent().add_child(carry)
 		for mi in model.find_children("*", "MeshInstance3D", true, false):
 			_meshes.append(mi as MeshInstance3D)
 			(mi as MeshInstance3D).layers = 2   # keeps blob-shadow decals off the body
@@ -116,19 +128,30 @@ func _ready() -> void:
 		Vfx.blob_shadow(self, r, Color(0.35, 0.95, 0.7, 0.7) if team == Team.PLAYER else Color(0, 0, 0, 0))
 	else:
 		anim = AnimDriver.new(null)
-	_flash_mat = StandardMaterial3D.new()
-	_flash_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	_flash_mat.albedo_color = Color(1, 1, 1, 0.55)
-	_flash_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	_flash_mat = flash_material()
 	if team == Team.ENEMY and not data.boss:
 		_make_hp_bar()
 	_set_state(State.IDLE)
 
 
-func _make_hp_bar() -> void:
+## White hit-flash overlay. Warm and see-through: a solid white silhouette read as a blob.
+static func flash_material() -> StandardMaterial3D:
+	var m := StandardMaterial3D.new()
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	m.albedo_color = Color(1, 0.92, 0.8, 0.38)
+	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	return m
+
+
+static func hp_material() -> ShaderMaterial:
 	if _hp_mat == null:
 		_hp_mat = ShaderMaterial.new()
 		_hp_mat.shader = load("res://assets/shaders/enemy_hp.gdshader")
+	return _hp_mat
+
+
+func _make_hp_bar() -> void:
+	hp_material()
 	hp_bar = MeshInstance3D.new()
 	var q := QuadMesh.new()
 	q.size = Vector2(clampf(data.radius * 2.6, 0.8, 1.4), 0.13)
@@ -156,6 +179,10 @@ func _make_hand_attach() -> Node3D:
 	var sk: Skeleton3D = skels[0]
 	if sk.find_bone("RightHand") < 0:
 		return null
+	_skel = sk
+	_bone_l = sk.find_bone("LeftHand")
+	_bone_r = sk.find_bone("RightHand")
+	_bone_chest = sk.find_bone("Chest")
 	var ba := BoneAttachment3D.new()
 	ba.bone_name = "RightHand"
 	sk.add_child(ba)
@@ -178,7 +205,7 @@ func can_act() -> bool:
 
 
 func request_light() -> void:
-	if state == State.ATTACK and attack and state_t >= attack.combo_window and not attack_with_prop:
+	if state == State.ATTACK and attack and state_t >= attack.combo_window and attack.id != &"" and _is_light(attack):
 		queued_light = true
 	elif can_act():
 		if held_prop:
@@ -188,8 +215,8 @@ func request_light() -> void:
 
 
 func request_heavy() -> void:
-	if state == State.ATTACK and _in_recovery() and not attack_with_prop and attack in data.light_combo and not held_prop:
-		_set_state(State.IDLE)   # light -> heavy finisher cancel
+	if state == State.ATTACK and _in_recovery() and _is_light(attack):
+		_set_state(State.IDLE)   # light -> heavy finisher cancel (bare or with a prop)
 	if not can_act():
 		return
 	if held_prop:
@@ -250,6 +277,15 @@ func can_dodge_cancel() -> bool:
 
 func _in_recovery() -> bool:
 	return attack != null and state_t >= attack.active_end
+
+
+func _is_light(a: AttackData) -> bool:
+	return a != null and (a in data.light_combo or String(a.id).ends_with("_light"))
+
+
+## Point in the attack where recovery can be cut short: a queued light chains, moving walks out.
+func _chain_point() -> float:
+	return attack.active_end + (attack.duration - attack.active_end) * CHAIN_AT
 
 
 func request_parry() -> void:
@@ -321,10 +357,15 @@ func _prop_attack(heavy: bool) -> AttackData:
 	var style := pd.attack_style()
 	var a := AttackData.new()
 	a.id = StringName("prop_%s_%s" % [style, "heavy" if heavy else "light"])
-	var slow := 1.35 if pd.weight == PropData.Weight.HEAVY and not heavy_one_hand else 1.0
+	var slow := 1.2 if pd.weight == PropData.Weight.HEAVY and not heavy_one_hand else 1.0
 	var r := pd.reach
-	var dur := 0.42
+	var dur := 0.38
 	var strike := Vector2(0.42, 0.68)
+	if combo_reset_t <= 0.0:
+		prop_combo = 0
+	var second := not heavy and prop_combo % 2 == 1   # every other light swing is a backhand
+	if not heavy:
+		prop_combo += 1
 	a.damage = pd.damage * (pd.heavy_mult if heavy else 1.0)
 	a.knockback = pd.knockback * (1.6 if heavy else 1.0)
 	a.knockdown = heavy or pd.weight == PropData.Weight.HEAVY
@@ -332,23 +373,32 @@ func _prop_attack(heavy: bool) -> AttackData:
 	a.lunge = 2.5 if heavy else 1.5
 	a.hit_size = Vector3(1.6 if heavy else 1.2, 1.4, r)
 	a.hit_offset = Vector3(0, 1.0, 0.35 + r * 0.5)
+	if second and style in [&"club", &"small"]:
+		style = &"backhand"
 	match [style, heavy]:
 		[&"club", false]:
 			a.clip = &"swing"
+		[&"backhand", false]:   # quick downward chop to follow a swing
+			a.clip = &"chop"
+			dur = 0.36
+			strike = Vector2(0.45, 0.66)
+			a.lunge = 2.0
+			a.hit_size = Vector3(1.0, 1.6, r + 0.3)
+			a.hit_offset = Vector3(0, 0.9, 0.3 + (r + 0.3) * 0.5)
 		[&"club", true], [&"small", true]:
 			a.clip = &"chop"
-			dur = 0.56
+			dur = 0.5
 			strike = Vector2(0.45, 0.66)
 			a.hit_size = Vector3(1.0, 1.6, r + 0.3)   # narrow but deep: a downward blow
 			a.hit_offset = Vector3(0, 0.9, 0.3 + (r + 0.3) * 0.5)
 		[&"small", false]:
 			a.clip = &"punch_jab"
-			dur = 0.3
+			dur = 0.26
 			strike = Vector2(0.3, 0.6)
 			a.lunge = 2.0
 		[&"long", false]:
 			a.clip = &"thrust"
-			dur = 0.44
+			dur = 0.38
 			strike = Vector2(0.4, 0.66)
 			a.lunge = 3.2
 			a.hit_size = Vector3(0.7, 1.2, r + 0.4)   # long, narrow poke
@@ -356,7 +406,7 @@ func _prop_attack(heavy: bool) -> AttackData:
 			a.knockback = pd.knockback * 1.2
 		[&"long", true]:
 			a.clip = &"spin"
-			dur = 0.78
+			dur = 0.7
 			strike = Vector2(0.24, 0.74)
 			a.lunge = 0.5
 			a.damage = pd.damage * 1.2   # hits everyone around you, so less than a full heavy
@@ -364,7 +414,7 @@ func _prop_attack(heavy: bool) -> AttackData:
 			a.hit_offset = Vector3(0, 1.0, 0)
 		[&"bulky", false]:
 			a.clip = &"ram"
-			dur = 0.5
+			dur = 0.44
 			strike = Vector2(0.45, 0.66)
 			a.lunge = 3.5
 			a.knockdown = false
@@ -374,13 +424,13 @@ func _prop_attack(heavy: bool) -> AttackData:
 			a.hit_offset = Vector3(0, 1.0, 1.0)
 		[&"bulky", true]:
 			a.clip = &"heavy"
-			dur = 0.64
+			dur = 0.58
 			strike = Vector2(0.55, 0.74)
 			a.hit_size = Vector3(2.0, 1.6, r + 0.4)   # wide slam
 	a.duration = dur * slow
 	a.active_start = a.duration * strike.x
 	a.active_end = a.duration * strike.y
-	a.combo_window = a.duration
+	a.combo_window = a.active_start   # presses from the windup on queue the next swing
 	a.prop_wear = 2 if heavy else 1
 	return a
 
@@ -396,6 +446,8 @@ func _start_attack(a: AttackData, prop: Prop) -> void:
 		_aim()
 	_set_state(State.ATTACK)
 	anim.play(a.clip, 0.06, a.duration)
+	if prop and team == Team.PLAYER:
+		SwingTrail.follow(self, prop, a)
 	attack_started.emit(a)
 
 
@@ -456,7 +508,8 @@ func _on_hit_landed(hb: Hurtbox, info: DamageInfo, amount: float) -> void:
 	crit_next = false
 	attack_landed.emit(info, amount, hb.owner_fighter)
 	if team == Team.PLAYER:   # only your own hits freeze the frame; a crowd hitting you shouldn't stutter
-		Juice.hitstop(0.04 if not info.knockdown else 0.07)
+		Juice.hitstop((0.07 if info.knockdown else 0.045) + (0.015 if attack_with_prop else 0.0))
+		Juice.shake(0.16 if info.knockdown else 0.06)
 		Inputs.rumble(0.3, 0.4 if info.knockdown else 0.0, 0.08)
 
 
@@ -620,8 +673,9 @@ func _physics_process(delta: float) -> void:
 				# the full turn is done on the model (the import drops hip rotation from the clip)
 				var k := clampf((state_t - attack.active_start) / maxf(attack.active_end - attack.active_start, 0.01), 0.0, 1.0)
 				model.rotation.y = -TAU * (k * k * (3.0 - 2.0 * k))
-			if state_t >= attack.duration:
-				var chain := queued_light and not attack_with_prop
+			var chain := queued_light and state_t >= _chain_point()
+			var walk_out := team == Team.PLAYER and not queued_light and state_t >= _chain_point() 					and intent_move.length() > 0.5
+			if chain or walk_out or state_t >= attack.duration:
 				_set_state(State.IDLE)
 				combo_reset_t = 0.45
 				if chain:
@@ -683,8 +737,72 @@ func _physics_process(delta: float) -> void:
 	if facing.length() > 0.01:
 		rotation.y = atan2(facing.x, facing.z)
 	_update_flash(delta)
+	if carry:
+		var want := 1.0 if held_prop and state in [State.IDLE, State.PICKUP, State.STAGGER] else 0.0
+		carry.influence = move_toward(carry.influence, want, delta * (6.0 if want > 0.0 else 14.0))
+		carry.active = carry.influence > 0.0
+		if held_prop:
+			carry.style = held_prop.data.attack_style()
 	if hp_bar:
 		_update_hp_bar(delta)
+
+
+## Long and bulky props don't hang off the right hand like a club: a pole points where it's thrust
+## (or out along the arm in a spin) and a bulky prop lies across the chest between both hands.
+func _process(_delta: float) -> void:
+	var p := held_prop
+	if p == null or not is_instance_valid(p) or p.mode != Prop.Mode.HELD or _skel == null or _bone_l < 0:
+		return
+	var style := p.data.attack_style()
+	if style != &"long" and style != &"bulky":
+		return
+	var sx := _skel.get_global_transform_interpolated()
+	var rh := sx * _skel.get_bone_global_pose(_bone_r).origin
+	var lh := sx * _skel.get_bone_global_pose(_bone_l).origin
+	var fwd := get_global_transform_interpolated().basis.z
+	fwd.y = 0.0
+	fwd = fwd.normalized() if fwd.length() > 0.01 else Vector3.FORWARD
+	var b := p.local_aabb()
+	var ax := p.long_axis()
+	var xf := Transform3D()
+	if style == &"long":
+		var dir := fwd
+		if state == State.ATTACK and attack and attack.clip == &"spin" and _bone_chest >= 0:
+			dir = rh - sx * _skel.get_bone_global_pose(_bone_chest).origin   # out along the arm
+			dir.y = 0.0
+			dir = dir.normalized() if dir.length() > 0.05 else fwd
+		dir = (dir + Vector3.DOWN * 0.08).normalized()
+		var side := Vector3.UP.cross(dir).normalized()
+		xf.basis = _basis_mapping(ax, dir, _other_axis(ax), side)
+		var half := b.size.dot(ax.abs()) * 0.5
+		xf.origin = rh - xf.basis * (b.get_center() - ax * half * 0.55)   # grip a quarter from the end
+	else:
+		var side := lh - rh
+		side.y = 0.0
+		side = side.normalized() if side.length() > 0.05 else fwd.cross(Vector3.UP)
+		if absf(ax.y) > 0.9:   # tall (barrel, urn): carried upright against the chest
+			xf.basis = _basis_mapping(Vector3.UP, Vector3.UP, Vector3.RIGHT, side)
+		else:
+			xf.basis = _basis_mapping(ax, side, Vector3.UP, Vector3.UP)
+		var depth := b.size.dot((xf.basis.inverse() * fwd).abs())   # its size front-to-back once rotated
+		var mid := (lh + rh) * 0.5 + fwd * (depth * 0.5 + 0.05)
+		xf.origin = mid - xf.basis * b.get_center()
+	p.top_level = true
+	p.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
+	p.global_transform = xf
+
+
+## A local axis perpendicular to unit axis `a`.
+static func _other_axis(a: Vector3) -> Vector3:
+	return Vector3.UP if absf(a.y) < 0.9 else Vector3.BACK
+
+
+## Rotation taking local unit axes a, b (perpendicular) onto world unit axes wa, wb.
+static func _basis_mapping(a: Vector3, wa: Vector3, b: Vector3, wb: Vector3) -> Basis:
+	wb = (wb - wa * wa.dot(wb)).normalized()
+	var local := Basis(a, b, a.cross(b))
+	var world := Basis(wa, wb, wa.cross(wb))
+	return world * local.inverse()
 
 
 ## Perfect dodge into a thrown prop (yours or an enemy's) snatches it out of the air.

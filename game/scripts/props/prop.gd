@@ -25,6 +25,7 @@ var hurtbox: Hurtbox
 var _visual: Node3D
 var _shape := CollisionShape3D.new()
 var _size := Vector3.ONE * 0.5
+var _aabb := AABB()
 
 
 func _ready() -> void:
@@ -56,6 +57,28 @@ func _ready() -> void:
 	if _size.y > 1.8 * maxf(_size.x, _size.z):
 		rotate_object_local(Vector3.RIGHT, PI / 2.0)
 		position.y += maxf(_size.x, _size.z) * 0.5 + 0.05
+
+
+## The model's bounds in the prop's own space (cached).
+func local_aabb() -> AABB:
+	if _aabb.size == Vector3.ZERO:
+		_aabb = AABB(Vector3(-_size.x * 0.5, 0, -_size.z * 0.5), _size)
+		if _visual:
+			var first := true
+			for n in _visual.find_children("*", "MeshInstance3D", true, false):
+				var mi := n as MeshInstance3D
+				var b := (_visual.transform * mi.transform) * mi.get_aabb()
+				_aabb = b if first else _aabb.merge(b)
+				first = false
+	return _aabb
+
+
+## Unit local axis along the prop's longest side, pointing from its origin end to its far end.
+func long_axis() -> Vector3:
+	var b := local_aabb()
+	var ax := Vector3.ZERO
+	ax[b.size.max_axis_index()] = 1.0
+	return ax if ax.dot(b.get_center()) >= 0.0 else -ax
 
 
 static func _measure(root: Node3D) -> Vector3:
@@ -177,6 +200,7 @@ func attach_to(f: Node3D) -> void:
 	collision_layer = 0
 	collision_mask = 0
 	var parent: Node3D = f.hand_attach if f.get("hand_attach") else f
+	top_level = false
 	reparent(parent, false)
 	if parent == f:
 		position = Vector3(0.35, 1.0, 0.45)
@@ -189,6 +213,7 @@ func attach_to(f: Node3D) -> void:
 ## Leaves the hand. With a thrower it becomes a damaging projectile; without one it just drops.
 func release(impulse: Vector3, by: Node) -> void:
 	var xf := global_transform
+	top_level = false
 	reparent(_level(), false)
 	global_transform = xf
 	freeze = false

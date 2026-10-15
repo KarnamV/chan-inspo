@@ -80,7 +80,7 @@ summary { cursor: pointer; font-weight: 600; }
 }
 </style>
 </head>
-<body data-updated="2026-10-10">
+<body data-updated="2026-10-13">
 <button class="theme" onclick="toggleTheme()" aria-label="Toggle theme">◐</button>
 <div class="wrap">
 <nav>
@@ -96,6 +96,7 @@ summary { cursor: pointer; font-weight: 600; }
     <li class="sub"><a href="#m4">M4 Realm 1</a></li>
     <li class="sub"><a href="#p1">Playtest polish</a></li>
     <li class="sub"><a href="#p2">Playtest 2 changes</a></li>
+    <li class="sub"><a href="#p3">Polish pass 3</a></li>
     <li class="sub"><a href="#m5">M5 Realms 1–3</a></li>
     <li class="sub"><a href="#m6">M6–M9 Realms 4–7</a></li>
     <li><a href="#you">Waiting on you</a></li>
@@ -117,11 +118,11 @@ summary { cursor: pointer; font-weight: 600; }
 <section id="now">
   <h2>Now</h2>
   <div class="card now">
-    <p><b>State:</b> Milestones M0–M4 are built and verified. Realm 1 plays end to end: tea house → 10 rooms → Butcher King → back to the tea house. After your first playtest (2026-10-10) the combat was reworked (talismans on cooldowns, input buffer, dodge cancels, softer demons), Then gamepad support, an art and UI polish pass, and an illustrated story intro were added. After your second round of notes, runs start with no talismans (you collect them), demons die in 4–5 hits, spread out and only attack once they see you, and every demon has a small health bar.</p>
-    <p><b>Checks:</b> 38/38 unit tests; all four gameplay bots pass. A real-HP bot that starts with no talismans and never dodges now beats the Butcher King (using one extra life), so the game may now be on the easy side.</p>
+    <p><b>State:</b> Milestones M0–M4 are built and verified. Realm 1 plays end to end: tea house → 10 rooms → Butcher King → back to the tea house. Two playtests have reworked combat (cooldown talismans, input buffer, dodge cancels, collect-as-you-go talismans, softer demons). On 2026-10-13 a polish pass fixed clunky attacks: same-clip follow-ups no longer freeze Jackie, combos chain early, you can walk out of recovery, and props have a carry pose, a two-hand grip for bulky ones, and swing trails. It also added a material pre-warm, the possessed-host ring, an exe icon, and less thief kiting. See <a href="#p3">Polish pass 3</a>.</p>
+    <p><b>Checks:</b> 54/54 unit tests; all four gameplay bots pass (each run twice). The real-HP probe (no talismans, never dodges) is noisy: this build reached rooms 4, 1, 1, 1 and the previous one 2, 1, 6, so it may be slightly harder now that thieves fight instead of running.</p>
     <p><b>Play it:</b> double-click <code>build/windows/DemonRealmEscape.exe</code> (no Godot needed). Rebuild after changes with <code>build_exe.bat</code>.</p>
-    <p><b>Waiting on you:</b> replay with a gamepad and judge feel, the new look and the intro. See <a href="#you">Waiting on you</a>.</p>
-    <p><b>Next up:</b> balance tweaks from your notes, then M5 (Frozen Teahouse and Rotting Docks). M5 assets are generated first, through the manifest runner.</p>
+    <p><b>Waiting on you:</b> replay the new build: do attacks and prop moves feel better? Plus the older replay items in <a href="#you">Waiting on you</a>.</p>
+    <p><b>Next up:</b> re-key the stiff procedural clips (chop, thrust, ram, heavy smash) and re-generate the three bad props, then balance tweaks and M5 (Frozen Teahouse and Rotting Docks).</p>
     <p><b>Git:</b> all work committed and pushed to GitHub <code>main</code> (the exe itself is not committed). loop-engineering set up: context in <code>.claude/context/</code>, rules in <code>program.md</code>.</p>
   </div>
 </section>
@@ -247,6 +248,25 @@ summary { cursor: pointer; font-weight: 600; }
     </ul>
   </div>
 
+  <div class="card milestone" id="p3" data-title="Polish pass 3">
+    <h3>Polish pass: attack feel and prop moves <span class="pill done">done</span></h3>
+    <div class="meta">2026-10-13 · "clunky attacks, prop attack anim"</div>
+    <ul class="tasks">
+      <li class="done">Same clip twice in a row (chop → chop, thrust → thrust, cross → heavy) restarts instead of freezing Jackie mid-hit</li>
+      <li class="done">Queued light chains early in recovery; moving walks out of recovery; prop swings queue, alternate swing / backhand chop, and cancel into heavy</li>
+      <li class="done">Prop swings about 10% quicker; heavy props less sluggish</li>
+      <li class="done">Carry pose: held props are raised and ready instead of dangling through the legs</li>
+      <li class="done">Two-hand grip: bulky props across the chest; poles point where they're thrust and sweep out in the spin</li>
+      <li class="done">Swing trails on prop attacks, small shake on your hits, softer hit flash and dust</li>
+      <li class="done">Pre-warm materials and demon models at room start (first-hit hitch)</li>
+      <li class="done">Violet ring under a possessed host; game icon on the exe</li>
+      <li class="done">Thief imps steal at most twice and fight after throwing</li>
+      <li class="you">Replay: do attacks and prop moves feel better? <span class="who">YOU</span></li>
+      <li>Re-key the stiff procedural clips (chop, thrust, ram, heavy smash) in Blender with anticipation and follow-through</li>
+      <li>Re-generate bucket, stool and pottery shard (GPU) and put bucket + stool back in the pool</li>
+    </ul>
+  </div>
+
   <div class="card milestone" id="m5" data-title="M5 Realms 1–3">
     <h3>M5: Milestone-1 release, realms 1–3 <span class="pill todo">next</span></h3>
     <div class="meta">Estimate 6–8 weeks</div>
@@ -305,13 +325,8 @@ summary { cursor: pointer; font-weight: 600; }
     <ul class="tasks">
       <li>Three props still look bad: bucket, stool, pottery shard (the 3D generator fails on open or thin shapes). Bucket and stool are out of the random pool. Try closed-lid / thick-seat prompts or Hunyuan 2.1.</li>
       <li>Heavy smash, throw, chop, thrust, spin and ram are hand-keyed placeholders (stiff). Upgrade with Kimodo (not installed).</li>
-      <li>Bulky props swing from one hand, so the ram lifts the bench to head height; a two-hand grip would read better.</li>
-      <li>Thief imps still kite a lot (a bot room took about 70 s).</li>
       <li>Gamepad: button icons instead of text names, PlayStation names, a rebinding menu</li>
       <li>Locked talisman icons in the hub are dim and small</li>
-      <li>Shader compile hitch when the first wave spawns (pre-warm materials)</li>
-      <li>Possessed host has no ring marker (Jackie has a jade ring)</li>
-      <li>Exe has the default Godot icon; add a game icon (needs rcedit)</li>
     </ul>
   </div>
 </section>

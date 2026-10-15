@@ -20,6 +20,7 @@ small = jab/chop. Fixed props (hanging lanterns, weapon rack) react in place.
 ## Conventions
 - Loose props and pieces parent to the `level_root` group node.
 - Long props spawn lying down.
+- Long and bulky props are placed by `Fighter._process` each frame (top_level): poles along the facing / arm, bulky props across the chest between both hands. Clubs and small props stay on the `RightHand` attachment.
 - Override the derived style with `PropData.style` in the `.tres`, not with a new code branch.
 
 ## What to avoid

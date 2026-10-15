@@ -9,6 +9,10 @@ var cooldown := 0.0
 var think_t := 0.0
 var target: Fighter
 var carry_t := 0.0   ## thief: seconds spent running with loot
+var steals := 0      ## thief: props stolen so far; after MAX_STEALS it just fights
+var greed_cd := 0.0  ## thief: fights for this long after throwing its loot
+const MAX_STEALS := 2
+var _had_loot := false
 var strafe := 1.0 if randf() < 0.5 else -1.0
 var wait_t := 0.0    ## circling while others attack
 ## At most this many demons swing at one target at once; the rest circle and wait their turn.
@@ -27,6 +31,7 @@ var wander_dir := Vector3.ZERO
 
 func think(f: Fighter, delta: float) -> void:
 	cooldown = maxf(cooldown - delta, 0.0)
+	greed_cd = maxf(greed_cd - delta, 0.0)
 	think_t -= delta
 	if think_t <= 0.0 or target == null or not is_instance_valid(target) or target.is_dead() or target.stealthed:
 		think_t = 0.4
@@ -97,9 +102,10 @@ func _pick_target(f: Fighter) -> Fighter:
 func _thief(f: Fighter, to: Vector3, dist: float) -> void:
 	if f.held_prop == null:
 		carry_t = 0.0
-		var p := _nearest_free_prop(f, 12.0)
+		_had_loot = false
+		var p := _nearest_free_prop(f, 12.0) if steals < MAX_STEALS and greed_cd <= 0.0 else null
 		if p == null:
-			_melee(f, to, dist)   # nothing to steal: fight (fleeing forever made it unkillable)
+			_melee(f, to, dist)   # nothing (left) to steal: fight; endless steal-and-run made rooms drag
 			return
 		var tp := p.global_position - f.global_position
 		tp.y = 0.0
@@ -108,13 +114,17 @@ func _thief(f: Fighter, to: Vector3, dist: float) -> void:
 		else:
 			f.intent_move = tp.normalized()
 		return
+	if not _had_loot:
+		_had_loot = true
+		steals += 1
 	carry_t += 0.016
 	var cornered := absf(f.global_position.x) > 7.0 or absf(f.global_position.z) > 7.0
-	if (dist < 2.5 or carry_t > 5.0 or cornered) and cooldown <= 0.0:
+	if (dist < 2.5 or carry_t > 3.5 or cornered) and cooldown <= 0.0:
 		f.facing = to / maxf(dist, 0.01)
 		f.request_grab()   # throw the loot at the player
 		cooldown = f.data.attack_cooldown
 		carry_t = 0.0
+		greed_cd = 4.0
 	else:
 		f.intent_move = -to / maxf(dist, 0.01) * 0.7   # loot slows it down
 

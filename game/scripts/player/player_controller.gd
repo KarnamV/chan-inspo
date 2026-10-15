@@ -14,6 +14,7 @@ signal controlled_changed(f: Fighter)
 var hero: Fighter
 var controlled: Fighter
 var host: Fighter          ## possessed demon, or null
+var _host_ring: Decal
 var camera: IsoCamera
 var spirit := 0.0          ## chi: spent only by chi moves; talismans run on cooldowns
 var possess_left := 0.0
@@ -234,6 +235,7 @@ func try_possess() -> bool:
 	t.collision_layer = 1 << 1
 	t.set_brain(brain)
 	t.set_tint(Color(0.6, 0.25, 1.0, 0.35))
+	_host_ring = Vfx.ring(t, t.data.radius * (2.6 if t.data.boss else 2.2), Color(0.7, 0.4, 1.0, 0.85))
 	t.knock_time = minf(t.knock_time, t.state_t + 0.2)   # stand the host up quickly
 	t.attack_landed.connect(_on_landed)
 	t.died.connect(_on_host_died)
@@ -249,6 +251,9 @@ func end_possession(reason: StringName) -> void:
 		return
 	var h := host
 	host = null
+	if is_instance_valid(_host_ring):
+		_host_ring.queue_free()
+	_host_ring = null
 	if is_instance_valid(h):
 		h.attack_landed.disconnect(_on_landed)
 		h.died.disconnect(_on_host_died)

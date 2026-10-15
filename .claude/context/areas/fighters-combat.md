@@ -21,7 +21,10 @@ tiny billboard HP bar once hurt.
 | Hit / hurt / HP / status | `game/scripts/components/hitbox.gd`, `hurtbox.gd`, `health.gd`, `status_fx.gd` |
 | Hitstop, shake | `game/scripts/core/juice.gd` |
 | Enemy HP bar | `game/scripts/fighters/fighter.gd` (`_make_hp_bar`, `_update_hp_bar`), `game/assets/shaders/enemy_hp.gdshader` |
-| Hit sparks, dust, blob shadow | `game/scripts/core/vfx.gd` |
+| Hit sparks, dust, blob shadow, host ring | `game/scripts/core/vfx.gd` |
+| Swing trail on prop attacks | `game/scripts/core/swing_trail.gd` |
+| Carry pose (arms while holding a prop) | `game/scripts/fighters/carry_pose.gd` |
+| Attack-feel showcase (record frames) | `game/tests/showcase/prop_moves.tscn` |
 | Test arenas | `game/scenes/levels/test_room.tscn`, `combat_arena.tscn`, `game/scripts/levels/arena.gd` |
 
 ## Conventions
@@ -36,6 +39,8 @@ tiny billboard HP bar once hurt.
 - Heavy, throw, chop, thrust, spin and ram clips are procedural placeholders; do not
   tune feel against them.
 - Nodes moved in `_process` need `physics_interpolation_mode = OFF` (interpolation is on).
+- A queued light chains at `_chain_point()` (35% into recovery); players walk out of recovery there.
+- Judge attack timing on recordings with `Juice.enabled = false`: hitstop runs on wall-clock time and stretches in `--write-movie`/headless.
 - Knockdown/getup reuse the death clip forwards/backwards (`AnimDriver` fallback).
 
 ## How to verify

@@ -41,7 +41,10 @@ func play(clip: StringName, blend := 0.12, fit_seconds := 0.0, backwards := fals
 		player.play_backwards(name, blend)
 		player.speed_scale = speed
 	else:
+		var again := player.current_animation == name and player.is_playing()
 		player.play(name, blend, 1.0)
+		if again:   # same clip back to back (chop -> chop): play() alone would just carry on
+			player.seek(0.0, true)
 		player.speed_scale = speed
 	current = clip
 
