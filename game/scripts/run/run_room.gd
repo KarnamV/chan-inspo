@@ -43,12 +43,48 @@ func _decorate() -> void:
 		var yaw := PI / 2 if spots[i].x < 0 else -PI / 2
 		if decor("res://assets/decors/%s.glb" % kinds[(i + rng.randi_range(0, 2)) % kinds.size()], spots[i], yaw) == null:
 			decor("res://assets/decors/pillar.glb", spots[i])
+		light_pool(spots[i] + Vector3(-signf(spots[i].x) * 1.2, 0, 0), 2.4 if i % 2 == 0 else 1.8)
+	for i in 2:   # warm pools mid-room so the fight floor isn't evenly lit
+		light_pool(Vector3(rng.randf_range(-h + 4.0, h - 4.0), 0, rng.randf_range(-h + 4.0, h - 5.0)), 2.6, 6.5)
+	_puddles(rng, h)
 	var glow := OmniLight3D.new()
 	glow.position = Vector3(0, 3.5, 0)
 	glow.light_color = Color(1.0, 0.6, 0.3)
-	glow.light_energy = 2.0
-	glow.omni_range = room_size
+	glow.light_energy = 1.2
+	glow.omni_range = room_size * 0.7
 	add_child(glow)
+
+
+## Rain puddles: glossy dark patches that catch the lantern light (night-market wet floor).
+func _puddles(rng: RandomNumberGenerator, h: float) -> void:
+	var mat := StandardMaterial3D.new()
+	var soft := GradientTexture2D.new()   # feathered edge
+	soft.fill = GradientTexture2D.FILL_RADIAL
+	soft.fill_from = Vector2(0.5, 0.5)
+	soft.fill_to = Vector2(0.5, 0.0)
+	var gr := Gradient.new()
+	gr.set_color(0, Color(1, 1, 1, 0.85))
+	gr.set_color(1, Color(1, 1, 1, 0.0))
+	gr.add_point(0.6, Color(1, 1, 1, 0.7))
+	soft.gradient = gr
+	mat.albedo_texture = soft
+	mat.albedo_color = Color(0.12, 0.09, 0.1)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.roughness = 0.03
+	mat.metallic = 0.85
+	mat.specular = 1.0
+	for i in rng.randi_range(4, 6):
+		var mi := MeshInstance3D.new()
+		var m := PlaneMesh.new()
+		var r := rng.randf_range(1.2, 3.0)
+		m.size = Vector2(r, r)
+		mi.mesh = m
+		mi.material_override = mat
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		mi.scale = Vector3(rng.randf_range(1.0, 1.8), 1, 1)
+		mi.rotation.y = rng.randf() * TAU
+		mi.position = Vector3(rng.randf_range(-h + 1.5, h - 1.5), 0.006, rng.randf_range(-h + 1.5, h - 1.5))
+		add_child(mi)
 
 
 func _populate() -> void:
@@ -57,6 +93,9 @@ func _populate() -> void:
 	if not Run.is_last_room():
 		_place_doors()
 	Events.prop_picked.connect(func(_f: Node, p: Node) -> void: Meta.see_prop((p as Prop).data.id))
+	_give_carried_prop()
+	Events.entity_died.connect(_on_entity_died)
+	Events.prop_broken.connect(_on_prop_broken)
 	if Run.room_i == 0 and not Meta.has_seen(&"first_room"):
 		_first_room_lines.call_deferred()
 	match spec.type:
@@ -224,6 +263,38 @@ func _talisman_tip(then: Callable) -> void:
 
 ## Exit doors stand sealed from the start so the way out is always visible; the reward on each is
 ## only decided when the room is cleared (rewards picked at the clear can change the options).
+## The prop Jackie walked out of the last room with comes along, worn as it was.
+func _give_carried_prop() -> void:
+	if Run.carried.is_empty() or not ResourceLoader.exists("res://data/props/%s.tres" % Run.carried.id):
+		return
+	var p := spawn_prop(Run.carried.id, hero.global_position)
+	p.durability = int(Run.carried.durability)
+	p.bonus_applied = bool(Run.carried.bonus)
+	p.attach_to(hero)
+	hero.held_prop = p
+	Run.carried = {}
+
+
+func _on_entity_died(e: Node) -> void:
+	var f := e as Fighter
+	if f == null or f.team != Fighter.Team.ENEMY or f.data.boss:
+		return
+	var g := Run.rng.randi_range(Run.KILL_GOLD.x, Run.KILL_GOLD.y)
+	if spec.get("elite", false):
+		g += Run.ELITE_KILL_BONUS
+	Run.gold += g
+	Vfx.gold_pop(f.global_position, g)
+
+
+func _on_prop_broken(p: Node, _pieces: Array) -> void:
+	var prop := p as Prop
+	if prop == null or Run.rng.randf() >= Run.PROP_GOLD_CHANCE:
+		return
+	var g := Run.rng.randi_range(Run.PROP_GOLD.x, Run.PROP_GOLD.y)
+	Run.gold += g
+	Vfx.gold_pop(prop.global_position, g)
+
+
 func _place_doors() -> void:
 	var h := room_size / 2
 	var n := Run.door_options().size()

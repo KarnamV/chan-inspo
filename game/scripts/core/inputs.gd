@@ -100,9 +100,9 @@ func combo(mod: StringName, action: StringName) -> String:
 
 ## One-line control reference for the current device.
 func controls_line() -> String:
-	return "%s move · %s light · %s heavy · %s grab/throw · %s dodge · %s parry · hold %s chi · hold %s talismans · %s pause" % [
+	return "%s move · %s light · %s heavy · %s grab/throw · %s dodge (just before a hit: counter) · hold %s chi · hold %s talismans · %s pause" % [
 		label(&"move"), label(&"attack_light"), label(&"attack_heavy"), label(&"grab"), label(&"dodge"),
-		label(&"parry"), label(&"chi_mod"), label(&"talisman_mod"), label(&"pause")]
+		label(&"chi_mod"), label(&"talisman_mod"), label(&"pause")]
 
 
 var _mute_until := -1

@@ -28,6 +28,10 @@ tiny billboard HP bar once hurt.
 | Test arenas | `game/scenes/levels/test_room.tscn`, `combat_arena.tscn`, `game/scripts/levels/arena.gd` |
 
 ## Conventions
+- Parry is folded into the dodge (`request_parry` = `request_dodge`). A hit landing within `parry_window` of a dodge starting = perfect dodge (`_perfect_counter`): attacker staggered, slow-mo, `crit_next`, `counter_t`.
+- Player dodge moves (`_dodge_follow`): light late in / just after a dodge = `dash_strike`, light while `counter_t` > 0 = `counter_spin`, heavy = `leap_slam`.
+- Player windup step: `lunge_speed` closes to striking distance of the soft-aim target (`MAX_LUNGE`); AI uses `attack.lunge`.
+- Dodging bodies ignore other fighters (`collision_mask` world-only during DODGE, `BODY_MASK` after).
 - `Health.take()` returns damage actually taken; emits `damaged`, `died` once.
 - A hit that passes through (dead, getup, i-frames, perfect dodge, invulnerable) sets
   `info.whiff = true`; attackers skip wear and hitstop on a whiff.

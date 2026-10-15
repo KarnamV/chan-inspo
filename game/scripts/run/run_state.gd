@@ -21,6 +21,11 @@ const REALM1 := [
 const REST_KINDS := ["shrine", "vault"]
 const ENEMY_POOL := [&"brute", &"shield_demon", &"thief_imp", &"archer_demon", &"wraith", &"armored_ghoul"]
 const REWARDS := [&"talisman", &"boon", &"draft", &"gold"]
+## Gold also drops from demons (per kill) and sometimes from broken props.
+const KILL_GOLD := Vector2i(4, 7)
+const ELITE_KILL_BONUS := 3
+const PROP_GOLD_CHANCE := 0.35
+const PROP_GOLD := Vector2i(1, 4)
 
 var active := false
 var room_i := 0
@@ -36,10 +41,11 @@ var mods := {"bare_mult": 1.0, "prop_mult": 1.0, "light_mult": 1.0, "durability_
 	"dodge_cd_mult": 1.0, "fire_mult": 1.0}
 var extra_lives := 0
 var pending_reward: StringName = &""
-var rest_kind := "shrine"
+var rest_kind := "vault"
 var rooms_cleared := 0
 var rng := RandomNumberGenerator.new()
 var victory := false
+var carried := {}   # the prop in Jackie's hands when she left the last room: {id, durability, bonus}
 
 
 func start_run(p_talismans: Array, seed_value := -1) -> void:
@@ -57,6 +63,8 @@ func start_run(p_talismans: Array, seed_value := -1) -> void:
 	mods = {"bare_mult": 1.0, "prop_mult": 1.0, "light_mult": 1.0, "durability_bonus": 0,
 		"dodge_cd_mult": 1.0, "fire_mult": 1.0}
 	extra_lives = 0
+	rest_kind = "vault"
+	carried = {}
 	pending_reward = &"talisman"   # runs start empty-handed: the first room always gives a talisman
 	rooms_cleared = 0
 	if seed_value >= 0:
@@ -95,8 +103,8 @@ func door_options() -> Array:
 			return [{"reward": &"shop", "label": "Shop"}, {"reward": pool[0], "label": _label(pool[0])}]
 		"story":
 			return [{"reward": &"story", "label": "Someone is waiting..."}]
-		"rest":
-			return [{"reward": &"shrine", "label": "Shrine"}, {"reward": &"vault", "label": "Prop vault"}]
+		"rest":   # realm 1 rests in the prop vault; demon shrines start in later realms
+			return [{"reward": &"vault", "label": "Prop vault"}]
 	return [{"reward": pool[0], "label": _label(pool[0])}, {"reward": pool[1], "label": _label(pool[1])}]
 
 
@@ -122,6 +130,8 @@ func room_cleared() -> void:
 ## Called by the room when the player body changes rooms or dies.
 func store(pc: PlayerController) -> void:
 	hp = pc.hero.health.hp
+	var p := pc.hero.held_prop
+	carried = {} if p == null or not is_instance_valid(p) or p.mode == Prop.Mode.BROKEN else 		{"id": p.data.id, "durability": p.durability, "bonus": p.bonus_applied}
 	spirit = pc.spirit
 	talismans = pc.equipped.map(func(t: Talisman) -> StringName: return t.id)
 	chi_unlocked = pc.chi_unlocked.duplicate()

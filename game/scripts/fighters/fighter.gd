@@ -21,6 +21,11 @@ const GRAVITY := 20.0
 const PICKUP_RANGE := 1.7
 const AIM_RANGE := 3.2          ## player attacks snap toward an enemy this close...
 const AIM_CONE := 0.5           ## ...within ~60 degrees of where you're pushing
+const BODY_MASK := 1 | (1 << 1) | (1 << 2)   ## world + other fighters
+const DODGE_FOLLOW_FROM := 0.12  ## attack this far into a dodge (or...)
+const DODGE_FOLLOW_AFTER := 0.22 ## ...this soon after it) = a dodge move
+const COUNTER_WINDOW := 1.2      ## after a perfect dodge, the next light is the counter spin
+const MAX_LUNGE := 11.0         ## fastest step-in toward an aimed enemy (m/s, during the windup)
 const STAGGER_ESCAPE := 0.15    ## player can dodge out of a stagger after this long
 const CHAIN_AT := 0.35          ## a queued light fires this far into an attack's recovery (0 = right after the hit)
 
@@ -66,6 +71,9 @@ var attack_with_prop: Prop
 var attack_hit_any := false
 var dodge_cd := 0.0
 var knock_time := 0.0
+var lunge_speed := 0.0          ## this attack's windup step speed (attack.lunge, or more to close in)
+var since_dodge := 99.0         ## seconds since the last dodge ended
+var counter_t := 0.0            ## > 0: perfect dodge counter ready
 var mercy_t := 0.0              ## post-hit invulnerability (data.hit_iframes)
 var _flash_t := 0.0
 var _flash_mat: StandardMaterial3D
@@ -80,7 +88,7 @@ var _overlay: Material
 func _ready() -> void:
 	add_to_group(&"fighters")
 	collision_layer = 1 << (1 if team == Team.PLAYER else 2)
-	collision_mask = 1 | (1 << 1) | (1 << 2)   # world + other bodies
+	collision_mask = BODY_MASK
 	var body := CollisionShape3D.new()
 	var cap := CapsuleShape3D.new()
 	cap.radius = data.radius
@@ -205,6 +213,9 @@ func can_act() -> bool:
 
 
 func request_light() -> void:
+	if _dodge_follow():   # out of a dodge: counter spin after a perfect dodge, else a dash strike
+		_start_attack(_counter_attack() if counter_t > 0.0 else _dash_attack(), held_prop)
+		return
 	if state == State.ATTACK and attack and state_t >= attack.combo_window and attack.id != &"" and _is_light(attack):
 		queued_light = true
 	elif can_act():
@@ -215,6 +226,9 @@ func request_light() -> void:
 
 
 func request_heavy() -> void:
+	if _dodge_follow():
+		_start_attack(_slam_attack(), held_prop)
+		return
 	if state == State.ATTACK and _in_recovery() and _is_light(attack):
 		_set_state(State.IDLE)   # light -> heavy finisher cancel (bare or with a prop)
 	if not can_act():
@@ -259,6 +273,7 @@ func request_dodge() -> void:
 		facing = intent_move.normalized()
 	_set_state(State.DODGE)
 	health.invulnerable = true
+	collision_mask = 1   # world only: dodge through demons instead of stopping dead on them
 	dodged.emit()
 	anim.play(&"dodge", 0.05, data.dodge_time)
 
@@ -279,6 +294,61 @@ func _in_recovery() -> bool:
 	return attack != null and state_t >= attack.active_end
 
 
+## Player only: pressing attack late in a dodge, or just after it, turns into a dodge move.
+func _dodge_follow() -> bool:
+	if team != Team.PLAYER or data.kit != &"":
+		return false
+	if state == State.DODGE and state_t >= DODGE_FOLLOW_FROM:
+		_set_state(State.IDLE)
+		return true
+	return state == State.IDLE and since_dodge < DODGE_FOLLOW_AFTER
+
+
+func _move(id: StringName, clip: StringName, dur: float, strike: Vector2, dmg: float) -> AttackData:
+	var a := AttackData.new()
+	a.id = id
+	a.clip = clip
+	a.duration = dur
+	a.active_start = dur * strike.x
+	a.active_end = dur * strike.y
+	a.combo_window = dur   # these don't chain; they end the string
+	a.damage = dmg + (held_prop.data.damage * 0.6 if held_prop else 0.0)
+	a.knockdown = true
+	return a
+
+
+## Dodge -> light: flying shoulder charge through the first demon in the way.
+func _dash_attack() -> AttackData:
+	var a := _move(&"dash_strike", &"ram", 0.42, Vector2(0.28, 0.62), 11.0)
+	a.lunge = 9.0
+	a.knockback = 7.0
+	a.hit_size = Vector3(1.5, 1.4, 1.5)
+	a.hit_offset = Vector3(0, 1.0, 0.8)
+	return a
+
+
+## Perfect dodge -> light: spinning backfist that clears everyone around you (the crit doubles it).
+func _counter_attack() -> AttackData:
+	counter_t = 0.0
+	var a := _move(&"counter_spin", &"spin", 0.55, Vector2(0.24, 0.72), 14.0)
+	a.lunge = 1.5
+	a.knockback = 6.5
+	a.hit_size = Vector3(3.8, 1.6, 3.8)
+	a.hit_offset = Vector3(0, 1.0, 0)
+	return a
+
+
+## Dodge -> heavy: leap and slam, a shockwave that floors everything close.
+func _slam_attack() -> AttackData:
+	var a := _move(&"leap_slam", &"heavy", 0.62, Vector2(0.62, 0.78), 13.0)
+	a.lunge = 4.5
+	a.knockback = 5.0
+	a.hit_size = Vector3(3.4, 1.4, 3.4)
+	a.hit_offset = Vector3(0, 0.8, 0.9)
+	a.prop_wear = 2
+	return a
+
+
 func _is_light(a: AttackData) -> bool:
 	return a != null and (a in data.light_combo or String(a.id).ends_with("_light"))
 
@@ -288,11 +358,10 @@ func _chain_point() -> float:
 	return attack.active_end + (attack.duration - attack.active_end) * CHAIN_AT
 
 
+## Parry is folded into the dodge: a dodge started just before a hit lands is a perfect dodge
+## (staggers the attacker, slow-mo, next hit crits). Kept so old callers and the button still work.
 func request_parry() -> void:
-	if not can_act():
-		return
-	_set_state(State.PARRY)
-	anim.play(&"guard", 0.04)
+	request_dodge()
 
 
 func request_attack(a: AttackData) -> void:
@@ -367,7 +436,7 @@ func _prop_attack(heavy: bool) -> AttackData:
 	if not heavy:
 		prop_combo += 1
 	a.damage = pd.damage * (pd.heavy_mult if heavy else 1.0)
-	a.knockback = pd.knockback * (1.6 if heavy else 1.0)
+	a.knockback = pd.knockback * (1.6 if heavy else 0.6)   # lights keep them in reach for the next swing
 	a.knockdown = heavy or pd.weight == PropData.Weight.HEAVY
 	a.stun = 0.4
 	a.lunge = 2.5 if heavy else 1.5
@@ -418,7 +487,7 @@ func _prop_attack(heavy: bool) -> AttackData:
 			strike = Vector2(0.45, 0.66)
 			a.lunge = 3.5
 			a.knockdown = false
-			a.knockback = pd.knockback * 2.0   # shove them away
+			a.knockback = pd.knockback * 1.15   # shove, but stay in reach of the next ram
 			a.stun = 0.6
 			a.hit_size = Vector3(1.8, 1.4, 1.3)
 			a.hit_offset = Vector3(0, 1.0, 1.0)
@@ -442,8 +511,13 @@ func _start_attack(a: AttackData, prop: Prop) -> void:
 	attack_with_prop = prop
 	attack_hit_any = false
 	queued_light = false
+	lunge_speed = a.lunge
 	if team == Team.PLAYER:
-		_aim()
+		var d := _aim()
+		if d > 0.0 and a.lunge > 0.0:   # step in to striking distance (knockback pushed them away)
+			var ideal := maxf(a.hit_offset.z, 0.9)
+			var close := (d - ideal) / maxf(a.active_start, 0.08)
+			lunge_speed = clampf(close, a.lunge, MAX_LUNGE)
 	_set_state(State.ATTACK)
 	anim.play(a.clip, 0.06, a.duration)
 	if prop and team == Team.PLAYER:
@@ -452,7 +526,8 @@ func _start_attack(a: AttackData, prop: Prop) -> void:
 
 
 ## Soft aim: face the pushed direction, snapping to the nearest enemy roughly that way.
-func _aim() -> void:
+## Returns the distance to the enemy it snapped to, or -1.
+func _aim() -> float:
 	var dir := intent_move.normalized() if intent_move.length() > 0.1 else facing
 	var best: Fighter = null
 	var best_d := AIM_RANGE
@@ -472,6 +547,7 @@ func _aim() -> void:
 		if to.length() > 0.01:
 			dir = to.normalized()
 	facing = dir
+	return best_d if best else -1.0
 
 
 func _attack_info(a: AttackData) -> DamageInfo:
@@ -514,6 +590,25 @@ func _on_hit_landed(hb: Hurtbox, info: DamageInfo, amount: float) -> void:
 
 
 # ---------------- hits taken ----------------
+## Perfect dodge: the attacker overcommits (staggered, unless a boss), time slows for a beat and
+## your next hit is a critical.
+func _perfect_counter(info: DamageInfo) -> void:
+	perfect_dodge.emit()
+	var atk := info.source as Fighter
+	if atk and not atk.is_dead() and not atk.data.boss and atk.global_position.distance_to(global_position) < 3.5:
+		atk.hitbox.deactivate()
+		atk._set_state(State.STAGGER)
+		atk.knock_time = 0.9
+		atk.anim.play(&"hit", 0.05, 0.6)
+	parried.emit(info.source)
+	Events.parried.emit(self, info.source)
+	if team == Team.PLAYER:
+		crit_next = true
+		counter_t = COUNTER_WINDOW
+		Juice.slowmo(0.3, 0.35)
+		Vfx.ring_flash(self)
+
+
 func receive_hit(info: DamageInfo) -> float:
 	if state == State.DEAD or state == State.GETUP or mercy_t > 0.0:
 		info.whiff = true
@@ -545,8 +640,9 @@ func receive_hit(info: DamageInfo) -> float:
 				anim.play(&"hit", 0.05, 0.6)
 			return 0.0
 	if health.invulnerable and state == State.DODGE and state_t <= data.dodge_iframes:
-		perfect_dodge.emit()
 		info.whiff = true
+		if state_t <= data.parry_window * parry_mult:   # timed it: the hit was already coming
+			_perfect_counter(info)
 		return 0.0
 	var amount := health.take(info)
 	if health.invulnerable:
@@ -635,11 +731,14 @@ func leave_body_state() -> void:
 func _set_state(s: State) -> void:
 	if state == State.DODGE and s != State.DODGE:
 		health.invulnerable = false
+		collision_mask = BODY_MASK
+		since_dodge = 0.0
 		dodge_cd = data.dodge_cooldown * float(data_mods.get("dodge_cd_mult", 1.0))
 	if state == State.ATTACK and s != State.ATTACK:
 		hitbox.deactivate()
 		if model:
 			model.rotation.y = 0.0   # undo the spin turn
+			model.position.y = 0.0   # land the leap
 	state = s
 	state_t = 0.0
 
@@ -649,6 +748,8 @@ func _physics_process(delta: float) -> void:
 	dodge_cd = maxf(dodge_cd - delta, 0.0)
 	mercy_t = maxf(mercy_t - delta, 0.0)
 	combo_reset_t = maxf(combo_reset_t - delta, 0.0)
+	since_dodge += delta
+	counter_t = maxf(counter_t - delta, 0.0)
 	intent_move = Vector3.ZERO
 	if brain and state != State.DEAD:
 		brain.think(self, delta)
@@ -664,9 +765,16 @@ func _physics_process(delta: float) -> void:
 				anim.ensure(&"idle")
 		State.ATTACK:
 			if state_t < attack.active_start:
-				target_vel = facing * attack.lunge
+				target_vel = facing * lunge_speed
 			if state_t >= attack.active_start and not hitbox.active and state_t < attack.active_end:
 				hitbox.activate(_attack_info(attack), attack.hit_size, attack.hit_offset)
+				if attack.id == &"leap_slam":
+					Vfx.dust(global_position + facing * 0.9, true)
+					Vfx.shockwave(global_position + facing * 0.9)
+					Juice.shake(0.25)
+			if attack.id == &"leap_slam" and model:   # hop up during the windup, drop on the strike
+				var k := clampf(state_t / attack.active_start, 0.0, 1.0)
+				model.position.y = sin(k * PI) * 0.9
 			if state_t >= attack.active_end and hitbox.active:
 				hitbox.deactivate()
 			if attack.clip == &"spin" and model:

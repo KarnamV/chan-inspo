@@ -5,6 +5,9 @@ in `design/CHANGELOG.md`.
 
 | Date | Decision | Why | Revisit when |
 |---|---|---|---|
+| 2026-10-15 | No parry state in play: the parry button dodges; timed dodges are the counter | Playtest 3: "can't really parry" | Playtest |
+| 2026-10-15 | Realm 1 rest room is the prop vault only | Playtest 3: shrines later; vault useful now props carry over | Realm 2 |
+| 2026-10-15 | `AssetCache` loads one resource at a time, no sub-threads | Parallel threaded loads deadlocked the room build | Godot loader fix |
 | 2026-10-09 | One `Fighter` body for Jackie and every demon; behaviour via swappable `Brain` | Possession = brain + team swap; Monkey/Tiger reuse it | Never without a design change |
 | 2026-10-10 | Talismans run on cooldowns, no spirit cost; spirit (chi) is only for chi moves. Sheep possession lasts 10 s (`sheep_duration`), 12 s cooldown | Chi costs left the player unable to attack (playtest 1) | Playtest |
 | 2026-10-10 | Talismans are collected, never replaced. Start with none; the first room always rewards one. 4 active slots (mod + light/heavy/grab/dodge) | Playtest 2 | Playtest |

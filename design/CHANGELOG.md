@@ -107,3 +107,17 @@
 - `Fade` autoload: room ↔ room, hub → room, room → hub fade to black, swap, wait 3 frames, fade in.
 - Exit doors rebuilt in code (generated gate meshes can't animate): lacquered double door with gold studs, bands and ring pulls, a talisman seal split across the leaves. Doors stand sealed (red seal) from room start; on clear the reward label/icon pop in and the seal turns gold; within 3.4 m the leaves swing inward onto a glowing doorway (dust + small shake); walking into the doorway takes it. Pillars are solid.
 - Lesson: Godot's resource cache is not a cache across scene changes — anything not referenced is freed. Hold references in an autoload for anything reused per room.
+
+## 2026-10-15 playtest 3 fixes
+- User: can't carry props into new rooms (vault useless); prop hits inconsistent; too little gold; shrines belong later; art grainy/basic; attacks too basic; dodge into enemies inconsistent; parry doesn't work. Decisions (asked): realm 1 rest = vault only; parry merged into dodge; do it all now.
+- Bot found during door work: Jackie already standing in a doorway when it unlocked never triggered it (body_entered fires only on entry), so doors also poll overlapping bodies. Space behind doors blocked (got wedged there).
+- Cache hang: several threaded loads (or sub-threads) in flight deadlocked the main thread when a room's own `load()` hit a resource mid-load (headless bot froze before room 1). AssetCache now loads one request at a time, no sub-threads (~5 s total, inside the intro; 246/246 in the exported exe); `Fade` calls `wait_all` while black.
+- Props carry over: `Run.carried` {id, durability, bonus} stored on leaving; the next room puts it back in Jackie's hands.
+- Gold: demons drop 4–7 (+3 in elite rooms), broken props 35% for 1–4; "+N gold" pop with coin glints. Gold door/vault unchanged.
+- Realm 1 rest room is the prop vault only; shrine code kept for later realms.
+- Prop hits: measured with a probe (passive brute, mashed light chains). Single swings always landed; chains landed 2–8 of 8–13 because each light knocked the demon ~1.4 m away and the windup step was ~0.25 m. Now the player's windup steps in to striking distance of the soft-aim target (`lunge_speed`, up to 11 m/s), prop light knockback x0.6, bulky ram shove 2.0 -> 1.15. Chains now land 7/8 (bulky) and all of them for club/long/small.
+- Dodge passes through demons (collision mask world-only during DODGE).
+- Parry -> perfect dodge: a dodge whose hit lands within the old parry window (0.22 s, Rabbit x2) staggers the attacker (not bosses), 0.3 s slow-mo, gold ring flash, next hit crits. Later in the i-frames: still avoided, no counter. Parry button now dodges.
+- New moves out of the dodge (existing clips): light late in / just after a dodge = dash strike (ram clip, 9 m/s, knockdown); light within 1.2 s of a perfect dodge = counter spin (360 backfist, crit); heavy = leap slam (hop on the model, shockwave ring, knockdown around).
+- Render: 4x MSAA, debanding, full-res high SSAO, soft shadow quality high; SSR on. Floor shader filters grout with derivatives (was the shimmer/grain), adds worn centres + grime, darkens toward walls; street dimmer (0.3). Ambient 0.75 -> 0.5 with warm light pools at stalls and mid-room, feathered glossy puddles, screen vignette.
+- Lesson: judge "prop hits inconsistent" with a chain probe, not single swings: isolated hits were 100%.

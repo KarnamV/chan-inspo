@@ -50,7 +50,7 @@ func think(f: Fighter, delta: float) -> void:
 		_buffer = &""
 		return
 	match _buffer:
-		&"parry": f.request_parry()
+		&"parry": f.request_dodge()   # parry is now the perfect dodge
 		&"attack_light": f.request_light()
 		&"attack_heavy": f.request_heavy()
 		&"grab": f.request_grab()

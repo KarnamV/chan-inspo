@@ -57,22 +57,76 @@ func after_each() -> void:
 	await wait_process_frames(2)
 
 
-func test_parry_blocks_and_staggers_attacker() -> void:
+func test_perfect_dodge_staggers_attacker_and_crits_next() -> void:
 	a = _fighter(Fighter.Team.PLAYER, Vector3.ZERO)
 	b = _fighter(Fighter.Team.ENEMY, Vector3(0, 0, 1))
-	a.request_parry()
+	a.request_dodge()
 	var info := DamageInfo.make(20.0, b)
-	assert_eq(a.receive_hit(info), 0.0, "parried hit does no damage")
+	assert_eq(a.receive_hit(info), 0.0, "perfect-dodged hit does no damage")
 	assert_eq(a.health.hp, a.data.max_hp)
 	assert_eq(b.state, Fighter.State.STAGGER, "attacker staggered")
+	assert_true(a.crit_next, "counter: next hit crits")
 
 
-func test_late_parry_does_not_block() -> void:
+func test_late_dodge_avoids_without_counter() -> void:
 	a = _fighter(Fighter.Team.PLAYER, Vector3.ZERO)
 	b = _fighter(Fighter.Team.ENEMY, Vector3(0, 0, 1))
-	a.request_parry()
+	a.request_dodge()
 	a.state_t = a.data.parry_window + 0.05
-	assert_gt(a.receive_hit(DamageInfo.make(20.0, b)), 0.0)
+	assert_eq(a.receive_hit(DamageInfo.make(20.0, b)), 0.0, "still inside the i-frames")
+	assert_ne(b.state, Fighter.State.STAGGER, "no counter for a late dodge")
+	assert_false(a.crit_next)
+
+
+func test_parry_button_dodges() -> void:
+	a = _fighter(Fighter.Team.PLAYER, Vector3.ZERO)
+	a.request_parry()
+	assert_eq(a.state, Fighter.State.DODGE)
+
+
+func test_light_out_of_dodge_is_dash_strike() -> void:
+	a = _fighter(Fighter.Team.PLAYER, Vector3.ZERO)
+	a.request_dodge()
+	a.state_t = Fighter.DODGE_FOLLOW_FROM + 0.01
+	a.request_light()
+	assert_eq(a.state, Fighter.State.ATTACK)
+	assert_eq(a.attack.id, &"dash_strike")
+
+
+func test_light_after_perfect_dodge_is_counter_spin() -> void:
+	a = _fighter(Fighter.Team.PLAYER, Vector3.ZERO)
+	b = _fighter(Fighter.Team.ENEMY, Vector3(0, 0, 1))
+	a.request_dodge()
+	a.receive_hit(DamageInfo.make(20.0, b))
+	a.state_t = Fighter.DODGE_FOLLOW_FROM + 0.01
+	a.request_light()
+	assert_eq(a.attack.id, &"counter_spin")
+	assert_eq(a.counter_t, 0.0, "counter used up")
+
+
+func test_heavy_just_after_dodge_is_leap_slam() -> void:
+	a = _fighter(Fighter.Team.PLAYER, Vector3.ZERO)
+	a.request_dodge()
+	a.state_t = a.data.dodge_time + 0.01
+	await wait_physics_frames(1)
+	assert_eq(a.state, Fighter.State.IDLE)
+	a.request_heavy()
+	assert_eq(a.attack.id, &"leap_slam")
+
+
+func test_plain_light_is_still_the_combo() -> void:
+	a = _fighter(Fighter.Team.PLAYER, Vector3.ZERO)
+	a.request_light()
+	assert_eq(a.attack, a.data.light_combo[0])
+
+
+func test_dodge_passes_through_fighters() -> void:
+	a = _fighter(Fighter.Team.PLAYER, Vector3.ZERO)
+	a.request_dodge()
+	assert_eq(a.collision_mask & (1 << 2), 0, "enemy bodies ignored mid-dodge")
+	a.state_t = a.data.dodge_time + 0.01
+	await wait_physics_frames(2)
+	assert_ne(a.collision_mask & (1 << 2), 0, "solid again after the dodge")
 
 
 func test_shield_blocks_front_not_back_not_shatter() -> void:

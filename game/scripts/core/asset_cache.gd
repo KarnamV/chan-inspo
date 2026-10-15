@@ -12,6 +12,8 @@ const EXTS := ["tres", "glb", "png", "gdshader", "tscn"]
 var _held := {}
 var _queue: Array[String] = []   # waiting to be requested
 var _current := ""                # the one path loading on a worker thread right now
+var _total := 0
+var _t0 := 0
 
 
 func _ready() -> void:
@@ -20,6 +22,8 @@ func _ready() -> void:
 		for f in ResourceLoader.list_directory(dir):   # export-safe (sees remapped / imported names)
 			if f.get_extension() in EXTS:
 				_queue.append(dir.path_join(f))
+	_total = _queue.size()
+	_t0 = Time.get_ticks_msec()
 	_next()
 
 
@@ -36,6 +40,7 @@ func _next() -> void:
 			_current = path
 			return
 	set_process(false)
+	print("AssetCache: %d/%d resources held, %d ms" % [_held.size(), _total, Time.get_ticks_msec() - _t0])
 
 
 func _process(_delta: float) -> void:

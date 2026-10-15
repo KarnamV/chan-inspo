@@ -21,6 +21,10 @@ to the hub. Meta progress (shards, boss ledger) saves to `user://meta.json`.
 | UI | `game/scripts/ui/choice_panel.gd`, `dialogue_panel.gd`, `hud.gd`, `boss_bar.gd` |
 
 ## Conventions
+- The held prop carries to the next room (`Run.carried`, given back in `RunRoom._give_carried_prop`).
+- Gold: per demon kill (`Run.KILL_GOLD`, elite bonus) and sometimes per broken prop; shown with `Vfx.gold_pop`.
+- Realm 1 rest room = prop vault only (shrine code kept for later realms).
+- Exit doors stand sealed from room start (`_place_doors`); `_open_doors` unlocks them on clear.
 - One-time boon effects in `apply_once`; behaviour hooks re-equipped per room.
 - `ChoicePanel` is modal and pauses the tree.
 - The first room always rewards a talisman (`pending_reward` in `start_run`).

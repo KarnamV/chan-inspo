@@ -246,7 +246,7 @@ func _build_environment() -> void:
 	env.background_color = Color(0.035, 0.02, 0.03)
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = Color(0.42, 0.32, 0.42)
-	env.ambient_light_energy = 0.75
+	env.ambient_light_energy = 0.5   # low fill: lantern pools carry the room
 	env.tonemap_mode = Environment.TONE_MAPPER_AGX
 	env.tonemap_exposure = 1.1
 	env.glow_enabled = true
@@ -256,6 +256,10 @@ func _build_environment() -> void:
 	env.ssao_enabled = true
 	env.ssao_radius = 1.2
 	env.ssao_intensity = 2.2
+	env.ssr_enabled = true   # puddles and lacquer catch the lanterns
+	env.ssr_max_steps = 48
+	env.ssr_fade_in = 0.1
+	env.ssr_fade_out = 1.5
 	env.fog_enabled = true   # fades the street outside into night
 	env.fog_light_color = Color(0.16, 0.06, 0.07)
 	env.fog_density = 0.012
@@ -266,6 +270,7 @@ func _build_environment() -> void:
 	var we := WorldEnvironment.new()
 	we.environment = env
 	add_child(we)
+	_add_vignette()
 	var moon := DirectionalLight3D.new()   # cool key light: lanterns supply the warm colour
 	moon.rotation_degrees = Vector3(-58, 30, 0)
 	moon.light_energy = 0.9
@@ -280,6 +285,39 @@ func _build_environment() -> void:
 	glow.light_energy = 3.0
 	glow.omni_range = room_size * 0.8
 	add_child(glow)
+
+
+## Darkened screen corners: frames the fight and hides the flat far floor.
+func _add_vignette() -> void:
+	var layer := CanvasLayer.new()
+	layer.layer = 0   # over the 3D view, under the HUD and panels
+	var rect := ColorRect.new()
+	rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var sh := Shader.new()
+	sh.code = """shader_type canvas_item;
+void fragment() {
+	vec2 q = UV - 0.5;
+	q.x *= 1.6;
+	COLOR = vec4(0.02, 0.0, 0.01, smoothstep(0.38, 0.95, length(q)) * 0.75);
+}"""
+	var m := ShaderMaterial.new()
+	m.shader = sh
+	rect.material = m
+	layer.add_child(rect)
+	add_child(layer)
+
+
+## Warm pool of light at a stall or lantern stand.
+func light_pool(at: Vector3, energy := 1.8, reach := 5.5) -> OmniLight3D:
+	var l := OmniLight3D.new()
+	l.light_color = Color(1.0, 0.62, 0.32)
+	l.light_energy = energy
+	l.omni_range = reach
+	l.omni_attenuation = 1.4
+	l.position = at + Vector3(0, 2.4, 0)
+	add_child(l)
+	return l
 
 
 func _static_box(size: Vector3, pos: Vector3, mat: Material) -> void:
@@ -309,7 +347,7 @@ func _shader_mat(path: String, params := {}) -> ShaderMaterial:
 
 
 func _build_room() -> void:
-	var floor_mat := _shader_mat(FLOOR_SHADER)
+	var floor_mat := _shader_mat(FLOOR_SHADER, {"room_half": room_size / 2})
 	_static_box(Vector3(room_size, 0.2, room_size), Vector3(0, -0.1, 0), floor_mat)
 	_build_street()
 	var wall_mat := _shader_mat(WALL_SHADER)
@@ -328,7 +366,7 @@ func _build_street() -> void:
 	var pm := PlaneMesh.new()
 	pm.size = Vector2(160, 160)
 	street.mesh = pm
-	street.material_override = _shader_mat(FLOOR_SHADER, {"dim": 0.45, "tile": 1.6})
+	street.material_override = _shader_mat(FLOOR_SHADER, {"dim": 0.3, "tile": 1.6})
 	street.position = Vector3(0, -0.03, 0)
 	add_child(street)
 	var rng := RandomNumberGenerator.new()

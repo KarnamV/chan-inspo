@@ -203,3 +203,59 @@ static func ring(owner: Node3D, radius: float, color: Color) -> Decal:
 	d.lower_fade = 0.2
 	owner.add_child(d)
 	return d
+
+
+## "+N gold" that rises and fades where gold was earned, with a few coin glints.
+static func gold_pop(at: Vector3, amount: int) -> void:
+	var tree := Engine.get_main_loop() as SceneTree
+	var lvl := tree.get_first_node_in_group(&"level_root") if tree else null
+	if lvl == null or amount <= 0:
+		return
+	var l := Label3D.new()
+	l.text = "+%d gold" % amount
+	l.font_size = 48
+	l.outline_size = 10
+	l.modulate = Color(1.0, 0.82, 0.3)
+	l.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	l.no_depth_test = true
+	l.position = at + Vector3(0, 2.0, 0)
+	lvl.add_child(l)
+	var tw := l.create_tween().set_parallel()
+	tw.tween_property(l, "position:y", l.position.y + 1.2, 0.9).set_ease(Tween.EASE_OUT)
+	tw.tween_property(l, "modulate:a", 0.0, 0.9).set_delay(0.35)
+	tw.chain().tween_callback(l.queue_free)
+	var s := SphereMesh.new()
+	s.radius = 0.05
+	s.height = 0.1
+	var p := _burst(lvl, at + Vector3(0, 1.0, 0), 6 + amount, 0.6, s, Color(1.0, 0.78, 0.25))
+	p.direction = Vector3.UP
+	p.spread = 40.0
+	p.initial_velocity_min = 2.5
+	p.initial_velocity_max = 4.0
+	p.gravity = Vector3(0, -9.0, 0)
+
+
+## Perfect dodge: a bright ring bursts out from under the dodger.
+static func ring_flash(owner: Node3D) -> void:
+	var d := ring(owner, 0.6, Color(1.0, 0.85, 0.45, 0.9))
+	d.position.y = 0.1
+	var tw := d.create_tween().set_parallel()
+	tw.tween_property(d, "size", Vector3(5.0, 0.6, 5.0), 0.35).set_ease(Tween.EASE_OUT)
+	tw.tween_property(d, "modulate:a", 0.0, 0.35)
+	tw.chain().tween_callback(d.queue_free)
+
+
+## Ground slam: a dusty ring racing outward along the floor.
+static func shockwave(at: Vector3) -> void:
+	var tree := Engine.get_main_loop() as SceneTree
+	var lvl := tree.get_first_node_in_group(&"level_root") if tree else null
+	if lvl == null:
+		return
+	var holder := Node3D.new()
+	lvl.add_child(holder)
+	holder.global_position = at
+	var d := ring(holder, 0.5, Color(0.95, 0.8, 0.6, 0.85))
+	var tw := d.create_tween().set_parallel()
+	tw.tween_property(d, "size", Vector3(6.5, 0.6, 6.5), 0.4).set_ease(Tween.EASE_OUT)
+	tw.tween_property(d, "modulate:a", 0.0, 0.4)
+	tw.chain().tween_callback(holder.queue_free)
