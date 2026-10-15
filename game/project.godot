@@ -16,6 +16,8 @@ Events="*res://scripts/core/events.gd"
 Juice="*res://scripts/core/juice.gd"
 Meta="*res://scripts/run/meta.gd"
 Run="*res://scripts/run/run_state.gd"
+AssetCache="*res://scripts/core/asset_cache.gd"
+Fade="*res://scripts/core/fade.gd"
 
 [display]
 

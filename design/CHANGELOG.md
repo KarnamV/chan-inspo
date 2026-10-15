@@ -99,3 +99,11 @@
 - Thief imp: at most 2 steals, fights 4 s after each throw, throws loot after 3.5 s (was 5 s, unlimited).
 - Lesson: `--write-movie` and headless runs stretch hitstop (wall-clock), so judge timing with `Juice.enabled = false`.
 - Not done: re-keying the procedural chop/thrust/ram/heavy clips (Blender); re-generating bucket/stool/shard (GPU).
+
+## 2026-10-15 room loading + exit doors
+- User: "takes time to load the next level"; wants a door that animates open.
+- Measured (probe changing rooms in a window): every room change froze 3–5 s, not just the first. Cause: `change_scene` frees the old room, every model/texture refcount hits zero, so the next room re-read ~150 MB of character `.glb`s plus props/decor from disk (hero data ~0.26 s, hero/HUD/props ~1.3 s, `_prewarm` ~1.6 s).
+- Fix: `AssetCache` autoload threads-loads `data/fighters`, `data/props`, `assets/{characters,props,pieces,decors,icons,portraits,shaders}`, `scenes/run` at boot (done ~1 s after launch, during the intro) and holds the references forever. Room change now ~85 ms.
+- `Fade` autoload: room ↔ room, hub → room, room → hub fade to black, swap, wait 3 frames, fade in.
+- Exit doors rebuilt in code (generated gate meshes can't animate): lacquered double door with gold studs, bands and ring pulls, a talisman seal split across the leaves. Doors stand sealed (red seal) from room start; on clear the reward label/icon pop in and the seal turns gold; within 3.4 m the leaves swing inward onto a glowing doorway (dust + small shake); walking into the doorway takes it. Pillars are solid.
+- Lesson: Godot's resource cache is not a cache across scene changes — anything not referenced is freed. Hold references in an autoload for anything reused per room.

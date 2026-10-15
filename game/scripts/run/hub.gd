@@ -161,4 +161,4 @@ func _refresh() -> void:
 
 func start_run() -> void:
 	Run.start_run([])
-	get_tree().change_scene_to_file(Run.ROOM_SCENE)
+	Fade.to_scene(Run.ROOM_SCENE)

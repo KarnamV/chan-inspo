@@ -80,7 +80,7 @@ summary { cursor: pointer; font-weight: 600; }
 }
 </style>
 </head>
-<body data-updated="2026-10-13">
+<body data-updated="2026-10-15">
 <button class="theme" onclick="toggleTheme()" aria-label="Toggle theme">◐</button>
 <div class="wrap">
 <nav>
@@ -118,10 +118,10 @@ summary { cursor: pointer; font-weight: 600; }
 <section id="now">
   <h2>Now</h2>
   <div class="card now">
-    <p><b>State:</b> Milestones M0–M4 are built and verified. Realm 1 plays end to end: tea house → 10 rooms → Butcher King → back to the tea house. Two playtests have reworked combat (cooldown talismans, input buffer, dodge cancels, collect-as-you-go talismans, softer demons). On 2026-10-13 a polish pass fixed clunky attacks: same-clip follow-ups no longer freeze Jackie, combos chain early, you can walk out of recovery, and props have a carry pose, a two-hand grip for bulky ones, and swing trails. It also added a material pre-warm, the possessed-host ring, an exe icon, and less thief kiting. See <a href="#p3">Polish pass 3</a>.</p>
+    <p><b>State:</b> Milestones M0–M4 are built and verified. Realm 1 plays end to end: tea house → 10 rooms → Butcher King → back to the tea house. Two playtests have reworked combat (cooldown talismans, input buffer, dodge cancels, collect-as-you-go talismans, softer demons). On 2026-10-13 a polish pass fixed clunky attacks: same-clip follow-ups no longer freeze Jackie, combos chain early, you can walk out of recovery, and props have a carry pose, a two-hand grip for bulky ones, and swing trails. It also added a material pre-warm, the possessed-host ring, an exe icon, and less thief kiting. See <a href="#p3">Polish pass 3</a>. On 2026-10-15 the 3–5 s freeze between rooms was fixed (models now stay loaded; room change ~85 ms behind a fade) and exit doors became sealed double doors that swing open as you walk up.</p>
     <p><b>Checks:</b> 54/54 unit tests; all four gameplay bots pass (each run twice). The real-HP probe (no talismans, never dodges) is noisy: this build reached rooms 4, 1, 1, 1 and the previous one 2, 1, 6, so it may be slightly harder now that thieves fight instead of running.</p>
     <p><b>Play it:</b> double-click <code>build/windows/DemonRealmEscape.exe</code> (no Godot needed). Rebuild after changes with <code>build_exe.bat</code>.</p>
-    <p><b>Waiting on you:</b> replay the new build: do attacks and prop moves feel better? Plus the older replay items in <a href="#you">Waiting on you</a>.</p>
+    <p><b>Waiting on you:</b> replay the new build: do attacks and prop moves feel better, is the room change quick, and do the doors open right? Plus the older replay items in <a href="#you">Waiting on you</a>.</p>
     <p><b>Next up:</b> re-key the stiff procedural clips (chop, thrust, ram, heavy smash) and re-generate the three bad props, then balance tweaks and M5 (Frozen Teahouse and Rotting Docks).</p>
     <p><b>Git:</b> all work committed and pushed to GitHub <code>main</code> (the exe itself is not committed). loop-engineering set up: context in <code>.claude/context/</code>, rules in <code>program.md</code>.</p>
   </div>
@@ -262,6 +262,9 @@ summary { cursor: pointer; font-weight: 600; }
       <li class="done">Violet ring under a possessed host; game icon on the exe</li>
       <li class="done">Thief imps steal at most twice and fight after throwing</li>
       <li class="you">Replay: do attacks and prop moves feel better? <span class="who">YOU</span></li>
+      <li class="done">Room change froze 3–5 s every room: asset cache keeps models loaded (now ~85 ms) + fade to black between rooms</li>
+      <li class="done">Exit doors: sealed lacquered double doors from room start, reward shows on clear, leaves swing open as you walk up</li>
+      <li class="you">Replay: is the room change quick now, and do the doors look and open right? <span class="who">YOU</span></li>
       <li>Re-key the stiff procedural clips (chop, thrust, ram, heavy smash) in Blender with anticipation and follow-through</li>
       <li>Re-generate bucket, stool and pottery shard (GPU) and put bucket + stool back in the pool</li>
     </ul>

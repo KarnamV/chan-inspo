@@ -13,7 +13,8 @@ var spec: Dictionary
 var waves: Array = []
 var wave_i := 0
 var cleared := false
-var doors: Array[RunDoor] = []
+var doors: Array[RunDoor] = []   # unlocked, takeable
+var _sealed: Array[RunDoor] = []
 var boss: Fighter
 var _ending := false
 var _wave_delay := -1.0
@@ -53,6 +54,8 @@ func _decorate() -> void:
 func _populate() -> void:
 	Run.apply(controller)
 	hero.died.connect(_on_hero_died)
+	if not Run.is_last_room():
+		_place_doors()
 	Events.prop_picked.connect(func(_f: Node, p: Node) -> void: Meta.see_prop((p as Prop).data.id))
 	if Run.room_i == 0 and not Meta.has_seen(&"first_room"):
 		_first_room_lines.call_deferred()
@@ -219,16 +222,26 @@ func _talisman_tip(then: Callable) -> void:
 		then.call())
 
 
-func _open_doors() -> void:
-	var opts := Run.door_options()
+## Exit doors stand sealed from the start so the way out is always visible; the reward on each is
+## only decided when the room is cleared (rewards picked at the clear can change the options).
+func _place_doors() -> void:
 	var h := room_size / 2
-	for i in opts.size():
+	var n := Run.door_options().size()
+	for i in n:
 		var d := RunDoor.new()
-		d.setup(opts[i])
-		var x := 0.0 if opts.size() == 1 else (-3.5 if i == 0 else 3.5)
-		d.position = Vector3(x, 0, -h + 1.0)
+		var x := 0.0 if n == 1 else (-3.5 if i == 0 else 3.5)
+		d.position = Vector3(x, 0, -h + 1.6)
 		add_child(d)
 		d.taken.connect(_take_door)
+		_sealed.append(d)
+
+
+func _open_doors() -> void:
+	var opts := Run.door_options()
+	for i in mini(opts.size(), _sealed.size()):
+		var d := _sealed[i]
+		d.setup(opts[i])
+		d.unlock()
 		doors.append(d)
 
 

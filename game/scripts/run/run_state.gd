@@ -111,7 +111,7 @@ func choose_door(opt: Dictionary) -> void:
 	if r == &"shrine" or r == &"vault":
 		rest_kind = String(r)
 	room_i += 1
-	get_tree().change_scene_to_file.call_deferred(ROOM_SCENE)
+	Fade.to_scene(ROOM_SCENE)
 
 
 func room_cleared() -> void:
@@ -154,7 +154,7 @@ var last_summary := {}
 
 
 func go_hub() -> void:
-	get_tree().change_scene_to_file.call_deferred(HUB_SCENE)
+	Fade.to_scene(HUB_SCENE)
 
 
 ## Enemy waves for a combat room at `depth` (1..7).
