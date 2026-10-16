@@ -1,8 +1,9 @@
 class_name RunDoor
 extends Area3D
 ## Exit door: a lacquered double door built in code (the generated gate meshes can't animate).
-## Stands sealed from the start of the room; `unlock` shows its reward; walking up swings the
-## leaves open onto a glowing doorway; walking into the doorway takes it.
+## Stands sealed against the back wall from the start of the room; `unlock` shows its reward;
+## walking up swings the leaves out toward you onto a glowing doorway; walking into it takes it.
+## Flush with the wall on purpose: an inward swing needed a gap behind, and bodies got wedged there.
 
 signal taken(option: Dictionary)
 
@@ -12,7 +13,7 @@ const ICONS := {&"talisman": "icon_door_talisman", &"boon": "icon_door_boon", &"
 const WIDTH := 2.2        # doorway, between the pillars
 const HEIGHT := 2.8
 const OPEN_RANGE := 3.4   # the leaves swing open when the hero is this close
-const OPEN_ANGLE := 1.85  # radians each leaf swings inward
+const OPEN_ANGLE := 1.6   # radians each leaf swings out toward the room
 const SEAL_LOCKED := Color(1.0, 0.18, 0.1)
 const SEAL_OPEN := Color(1.0, 0.72, 0.3)
 
@@ -37,7 +38,7 @@ func _ready() -> void:
 	monitoring = true
 	var cs := CollisionShape3D.new()
 	var box := BoxShape3D.new()
-	box.size = Vector3(WIDTH, 2.5, 1.4)   # reaches out in front: you take it before brushing a pillar
+	box.size = Vector3(WIDTH + 1.6, 2.5, 1.4)   # covers the pillars and reaches out in front: touching the frame takes it
 	cs.shape = box
 	cs.position = Vector3(0, 1.25, 0.45)
 	add_child(cs)
@@ -87,7 +88,7 @@ func open() -> void:
 	opened = true
 	var tw := create_tween().set_parallel()
 	for i in _leaves.size():
-		var to := OPEN_ANGLE if i == 0 else -OPEN_ANGLE
+		var to := -OPEN_ANGLE if i == 0 else OPEN_ANGLE
 		tw.tween_property(_leaves[i], "rotation:y", to, 0.75).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.tween_property(_glow, "light_energy", 4.0, 0.6)
 	tw.tween_property(_portal, "emission_energy_multiplier", 2.2, 0.6)
@@ -164,12 +165,6 @@ func _build_frame() -> void:
 		pcs.position = Vector3(s * px, (HEIGHT + 0.5) / 2, 0)
 		solid.add_child(pcs)
 		_box(Vector3(0.5, 0.25, 0.5), Vector3(s * px, 0.125, 0), wood)   # plinth
-	var back := CollisionShape3D.new()   # nobody gets wedged in the gap between the door and the wall
-	var bb := BoxShape3D.new()
-	bb.size = Vector3(WIDTH + 0.8, HEIGHT, 1.2)
-	back.shape = bb
-	back.position = Vector3(0, HEIGHT / 2, -0.85)
-	solid.add_child(back)
 	_box(Vector3(WIDTH + 1.1, 0.35, 0.5), Vector3(0, HEIGHT + 0.25, 0), lacquer)   # lintel
 	_box(Vector3(WIDTH + 0.6, 0.08, 0.52), Vector3(0, HEIGHT + 0.02, 0), gold)
 	var top := MeshInstance3D.new()
@@ -191,13 +186,13 @@ func _build_frame() -> void:
 	qm.size = Vector2(WIDTH, HEIGHT)
 	q.mesh = qm
 	q.material_override = _portal
-	q.position = Vector3(0, HEIGHT / 2, -1.2)   # behind the swing of the leaves
+	q.position = Vector3(0, HEIGHT / 2, -0.22)   # just in front of the wall behind
 	add_child(q)
 	_glow = OmniLight3D.new()
 	_glow.light_color = Color(1.0, 0.55, 0.25)
 	_glow.light_energy = 0.0
 	_glow.omni_range = 5.0
-	_glow.position = Vector3(0, 1.4, -0.6)
+	_glow.position = Vector3(0, 1.4, 0.3)
 	add_child(_glow)
 	_seal = OmniLight3D.new()
 	_seal.light_color = SEAL_LOCKED

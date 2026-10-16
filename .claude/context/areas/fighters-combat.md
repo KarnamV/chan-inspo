@@ -40,8 +40,10 @@ tiny billboard HP bar once hurt.
 
 ## What to avoid
 - Spawning: set `position` before `add_child`.
-- Heavy, throw, chop, thrust, spin and ram clips are procedural placeholders; do not
-  tune feel against them.
+- Chop, thrust, ram and heavy are re-keyed (pipeline `anim_rekey.py`, strike at 0.53 / 0.47 / 0.5 / 0.67 of the clip);
+  throw and spin are still procedural placeholders.
+- After a dodge the body stays non-solid to fighters until clear (`_ghost`, `_unghost`): overlapping
+  CharacterBodies never separate on their own.
 - Nodes moved in `_process` need `physics_interpolation_mode = OFF` (interpolation is on).
 - A queued light chains at `_chain_point()` (35% into recovery); players walk out of recovery there.
 - Judge attack timing on recordings with `Juice.enabled = false`: hitstop runs on wall-clock time and stretches in `--write-movie`/headless.

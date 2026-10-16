@@ -72,6 +72,7 @@ var attack_hit_any := false
 var dodge_cd := 0.0
 var knock_time := 0.0
 var lunge_speed := 0.0          ## this attack's windup step speed (attack.lunge, or more to close in)
+var _ghost := false             ## dodged through someone: not solid to fighters until clear
 var since_dodge := 99.0         ## seconds since the last dodge ended
 var counter_t := 0.0            ## > 0: perfect dodge counter ready
 var mercy_t := 0.0              ## post-hit invulnerability (data.hit_iframes)
@@ -293,6 +294,26 @@ func can_dodge_cancel() -> bool:
 
 func _in_recovery() -> bool:
 	return attack != null and state_t >= attack.active_end
+
+
+## After a dodge through a body: stay non-solid to fighters and ease out of whoever we overlap,
+## then turn solid. Restoring collision while inside another body fused the two for good.
+func _unghost() -> void:
+	var push := Vector3.ZERO
+	for n in get_tree().get_nodes_in_group(&"fighters"):
+		var o := n as Fighter
+		if o == null or o == self or o.is_dead() or o.collision_layer == 0:
+			continue
+		var away := global_position - o.global_position
+		away.y = 0.0
+		var need := data.radius + o.data.radius + 0.05
+		if away.length() < need:
+			push += (away.normalized() if away.length() > 0.01 else -facing) * (need - away.length())
+	if push == Vector3.ZERO:
+		_ghost = false
+		collision_mask = BODY_MASK
+	else:
+		global_position += push.limit_length(0.08)
 
 
 ## Player only: pressing attack late in a dodge, or just after it, turns into a dodge move.
@@ -732,7 +753,7 @@ func leave_body_state() -> void:
 func _set_state(s: State) -> void:
 	if state == State.DODGE and s != State.DODGE:
 		health.invulnerable = false
-		collision_mask = BODY_MASK
+		_ghost = true   # solid again once clear of everyone (see _unghost)
 		since_dodge = 0.0
 		dodge_cd = data.dodge_cooldown * float(data_mods.get("dodge_cd_mult", 1.0))
 	if state == State.ATTACK and s != State.ATTACK:
@@ -750,6 +771,8 @@ func _physics_process(delta: float) -> void:
 	mercy_t = maxf(mercy_t - delta, 0.0)
 	combo_reset_t = maxf(combo_reset_t - delta, 0.0)
 	since_dodge += delta
+	if _ghost and state != State.DODGE:
+		_unghost()
 	counter_t = maxf(counter_t - delta, 0.0)
 	intent_move = Vector3.ZERO
 	if brain and state != State.DEAD:

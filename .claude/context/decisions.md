@@ -5,6 +5,7 @@ in `design/CHANGELOG.md`.
 
 | Date | Decision | Why | Revisit when |
 |---|---|---|---|
+| 2026-10-16 | Exit doors flush on the back wall, swinging out; trigger covers the pillars | Bodies got wedged behind/beside inward doors | - |
 | 2026-10-15 | No parry state in play: the parry button dodges; timed dodges are the counter | Playtest 3: "can't really parry" | Playtest |
 | 2026-10-15 | Realm 1 rest room is the prop vault only | Playtest 3: shrines later; vault useful now props carry over | Realm 2 |
 | 2026-10-15 | `AssetCache` loads one resource at a time, no sub-threads | Parallel threaded loads deadlocked the room build | Godot loader fix |

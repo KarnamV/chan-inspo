@@ -129,3 +129,11 @@
 - Characters: `CharacterLook` chains a next_pass on every model material: soft fresnel rim (warm on Jackie, red-orange on demons, strength 0.16) + inverted-hull dark outline (1.2 cm). Compared none / rim / outline / both on captures: strong rim washed colours out; outline alone left black trousers merging with the floor; soft rim + outline kept colour and separated both. Overlay slot untouched (hit flash / possession tint still work).
 - Fixed `mat.specular` warning on puddles (`metallic_specular`).
 - Lesson: for simple hard-surface props TRELLIS can't do (open, thin, shells), a 100-line bmesh script beats more re-rolls and matches the flat low-poly style.
+
+## 2026-10-16 attack clips re-keyed
+- Art pass 2 committed and pushed (986fe51): rim light + outline kept.
+- New pipeline script `anim_rekey.py` replaces chop, thrust, ram and heavy on every humanoid (hero, 6 demons, Butcher King heavy): 6–7 keys each with anticipation, fast strike, overshoot and settle; hips dip and drive forward; off hand and torso trail the weapon arm; the lead foot steps. Legs are solved with IK at each key and baked to FK (feet within ~1 cm of the floor at keys; up to 3.7 cm sink mid-lunge). Strike lands at the same clip fraction as before, so hit timing is unchanged. `asset_runner` now runs it after `anim_procedural`, so new characters get these clips.
+- Found on the stills: `anim_procedural.py` had the torso lean sign backwards: every "lean into the hit" key reared the body back with the arms flung up. Positive X on Spine/Chest/Neck leans forward; arm angles now subtract the torso lean so they're world angles.
+- Exit doors now sit flush on the back wall and swing out toward the room. The full-run bot failed 1 in 11 runs after the clips change: Jackie got wedged in the gap behind an inward-swinging door, then (after moving them flush) caught on the outside of a pillar. Doorway trigger now covers the pillars.
+- Dodge-through could end with Jackie inside a demon; two overlapping character bodies never separate, so the boss and Jackie stayed fused at the wall (bot timed out at the boss, hp frozen). After a dodge she stays non-solid to fighters and eases out until clear (`Fighter._unghost`). Full run 12/12 after the fix.
+- Lesson: run the full-run bot 10+ times after movement or collision changes; 1-in-10 softlocks don't show in 2 runs.

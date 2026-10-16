@@ -300,7 +300,7 @@ func _place_doors() -> void:
 	for i in n:
 		var d := RunDoor.new()
 		var x := 0.0 if n == 1 else (-3.5 if i == 0 else 3.5)
-		d.position = Vector3(x, 0, -h + 1.6)
+		d.position = Vector3(x, 0, -h + 0.45)   # frame back against the wall face
 		add_child(d)
 		d.taken.connect(_take_door)
 		_sealed.append(d)

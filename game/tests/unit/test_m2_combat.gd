@@ -129,6 +129,19 @@ func test_dodge_passes_through_fighters() -> void:
 	assert_ne(a.collision_mask & (1 << 2), 0, "solid again after the dodge")
 
 
+func test_dodge_ending_inside_a_demon_eases_out_before_turning_solid() -> void:
+	a = _fighter(Fighter.Team.PLAYER, Vector3.ZERO)
+	b = _fighter(Fighter.Team.ENEMY, Vector3(0, 0, 0.2))
+	a.request_dodge()
+	a.state_t = a.data.dodge_time + 0.01
+	await wait_physics_frames(2)
+	assert_eq(a.collision_mask & (1 << 2), 0, "still passing through while overlapping")
+	await wait_physics_frames(30)
+	var gap := Vector2(a.global_position.x - b.global_position.x, a.global_position.z - b.global_position.z).length()
+	assert_gt(gap, a.data.radius + b.data.radius, "pushed clear")
+	assert_ne(a.collision_mask & (1 << 2), 0, "solid once clear")
+
+
 func test_shield_blocks_front_not_back_not_shatter() -> void:
 	var d := FighterData.new()
 	d.front_block = true
