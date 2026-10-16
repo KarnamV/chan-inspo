@@ -223,6 +223,12 @@ func release(impulse: Vector3, by: Node) -> void:
 	collision_mask = 1 | (1 << 3) | (1 << 2) | (1 << 1)   # thrown props also hit fighters
 	thrower = by
 	mode = Mode.THROWN if by else Mode.FREE
+	if by is PhysicsBody3D:   # thrown from the hand, which can start inside the thrower's own body
+		var body := by as PhysicsBody3D
+		add_collision_exception_with(body)
+		get_tree().create_timer(0.35).timeout.connect(func() -> void:
+			if is_instance_valid(self) and is_instance_valid(body):
+				remove_collision_exception_with(body))
 	linear_velocity = impulse
 	angular_velocity = Vector3(randf_range(-6, 6), randf_range(-3, 3), randf_range(-6, 6)) if by else Vector3.ZERO
 

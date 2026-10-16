@@ -25,6 +25,9 @@ const BODY_MASK := 1 | (1 << 1) | (1 << 2)   ## world + other fighters
 const DODGE_FOLLOW_FROM := 0.12  ## attack this far into a dodge (or...)
 const DODGE_FOLLOW_AFTER := 0.22 ## ...this soon after it) = a dodge move
 const COUNTER_WINDOW := 1.2      ## after a perfect dodge, the next light is the counter spin
+const THROW_RANGE := 12.0       ## throws snap to an opponent this far away...
+const THROW_CONE := 0.55        ## ...within ~55 degrees of where you're pushing / facing
+const THROW_SPEED := 14.0
 const MAX_LUNGE := 11.0         ## fastest step-in toward an aimed enemy (m/s, during the windup)
 const STAGGER_ESCAPE := 0.15    ## player can dodge out of a stagger after this long
 const CHAIN_AT := 0.35          ## a queued light fires this far into an attack's recovery (0 = right after the hit)
@@ -72,6 +75,7 @@ var attack_hit_any := false
 var dodge_cd := 0.0
 var knock_time := 0.0
 var lunge_speed := 0.0          ## this attack's windup step speed (attack.lunge, or more to close in)
+var _throw_at: Fighter          ## who the current throw is aimed at (null = straight ahead)
 var _ghost := false             ## dodged through someone: not solid to fighters until clear
 var since_dodge := 99.0         ## seconds since the last dodge ended
 var counter_t := 0.0            ## > 0: perfect dodge counter ready
@@ -247,6 +251,12 @@ func request_grab() -> void:
 	if not can_act():
 		return
 	if held_prop:
+		_throw_at = _throw_target()
+		if _throw_at:
+			var to := _throw_at.global_position - global_position
+			to.y = 0.0
+			if to.length() > 0.01:
+				facing = to.normalized()
 		_set_state(State.THROW)
 		anim.play(&"throw", 0.08, 0.38)
 	elif grab_override.is_valid() and grab_override.call(self):
@@ -294,6 +304,44 @@ func can_dodge_cancel() -> bool:
 
 func _in_recovery() -> bool:
 	return attack != null and state_t >= attack.active_end
+
+
+## Nearest opponent roughly where we're pushing (or facing), for a thrown prop.
+func _throw_target() -> Fighter:
+	var dir := intent_move.normalized() if intent_move.length() > 0.1 else facing
+	var best: Fighter = null
+	var best_score := INF
+	for n in get_tree().get_nodes_in_group(&"fighters"):
+		var o := n as Fighter
+		if o == null or o == self or o.team == team or o.is_dead() or o.hidden:
+			continue
+		var to := o.global_position - global_position
+		to.y = 0.0
+		var d := to.length()
+		if d > THROW_RANGE or d < 0.01:
+			continue
+		var dot := dir.dot(to / d)
+		if dot < THROW_CONE and d > 2.0:
+			continue
+		var score := d * (1.6 - dot)   # prefer close and straight ahead
+		if score < best_score:
+			best_score = score
+			best = o
+	return best
+
+
+## Launch velocity: an arc that lands on the target's chest (leading it a little), else straight ahead.
+func _throw_velocity(p: Prop) -> Vector3:
+	if _throw_at == null or not is_instance_valid(_throw_at) or _throw_at.is_dead():
+		return facing * 13.0 + Vector3.UP * 2.0
+	var from := p.global_position
+	var aim := _throw_at.global_position + Vector3.UP * 1.0
+	var flat := Vector3(aim.x - from.x, 0.0, aim.z - from.z)
+	var time := maxf(flat.length() / THROW_SPEED, 0.08)
+	aim += Vector3(_throw_at.velocity.x, 0.0, _throw_at.velocity.z) * time
+	flat = Vector3(aim.x - from.x, 0.0, aim.z - from.z)
+	var g := float(ProjectSettings.get_setting("physics/3d/default_gravity", 9.8)) * p.gravity_scale
+	return flat / time + Vector3.UP * ((aim.y - from.y) / time + 0.5 * g * time)
 
 
 ## After a dodge through a body: stay non-solid to fighters and ease out of whoever we overlap,
@@ -852,7 +900,8 @@ func _physics_process(delta: float) -> void:
 			if state_t >= 0.16 and held_prop:
 				var p := held_prop
 				held_prop = null
-				p.release(facing * 13.0 + Vector3.UP * 2.0, self)
+				p.release(_throw_velocity(p), self)
+				_throw_at = null
 			if state_t >= 0.38:
 				_set_state(State.IDLE)
 

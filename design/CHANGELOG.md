@@ -137,3 +137,9 @@
 - Exit doors now sit flush on the back wall and swing out toward the room. The full-run bot failed 1 in 11 runs after the clips change: Jackie got wedged in the gap behind an inward-swinging door, then (after moving them flush) caught on the outside of a pillar. Doorway trigger now covers the pillars.
 - Dodge-through could end with Jackie inside a demon; two overlapping character bodies never separate, so the boss and Jackie stayed fused at the wall (bot timed out at the boss, hp frozen). After a dodge she stays non-solid to fighters and eases out until clear (`Fighter._unghost`). Full run 12/12 after the fix.
 - Lesson: run the full-run bot 10+ times after movement or collision changes; 1-in-10 softlocks don't show in 2 runs.
+
+## 2026-10-16 throws
+- User: "Jackie doesn't throw the prop at the nearest enemy, he just drops it."
+- Probe (throw at a brute 5 m ahead): chair and bun basket landed ~2 m *behind* Jackie and never hit; pole, crate, bench flew 4–9 m and hit. Club/small props leave from the hand, which is behind the head in the throw wind-up, inside Jackie's own body; the thrown prop collides with player bodies and bounced off her. Long/bulky props are carried in front, so they cleared.
+- Fix: a thrown prop ignores its thrower for 0.35 s. Throws now aim: the nearest opponent within 12 m and ~55 degrees of the stick (or facing) direction; Jackie turns to it and the launch is an arc onto its chest, leading its movement. No one in the cone = straight ahead as before.
+- Probe after: every prop type hits at 5–10 m, up to 40 degrees off-facing. 63/63 unit tests; bots pass; full run 8/8.

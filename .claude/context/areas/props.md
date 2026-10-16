@@ -18,6 +18,7 @@ small = jab/chop. Fixed props (hanging lanterns, weapon rack) react in place.
 | Models | `game/assets/props/*.glb`, `game/assets/pieces/*.glb` (Git LFS) |
 
 ## Conventions
+- Throws aim (`Fighter._throw_target`, `_throw_velocity`: nearest opponent within `THROW_RANGE` / `THROW_CONE`, arc onto the chest); a released prop ignores its thrower for 0.35 s (it starts inside the body).
 - Loose props and pieces parent to the `level_root` group node.
 - Long props spawn lying down.
 - Long and bulky props are placed by `Fighter._process` each frame (top_level): poles along the facing / arm, bulky props across the chest between both hands. Clubs and small props stay on the `RightHand` attachment.

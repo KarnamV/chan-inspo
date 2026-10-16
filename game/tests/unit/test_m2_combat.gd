@@ -202,3 +202,27 @@ func test_dodge_catches_thrown_prop() -> void:
 	await wait_physics_frames(2)
 	assert_eq(a.held_prop, p, "caught out of the air")
 	assert_eq(p.mode, Prop.Mode.HELD)
+
+
+func test_throw_aims_at_the_demon_in_front() -> void:
+	a = _fighter(Fighter.Team.PLAYER, Vector3.ZERO)
+	b = _fighter(Fighter.Team.ENEMY, Vector3(3, 0, 6))   # ~27 degrees off facing (+Z)
+	a.facing = Vector3(0, 0, 1)
+	var p := Prop.new()
+	p.data = load("res://data/props/chair.tres")
+	add_child_autofree(p)
+	p.attach_to(a)
+	a.held_prop = p
+	a.request_grab()
+	assert_eq(a.state, Fighter.State.THROW)
+	var to := (b.global_position - a.global_position).normalized()
+	assert_gt(a.facing.dot(to), 0.99, "turned to face the demon")
+	var v := a._throw_velocity(p)
+	assert_gt(Vector3(v.x, 0, v.z).normalized().dot(Vector3(to.x, 0, to.z).normalized()), 0.97, "thrown at it")
+
+
+func test_throw_with_no_demon_ahead_goes_straight() -> void:
+	a = _fighter(Fighter.Team.PLAYER, Vector3.ZERO)
+	b = _fighter(Fighter.Team.ENEMY, Vector3(-6, 0, -1))   # behind and to the side
+	a.facing = Vector3(0, 0, 1)
+	assert_null(a._throw_target())
