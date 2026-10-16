@@ -3,8 +3,7 @@ extends Arena
 ## One room of a run (realm 1: Ember Night Market). Reads Run.spec(): combat / story / shop /
 ## shrine / vault / boss. Clear it -> reward (from the door you came through) -> exit doors.
 
-## bucket + stool left out: their meshes reconstruct badly (open/thin shapes), see STATUS
-const MARKET_PROPS := [&"chair", &"bench", &"crate", &"barrel", &"pole", &"lantern",
+const MARKET_PROPS := [&"chair", &"bench", &"stool", &"bucket", &"crate", &"barrel", &"pole", &"lantern",
 	&"spear", &"bun_basket", &"roast_duck", &"spirit_urn", &"market_stall_cart", &"wok", &"crate_of_fish",
 	&"fruit_cart"]
 const RARE_PROPS := [&"spirit_urn", &"spear", &"lantern", &"fruit_cart", &"market_stall_cart", &"roast_duck"]
@@ -72,7 +71,7 @@ func _puddles(rng: RandomNumberGenerator, h: float) -> void:
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.roughness = 0.03
 	mat.metallic = 0.85
-	mat.specular = 1.0
+	mat.metallic_specular = 1.0
 	for i in rng.randi_range(4, 6):
 		var mi := MeshInstance3D.new()
 		var m := PlaneMesh.new()

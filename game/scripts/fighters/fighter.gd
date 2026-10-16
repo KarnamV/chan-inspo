@@ -132,6 +132,7 @@ func _ready() -> void:
 		for mi in model.find_children("*", "MeshInstance3D", true, false):
 			_meshes.append(mi as MeshInstance3D)
 			(mi as MeshInstance3D).layers = 2   # keeps blob-shadow decals off the body
+		CharacterLook.apply(_meshes, CharacterLook.HERO_RIM if team == Team.PLAYER else CharacterLook.ENEMY_RIM)
 		var r := data.radius * (2.6 if data.boss else 2.2)
 		Vfx.blob_shadow(self, r, Color(0.35, 0.95, 0.7, 0.7) if team == Team.PLAYER else Color(0, 0, 0, 0))
 	else:

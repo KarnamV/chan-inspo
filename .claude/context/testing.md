@@ -71,3 +71,6 @@ Bot pass = process exit code 0. Each bot prints `PASS`/`FAIL` lines and a
 - `-s` scripts compile before autoloads exist; anything touching `Events`/`Juice`
   must be a scene (that is why bots are scenes).
 - After adding a new `class_name`, re-run import so the class cache picks it up.
+- The 300-frame boot check can print `chair.tres:8 - Parse Error` (or another `data/props` file):
+  it quit while AssetCache was mid-load (the cache needs ~4.5 s). Not a bug; confirm with
+  `--quit-after 1500`, which must print `AssetCache: N/N resources held` and no errors.

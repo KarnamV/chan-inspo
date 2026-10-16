@@ -118,11 +118,11 @@ summary { cursor: pointer; font-weight: 600; }
 <section id="now">
   <h2>Now</h2>
   <div class="card now">
-    <p><b>State:</b> Milestones M0–M4 are built and verified. Realm 1 plays end to end: tea house → 10 rooms → Butcher King → back to the tea house. Two playtests have reworked combat (cooldown talismans, input buffer, dodge cancels, collect-as-you-go talismans, softer demons). On 2026-10-13 a polish pass fixed clunky attacks: same-clip follow-ups no longer freeze Jackie, combos chain early, you can walk out of recovery, and props have a carry pose, a two-hand grip for bulky ones, and swing trails. It also added a material pre-warm, the possessed-host ring, an exe icon, and less thief kiting. See <a href="#p3">Polish pass 3</a>. On 2026-10-15 the 3–5 s freeze between rooms was fixed (models now stay loaded; room change ~85 ms behind a fade) and exit doors became sealed double doors that swing open as you walk up. Playtest 3 fixes the same day: props carry between rooms, gold drops from demons and props, realm 1 rests in the prop vault, prop chains connect, dodge passes through demons, parry became a perfect-dodge counter, three new dodge moves (dash strike, counter spin, leap slam), and a render pass (antialiasing, lighting, puddles).</p>
+    <p><b>State:</b> Milestones M0–M4 are built and verified. Realm 1 plays end to end: tea house → 10 rooms → Butcher King → back to the tea house. Two playtests have reworked combat (cooldown talismans, input buffer, dodge cancels, collect-as-you-go talismans, softer demons). On 2026-10-13 a polish pass fixed clunky attacks: same-clip follow-ups no longer freeze Jackie, combos chain early, you can walk out of recovery, and props have a carry pose, a two-hand grip for bulky ones, and swing trails. It also added a material pre-warm, the possessed-host ring, an exe icon, and less thief kiting. See <a href="#p3">Polish pass 3</a>. On 2026-10-15 the 3–5 s freeze between rooms was fixed (models now stay loaded; room change ~85 ms behind a fade) and exit doors became sealed double doors that swing open as you walk up. Playtest 3 fixes the same day: props carry between rooms, gold drops from demons and props, realm 1 rests in the prop vault, prop chains connect, dodge passes through demons, parry became a perfect-dodge counter, three new dodge moves (dash strike, counter spin, leap slam), and a render pass (antialiasing, lighting, puddles). Art pass 2 (same day): bucket, stool and pottery shard rebuilt by hand in Blender and back in the room pool; characters have a soft rim light and thin dark outline so they separate from the night floor. Before/after shots: <code>assets/captures/art_pass2/</code>.</p>
     <p><b>Checks:</b> 60/60 unit tests; all four gameplay bots pass (full run twice). The real-HP probe is still noisy (rooms 1, 2, 10).</p>
     <p><b>Play it:</b> double-click <code>build/windows/DemonRealmEscape.exe</code> (no Godot needed). Rebuild after changes with <code>build_exe.bat</code>.</p>
-    <p><b>Waiting on you:</b> replay the new build: room changes and doors, prop chains, the dodge moves and perfect-dodge counter, gold, and the new look. Plus the older replay items in <a href="#you">Waiting on you</a>.</p>
-    <p><b>Next up:</b> re-key the stiff procedural clips (chop, thrust, ram, heavy smash) and re-generate the three bad props, then balance tweaks and M5 (Frozen Teahouse and Rotting Docks).</p>
+    <p><b>Waiting on you:</b> replay the new build: room changes and doors, prop chains, the dodge moves and perfect-dodge counter, gold, and the new look (compare <code>assets/captures/art_pass2/compare_*.jpg</code>; say if the character outline should stay). Plus the older replay items in <a href="#you">Waiting on you</a>.</p>
+    <p><b>Next up:</b> re-key the stiff procedural clips (chop, thrust, ram, heavy smash), then balance tweaks and M5 (Frozen Teahouse and Rotting Docks).</p>
     <p><b>Git:</b> all work committed and pushed to GitHub <code>main</code> (the exe itself is not committed). loop-engineering set up: context in <code>.claude/context/</code>, rules in <code>program.md</code>.</p>
   </div>
 </section>
@@ -274,9 +274,10 @@ summary { cursor: pointer; font-weight: 600; }
       <li class="done">New dodge moves: dash strike (dodge → light), counter spin (perfect dodge → light), leap slam (dodge → heavy)</li>
       <li class="done">Render: MSAA, softer SSAO and shadows, floor grain fixed, warm light pools, wet puddles, vignette</li>
       <li class="you">Replay: prop chains, dodge moves and the perfect-dodge counter; is gold enough; does the room look less grainy? <span class="who">YOU</span></li>
-      <li>Art pass 2: re-generate key decor/props at higher quality, outline or rim light for readability (asset pipeline)</li>
+      <li class="done">Art pass 2: bucket, stool and pottery shard rebuilt as hand-made low-poly meshes (TRELLIS failed twice), characters get a soft rim light + thin outline. Before/after in <code>assets/captures/art_pass2/</code></li>
+      <li class="you">Judge art pass 2: <code>assets/captures/art_pass2/compare_*.jpg</code> and the exe. Keep rim + outline, or outline only? <span class="who">YOU</span></li>
       <li>Re-key the stiff procedural clips (chop, thrust, ram, heavy smash) in Blender with anticipation and follow-through</li>
-      <li>Re-generate bucket, stool and pottery shard (GPU) and put bucket + stool back in the pool</li>
+      <li class="done">Re-make bucket, stool and pottery shard and put bucket + stool back in the pool</li>
     </ul>
   </div>
 
@@ -336,7 +337,6 @@ summary { cursor: pointer; font-weight: 600; }
   <h2>Backlog &amp; known issues</h2>
   <div class="card">
     <ul class="tasks">
-      <li>Three props still look bad: bucket, stool, pottery shard (the 3D generator fails on open or thin shapes). Bucket and stool are out of the random pool. Try closed-lid / thick-seat prompts or Hunyuan 2.1.</li>
       <li>Heavy smash, throw, chop, thrust, spin and ram are hand-keyed placeholders (stiff). Upgrade with Kimodo (not installed).</li>
       <li>Gamepad: button icons instead of text names, PlayStation names, a rebinding menu</li>
       <li>Locked talisman icons in the hub are dim and small</li>

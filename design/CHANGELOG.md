@@ -121,3 +121,11 @@
 - New moves out of the dodge (existing clips): light late in / just after a dodge = dash strike (ram clip, 9 m/s, knockdown); light within 1.2 s of a perfect dodge = counter spin (360 backfist, crit); heavy = leap slam (hop on the model, shockwave ring, knockdown around).
 - Render: 4x MSAA, debanding, full-res high SSAO, soft shadow quality high; SSR on. Floor shader filters grout with derivatives (was the shimmer/grain), adds worn centres + grime, darkens toward walls; street dimmer (0.3). Ambient 0.75 -> 0.5 with warm light pools at stalls and mid-room, feathered glossy puddles, screen vignette.
 - Lesson: judge "prop hits inconsistent" with a chain probe, not single swings: isolated hits were 100%.
+
+## 2026-10-15 art pass 2 (props + character readability)
+- Follow-up to playtest 3 "art grainy and basic" (render pass already in b9921d1).
+- Before/after: `game/tests/showcase/look_shots.tscn` (`-- --out=<dir> [--look=none|rim|outline|both]`) shoots hub, combat room, boss room (wide + close, Jackie walked up to the nearest demon) and a prop line-up. Shots + side-by-sides in `assets/captures/art_pass2/`.
+- Weakest props: bucket, stool, pottery shard (TRELLIS shreds, 2 attempts each). Rest of realm-1 decor/props already fine after earlier re-rolls. Rebuilt by hand: `tools/blender_props.py` (bmesh, flat-shaded facets, 70–200 faces): staved bucket with iron hoops, rope handle and water; three-leg stool with chamfered seat + stretcher; glazed blue/gold urn shard with clay break edges. Writes `art/<cat>s/<id>/prepped.glb`, so `tools/sync_assets.py` syncs as usual. Bucket + stool back in `MARKET_PROPS`.
+- Characters: `CharacterLook` chains a next_pass on every model material: soft fresnel rim (warm on Jackie, red-orange on demons, strength 0.16) + inverted-hull dark outline (1.2 cm). Compared none / rim / outline / both on captures: strong rim washed colours out; outline alone left black trousers merging with the floor; soft rim + outline kept colour and separated both. Overlay slot untouched (hit flash / possession tint still work).
+- Fixed `mat.specular` warning on puddles (`metallic_specular`).
+- Lesson: for simple hard-surface props TRELLIS can't do (open, thin, shells), a 100-line bmesh script beats more re-rolls and matches the flat low-poly style.
